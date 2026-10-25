@@ -141,6 +141,15 @@ class CampusController extends Controller
         $activeQrCode = DB::table('campus_qr_codes')->where('status', 'Active')->first();
         $books = DB::table('campus_books')->orderBy('id', 'desc')->get();
         $posts = DB::table('campus_posts')->orderBy('is_pinned', 'desc')->orderBy('created_at', 'desc')->get();
+        $homeworks = DB::table('campus_homeworks')->orderBy('id', 'desc')->get();
+        $studentId = $student['id'] ?? null;
+        $myHomeworkSubmissions = collect();
+        if ($studentId && $studentId !== 'GUEST') {
+            $myHomeworkSubmissions = DB::table('campus_homework_submissions')
+                ->where('student_id', $studentId)
+                ->get()
+                ->keyBy('homework_id');
+        }
 
         // My Enrolled Classes (for Class Classroom View)
         $myClasses = DB::table('campus_classes')
@@ -277,7 +286,7 @@ class CampusController extends Controller
             ['modal' => 'challenge', 'icon' => 'trophy', 'bg' => '#f59e0b', 'title' => 'Challenge', 'desc' => 'Live arena & score', 'badge' => 'NEW', 'category' => 'community'],
             ['modal' => 'attendance', 'icon' => 'check-circle-2', 'bg' => '#2563eb', 'title' => 'Attendance', 'desc' => 'វត្តមានតាមមុខវិជ្ជា & ម៉ោង', 'badge' => $student['overall_attendance'], 'category' => 'classroom'],
             ['modal' => 'library', 'icon' => 'book-open', 'bg' => '#8b5cf6', 'title' => 'Library', 'desc' => 'E-Books by Admin', 'badge' => $books->count() . ' Books', 'category' => 'academic'],
-            ['modal' => 'news', 'icon' => 'newspaper', 'bg' => '#0d9488', 'title' => 'News', 'desc' => 'Admin announcements', 'badge' => $posts->count() . ' Posts', 'category' => 'community'],
+            ['modal' => 'homework', 'icon' => 'clipboard-check', 'bg' => '#0d9488', 'title' => 'Homework', 'desc' => 'កិច្ចការផ្ទះ & Assignments', 'badge' => ($homeworks->where('status', 'Active')->count() ? $homeworks->where('status', 'Active')->count() . ' Active' : null), 'category' => 'academic'],
         ];
 
         // 9. Daily 2-Session Attendance Checks & History
@@ -351,6 +360,8 @@ class CampusController extends Controller
             'enrolledClasses',
             'books',
             'posts',
+            'homeworks',
+            'myHomeworkSubmissions',
             'myClasses',
             'session1Check',
             'session2Check',
@@ -1709,6 +1720,99 @@ class CampusController extends Controller
                 'created_at' => $now->copy()->subHours(2),
                 'updated_at' => $now->copy()->subHours(2),
             ],
+        ]);
+    }
+
+    /**
+     * Submit Homework Answer (Student typing text answer to questions)
+     */
+    public function submitHomework(Request $request, $id)
+    {
+        $request->validate([
+            'answer_text' => 'required|string',
+        ]);
+
+        $homework = DB::table('campus_homeworks')->where('id', $id)->first();
+        if (!$homework) {
+            return response()->json([
+                'success' => false,
+                'message' => 'រកមិនឃើញកិច្ចការផ្ទះនេះទេ (Homework not found)',
+            ], 404);
+        }
+
+        $now = \Carbon\Carbon::now('Asia/Phnom_Penh');
+        $deadline = \Carbon\Carbon::parse($homework->deadline)->timezone('Asia/Phnom_Penh');
+
+        // Check if deadline has passed
+        if ($now->greaterThan($deadline)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'កិច្ចការនេះបានហួសកាលបរិច្ឆេទផុតកំណត់ហើយ មិនអាចបញ្ជូនបានទេ! (Deadline has passed)',
+            ], 422);
+        }
+
+        // Check start date if present
+        if ($homework->start_date) {
+            $startDate = \Carbon\Carbon::parse($homework->start_date)->timezone('Asia/Phnom_Penh');
+            if ($now->lessThan($startDate)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'កិច្ចការនេះមិនទាន់ដល់កាលបរិច្ឆេទចាប់ផ្តើមនៅឡើយទេ!',
+                ], 422);
+            }
+        }
+
+        // Determine student identity
+        $studentId = 'GZ-GUEST';
+        $studentName = 'Guest Student';
+        $studentAvatar = null;
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $dbStudent = DB::table('campus_students')
+                ->where('email', $user->email)
+                ->orWhere('student_id', $user->student_id)
+                ->first();
+
+            $studentId = $dbStudent ? $dbStudent->student_id : ($user->student_id ?: 'GZ-' . $user->id);
+            $studentName = $dbStudent ? $dbStudent->name : $user->name;
+            $studentAvatar = $dbStudent ? $dbStudent->avatar : null;
+        }
+
+        // Check existing submission
+        $existing = DB::table('campus_homework_submissions')
+            ->where('homework_id', $id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        if ($existing && $existing->status === 'Graded') {
+            return response()->json([
+                'success' => false,
+                'message' => 'កិច្ចការនេះត្រូវបានគ្រូដាក់ពិន្ទុរួចហើយ មិនអាចកែប្រែបានទៀតទេ!',
+            ], 422);
+        }
+
+        DB::table('campus_homework_submissions')->updateOrInsert(
+            [
+                'homework_id' => $id,
+                'student_id' => $studentId,
+            ],
+            [
+                'student_name' => $studentName,
+                'student_avatar' => $studentAvatar,
+                'answer_text' => $request->input('answer_text'),
+                'submitted_at' => $now,
+                'status' => 'Submitted',
+                'updated_at' => $now,
+                'created_at' => $existing ? $existing->created_at : $now,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'កិច្ចការផ្ទះត្រូវបានបញ្ជូនជោគជ័យ!',
+            'submitted_at' => $now->format('d/m/Y h:i A'),
+            'student_name' => $studentName,
         ]);
     }
 }

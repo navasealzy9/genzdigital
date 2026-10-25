@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -48,6 +49,8 @@ class AdminController extends Controller
         $screenSpotlights = DB::table('campus_screen_spotlights')->orderBy('display_order', 'asc')->get();
         $books = DB::table('campus_books')->orderBy('id', 'desc')->get();
         $posts = DB::table('campus_posts')->orderBy('id', 'desc')->get();
+        $homeworks = DB::table('campus_homeworks')->orderBy('id', 'desc')->get();
+        $homeworkSubmissions = DB::table('campus_homework_submissions')->orderBy('submitted_at', 'desc')->get();
 
         // Analytics / Reports stats
         $stats = [
@@ -81,7 +84,9 @@ class AdminController extends Controller
             'screenSpotlights',
             'stats',
             'books',
-            'posts'
+            'posts',
+            'homeworks',
+            'homeworkSubmissions'
         ));
     }
 
@@ -1396,5 +1401,137 @@ class AdminController extends Controller
     {
         DB::table('campus_posts')->where('id', $id)->delete();
         return redirect()->route('admin.index', ['tab' => 'news'])->with('success', 'សេចក្តីជូនដំណឹងត្រូវបានលុបជោគជ័យ!');
+    }
+
+    // =========================================================================
+    // 16. HOMEWORK & ASSIGNMENTS MANAGEMENT (ADMIN)
+    // =========================================================================
+
+    /**
+     * Store new Homework Assignment / Topic
+     */
+    public function storeHomework(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'questions' => 'required|string',
+            'deadline' => 'required',
+        ]);
+
+        $startDate = $request->filled('start_date')
+            ? \Carbon\Carbon::parse($request->input('start_date'))->timezone('Asia/Phnom_Penh')
+            : \Carbon\Carbon::now('Asia/Phnom_Penh');
+
+        $deadline = \Carbon\Carbon::parse($request->input('deadline'))->timezone('Asia/Phnom_Penh');
+        $now = \Carbon\Carbon::now('Asia/Phnom_Penh');
+
+        $classCode = $request->input('class_code');
+        if ($classCode === 'ALL' || empty($classCode)) {
+            $classCode = null;
+        }
+
+        DB::table('campus_homeworks')->insert([
+            'title' => $request->input('title'),
+            'class_code' => $classCode,
+            'subject' => $request->input('subject', 'General Academic'),
+            'questions' => $request->input('questions'),
+            'start_date' => $startDate,
+            'deadline' => $deadline,
+            'max_score' => $request->input('max_score', 100),
+            'status' => 'Active',
+            'created_by' => Auth::user()->name ?? 'Campus Administrator',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return redirect()->route('admin.index', ['tab' => 'homework'])->with('success', 'កិច្ចការផ្ទះ (Homework) ត្រូវបានដាក់ជូនសិស្សដោយជោគជ័យ!');
+    }
+
+    /**
+     * Toggle Homework Status (Active <-> Closed)
+     */
+    public function toggleHomeworkStatus($id)
+    {
+        $hw = DB::table('campus_homeworks')->where('id', $id)->first();
+        if ($hw) {
+            $newStatus = ($hw->status === 'Active') ? 'Closed' : 'Active';
+            DB::table('campus_homeworks')->where('id', $id)->update([
+                'status' => $newStatus,
+                'updated_at' => \Carbon\Carbon::now('Asia/Phnom_Penh'),
+            ]);
+            return redirect()->route('admin.index', ['tab' => 'homework'])->with('success', "ស្ថានភាពកិច្ចការផ្ទះត្រូវបានប្តូរទៅ: {$newStatus}");
+        }
+        return redirect()->route('admin.index', ['tab' => 'homework'])->with('error', 'រកមិនឃើញកិច្ចការផ្ទះនេះទេ');
+    }
+
+    /**
+     * Delete Homework & Associated Submissions
+     */
+    public function deleteHomework($id)
+    {
+        DB::table('campus_homework_submissions')->where('homework_id', $id)->delete();
+        DB::table('campus_homeworks')->where('id', $id)->delete();
+        return redirect()->route('admin.index', ['tab' => 'homework'])->with('success', 'កិច្ចការផ្ទះ និងចម្លើយទាំងអស់ត្រូវបានលុបជោគជ័យ!');
+    }
+
+    /**
+     * Get Homework Submissions API (for Admin Review)
+     */
+    public function getHomeworkSubmissions($id)
+    {
+        $homework = DB::table('campus_homeworks')->where('id', $id)->first();
+        if (!$homework) {
+            return response()->json(['success' => false, 'message' => 'Not found'], 404);
+        }
+
+        $submissions = DB::table('campus_homework_submissions')
+            ->where('homework_id', $id)
+            ->orderBy('submitted_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'homework' => $homework,
+            'submissions' => $submissions,
+            'count' => $submissions->count(),
+        ]);
+    }
+
+    /**
+     * Admin Review & Grade Homework Submission (បញ្ចូលពិន្ទុលើឈ្មោះសិស្ស)
+     */
+    public function gradeHomeworkSubmission(Request $request, $id)
+    {
+        $request->validate([
+            'score' => 'required|numeric|min:0',
+        ]);
+
+        $sub = DB::table('campus_homework_submissions')->where('id', $id)->first();
+        if (!$sub) {
+            return response()->json(['success' => false, 'message' => 'រកមិនឃើញចម្លើយរបស់សិស្សទេ'], 404);
+        }
+
+        $hw = DB::table('campus_homeworks')->where('id', $sub->homework_id)->first();
+        $score = (float)$request->input('score');
+        $feedback = $request->input('feedback');
+        $now = \Carbon\Carbon::now('Asia/Phnom_Penh');
+
+        DB::table('campus_homework_submissions')->where('id', $id)->update([
+            'score' => $score,
+            'feedback' => $feedback,
+            'status' => 'Graded',
+            'graded_by' => Auth::user()->name ?? 'Administrator',
+            'graded_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "ពិន្ទុ {$score}/{$hw->max_score} ត្រូវបានបញ្ចូលជូនសិស្ស {$sub->student_name} រួចរាល់!",
+            'score' => $score,
+            'feedback' => $feedback,
+            'status' => 'Graded',
+            'student_name' => $sub->student_name,
+        ]);
     }
 }

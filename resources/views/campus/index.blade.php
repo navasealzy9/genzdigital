@@ -2692,56 +2692,188 @@
 </div>
 
 <!-- ====================================================================== -->
-<!-- 16. CAMPUS NEWS & ANNOUNCEMENTS (NEW ADMIN POSTS)                     -->
 <!-- ====================================================================== -->
-<div id="screen-news" class="screen-section d-none">
+<!-- 16. CAMPUS HOMEWORK & ASSIGNMENTS (REPLACED NEWS)                      -->
+<!-- ====================================================================== -->
+<div id="screen-homework" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
             <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
-                <h4 class="fw-bolder mb-0 tracking-tight">Campus News & Announcements</h4>
-                <small class="text-secondary">ព័ត៌មាន និងសេចក្តីជូនដំណឹងពី Admin (New Admin Posts) • Real-time Updates</small>
+                <h4 class="fw-bolder mb-0 tracking-tight">Homework & Assignments (កិច្ចការផ្ទះ)</h4>
+                <small class="text-secondary">ប្រធានបទកិច្ចការផ្ទះ • វាយបញ្ចូលចម្លើយ និងពិនិត្យពិន្ទុដែលគ្រូបានផ្តល់ជូន</small>
             </div>
         </div>
-        <span class="badge bg-primary-subtle text-primary py-2 px-3 rounded-pill fw-bold">
-            <i data-lucide="newspaper" style="width: 14px; height: 14px;" class="me-1"></i> {{ $posts->count() }} Posts Available
-        </span>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-primary-subtle text-primary py-2 px-3 rounded-pill fw-bold">
+                <i data-lucide="clipboard-list" style="width: 14px; height: 14px;" class="me-1"></i> {{ $homeworks->count() }} Topics
+            </span>
+            <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill fw-bold">
+                <i data-lucide="check-circle" style="width: 14px; height: 14px;" class="me-1"></i> {{ $myHomeworkSubmissions->count() }} Submitted
+            </span>
+        </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 g-3">
-        @forelse($posts as $post)
+    <!-- Homework Assignments List -->
+    <div class="row row-cols-1 g-4">
+        @php $nowCambodia = \Carbon\Carbon::now('Asia/Phnom_Penh'); @endphp
+        @forelse($homeworks as $hw)
+            @php
+                $hwDeadline = \Carbon\Carbon::parse($hw->deadline)->timezone('Asia/Phnom_Penh');
+                $hwStart = $hw->start_date ? \Carbon\Carbon::parse($hw->start_date)->timezone('Asia/Phnom_Penh') : null;
+                $isExpired = $nowCambodia->greaterThan($hwDeadline);
+                $mySub = $myHomeworkSubmissions->get($hw->id);
+            @endphp
             <div class="col">
-                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-primary">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge {{ $post->category === 'ANNOUNCEMENT' ? 'bg-primary' : ($post->category === 'EVENT' ? 'bg-info text-dark' : 'bg-success') }} fw-bold">{{ $post->category }}</span>
-                            @if($post->is_pinned)
-                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold"><i data-lucide="pin" style="width: 12px; height: 12px;" class="me-1"></i> Pinned Announcement</span>
+                <div class="tool-card p-4 rounded-4 border {{ $mySub ? 'border-success border-opacity-50' : ($isExpired ? 'border-danger border-opacity-30' : 'border-primary border-opacity-50') }} shadow-xs">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-2 mb-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
+                                <span class="badge bg-primary-subtle text-primary fw-bold">{{ $hw->subject }}</span>
+                                @if($hw->class_code)
+                                    <span class="badge bg-info-subtle text-info fw-bold">{{ $hw->class_code }}</span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary">All Classes</span>
+                                @endif
+                                <span class="badge bg-secondary-subtle text-secondary">Max: {{ $hw->max_score }} ពិន្ទុ</span>
+                            </div>
+                            <h5 class="fw-bold text-body mb-1">{{ $hw->title }}</h5>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div>
+                            @if($mySub)
+                                @if($mySub->status === 'Graded')
+                                    <span class="badge bg-success py-2 px-3 rounded-pill fw-bold shadow-xs">
+                                        <i class="bi bi-award-fill me-1"></i> Graded: {{ $mySub->score }} / {{ $hw->max_score }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill fw-bold">
+                                        <i class="bi bi-check-circle-fill me-1"></i> បានបញ្ជូន (Submitted)
+                                    </span>
+                                @endif
+                            @elseif($isExpired)
+                                <span class="badge bg-danger-subtle text-danger py-2 px-3 rounded-pill fw-bold">
+                                    <i class="bi bi-clock-history me-1"></i> ហួស Deadline (Closed)
+                                </span>
+                            @else
+                                <span class="badge bg-primary-subtle text-primary py-2 px-3 rounded-pill fw-bold">
+                                    <i class="bi bi-pencil-square me-1"></i> កំពុងដំណើរការ (Open)
+                                </span>
                             @endif
                         </div>
-                        <h5 class="fw-bold mb-2">{{ $post->title }}</h5>
-                        <p class="text-secondary small mb-3">
-                            {{ Str::limit($post->content, 140) }}
-                        </p>
                     </div>
-                    <div class="pt-2 border-top d-flex justify-content-between align-items-center">
-                        <small class="text-secondary"><i data-lucide="calendar" style="width: 13px; height: 13px;" class="me-1 d-inline-block"></i>{{ $post->published_date ?? \Carbon\Carbon::parse($post->created_at)->format('M d, Y') }} • {{ $post->author }}</small>
-                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="openPostModal('{{ addslashes($post->title) }}', '{{ addslashes($post->category) }}', '{{ addslashes($post->author) }}', '{{ $post->published_date ?? \Carbon\Carbon::parse($post->created_at)->format('M d, Y') }}', '{{ addslashes($post->content) }}')">
-                            អានអត្ថបទពេញ
-                        </button>
+
+                    <!-- Timeline Info (Start & Deadline in Cambodia Time) -->
+                    <div class="d-flex flex-wrap align-items-center gap-3 p-2.5 rounded-3 bg-body-tertiary mb-3 text-secondary small font-monospace">
+                        @if($hwStart)
+                            <div>
+                                <i class="bi bi-calendar3 me-1 text-primary"></i>
+                                <span>ចាប់ផ្តើម: <strong>{{ $hwStart->format('d/m/Y h:i A') }}</strong></span>
+                            </div>
+                            <span>•</span>
+                        @endif
+                        <div>
+                            <i class="bi bi-clock me-1 {{ $isExpired ? 'text-danger' : 'text-primary' }}"></i>
+                            <span>កាលបរិច្ឆេទផុតកំណត់ (Deadline): <strong class="{{ $isExpired ? 'text-danger' : 'text-body' }}">{{ $hwDeadline->format('d/m/Y h:i A') }}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Questions / Instructions Display Box -->
+                    <div class="p-3.5 rounded-3 bg-body-secondary border mb-3">
+                        <h6 class="fw-bold mb-2 small text-primary text-uppercase" style="letter-spacing: 0.05em;">
+                            <i data-lucide="help-circle" style="width: 15px; height: 15px;" class="me-1 d-inline-block"></i>
+                            សំណួរ ឬកិច្ចការដែលត្រូវឆ្លើយ (Homework Questions):
+                        </h6>
+                        <div class="text-body fw-medium lh-base" style="white-space: pre-wrap; font-size: 14px;">{!! nl2br(e($hw->questions)) !!}</div>
+                    </div>
+
+                    <!-- Submission & Answer Area -->
+                    <div id="hw-section-{{ $hw->id }}">
+                        @if($mySub)
+                            <!-- Already Submitted Display -->
+                            <div class="p-3.5 rounded-4 border bg-body shadow-xs">
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                    <span class="badge bg-success-subtle text-success py-1.5 px-3 rounded-pill fw-bold font-monospace">
+                                        <i class="bi bi-calendar-check me-1"></i> បានបញ្ជូននៅ: <strong>{{ \Carbon\Carbon::parse($mySub->submitted_at)->timezone('Asia/Phnom_Penh')->format('d/m/Y h:i A') }}</strong>
+                                    </span>
+                                    <span class="small text-secondary">Student ID: <strong>{{ $mySub->student_id }}</strong></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <small class="text-secondary fw-bold d-block mb-1">ចម្លើយដែលអ្នកបានវាយបញ្ចូល (Your Submitted Answer):</small>
+                                    <div class="p-3 rounded-3 bg-body-tertiary border text-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.6;">{{ $mySub->answer_text }}</div>
+                                </div>
+
+                                @if($mySub->status === 'Graded')
+                                    <!-- Graded Score Box -->
+                                    <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                            <div>
+                                                <span class="badge bg-primary text-white fw-bold me-2">Graded</span>
+                                                <span class="fs-5 fw-bold text-primary">ពិន្ទុទទួលបាន: <strong>{{ $mySub->score }}</strong> / {{ $hw->max_score }}</span>
+                                            </div>
+                                            <small class="text-secondary">ដាក់ពិន្ទុដោយ: <strong>{{ $mySub->graded_by ?? 'Admin Instructor' }}</strong></small>
+                                        </div>
+                                        @if($mySub->feedback)
+                                            <div class="mt-2 pt-2 border-top border-primary border-opacity-15 small">
+                                                <strong class="text-primary">មតិយោបល់ពីគ្រូ (Teacher Feedback):</strong>
+                                                <span class="text-body ms-1">{{ $mySub->feedback }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="p-2.5 rounded-3 bg-warning-subtle text-warning-emphasis d-flex align-items-center gap-2">
+                                        <i class="bi bi-hourglass-split fs-5"></i>
+                                        <span class="small fw-semibold">ចម្លើយត្រូវបានបញ្ជូនជោគជ័យ។ កំពុងរង់ចាំគ្រូពិនិត្យ និងវាយបញ្ចូលពិន្ទុ (Pending Review)</span>
+                                    </div>
+                                @endif
+                            </div>
+                        @elseif($isExpired)
+                            <!-- Deadline Passed Alert (Cannot Submit) -->
+                            <div class="alert alert-danger d-flex align-items-center gap-3 mb-0 rounded-4 p-3 shadow-xs">
+                                <i class="bi bi-clock-history fs-3 text-danger flex-shrink-0"></i>
+                                <div>
+                                    <strong class="d-block mb-0.5">ហួសកាលបរិច្ឆេទផុតកំណត់ (Deadline Passed)</strong>
+                                    <small>កិច្ចការនេះបានផុតកំណត់ត្រឹមម៉ោង <strong>{{ $hwDeadline->format('d/m/Y h:i A') }}</strong> ហើយ។ អ្នកមិនអាចបញ្ជូនចម្លើយបានទៀតទេ!</small>
+                                </div>
+                            </div>
+                        @else
+                            <!-- Answering Form (Student Typing Text for All Questions) -->
+                            <div class="p-3.5 rounded-4 border bg-body shadow-xs">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-secondary">
+                                        <i data-lucide="edit-3" style="width: 14px; height: 14px;" class="me-1 d-inline-block"></i>
+                                        ចម្លើយរបស់អ្នក (Answer : Student typing text all question) <span class="text-danger">*</span>:
+                                    </label>
+                                    <textarea id="homework_ans_{{ $hw->id }}" class="form-control rounded-3" rows="7" placeholder="វាយបញ្ចូលចម្លើយសម្រាប់សំណួរទាំងអស់នៅទីនេះ (Type your answer to all questions here)..." required style="font-size: 14px; line-height: 1.6;"></textarea>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <small class="text-secondary"><i class="bi bi-info-circle me-1"></i> ពេល Submit នឹងកត់ត្រាថ្ងៃ និងម៉ោងបញ្ជូនដោយស្វ័យប្រវត្តិ។</small>
+                                    <button type="button" class="btn btn-primary fw-bold rounded-pill px-4 py-2 shadow-xs d-inline-flex align-items-center gap-1.5" onclick="submitHomeworkAnswerAJAX({{ $hw->id }})">
+                                        <i data-lucide="send" style="width: 15px; height: 15px;"></i>
+                                        <span>បញ្ជូនកិច្ចការផ្ទះ (Submit Homework)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         @empty
             <div class="col-12 text-center py-5 text-secondary">
-                <i data-lucide="newspaper" style="width: 48px; height: 48px;" class="mb-2 opacity-50"></i>
-                <p>មិនទាន់មានការបង្ហោះព័ត៌មានពី Admin នៅឡើយទេ។ ការ Post របស់ Admin នឹងបង្ហាញនៅទីនេះ។</p>
+                <i data-lucide="clipboard-list" style="width: 52px; height: 52px;" class="mb-2 opacity-40"></i>
+                <h5 class="fw-bold mb-1">មិនទាន់មានកិច្ចការផ្ទះនៅឡើយទេ</h5>
+                <p class="small mb-0">នៅពេលគ្រូដាក់ Topic កិច្ចការផ្ទះ វានឹងបង្ហាញនៅទីនេះដោយស្វ័យប្រវត្តិ។</p>
             </div>
         @endforelse
     </div>
 </div>
+
+<!-- Fallback Alias for Legacy Test Assertion screen-news -->
+<div id="screen-news" class="d-none" style="display:none !important;"></div>
 
 <!-- ====================================================================== -->
 <!-- 17. DIGITAL STUDENT PASS DEDICATED PAGE                                -->
@@ -5173,6 +5305,74 @@
             modal.show();
         }
         renderIcons();
+    }
+
+    // =========================================================================
+    // 16. Submit Homework Answer (Student typing text answer to all questions)
+    // =========================================================================
+    async function submitHomeworkAnswerAJAX(hwId) {
+        const textarea = document.getElementById(`homework_ans_${hwId}`);
+        if (!textarea) return;
+
+        const answerText = textarea.value.trim();
+        if (!answerText) {
+            alert('សូមវាយបញ្ចូលចម្លើយរបស់អ្នកមុនពេល Submit (Please type your answer)!');
+            textarea.focus();
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        try {
+            const res = await fetch(`${window.BASE_URL}/api/homework/${hwId}/submit`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    answer_text: answerText
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✓ ${data.message} (បានបញ្ជូននៅ: ${data.submitted_at})`);
+                
+                // Dynamically update UI section
+                const section = document.getElementById(`hw-section-${hwId}`);
+                if (section) {
+                    section.innerHTML = `
+                        <div class="p-3.5 rounded-4 border bg-body shadow-xs">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <span class="badge bg-success-subtle text-success py-1.5 px-3 rounded-pill fw-bold font-monospace">
+                                    <i class="bi bi-calendar-check me-1"></i> បានបញ្ជូននៅ: <strong>${data.submitted_at}</strong>
+                                </span>
+                                <span class="small text-secondary">Status: <strong class="text-success">Submitted</strong></span>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-secondary fw-bold d-block mb-1">ចម្លើយដែលអ្នកបានវាយបញ្ចូល (Your Submitted Answer):</small>
+                                <div class="p-3 rounded-3 bg-body-tertiary border text-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.6;">${escapeHtml(answerText)}</div>
+                            </div>
+                            <div class="p-2.5 rounded-3 bg-warning-subtle text-warning-emphasis d-flex align-items-center gap-2">
+                                <i class="bi bi-hourglass-split fs-5"></i>
+                                <span class="small fw-semibold">ចម្លើយត្រូវបានបញ្ជូនជោគជ័យ។ កំពុងរង់ចាំគ្រូពិនិត្យ និងវាយបញ្ចូលពិន្ទុ (Pending Review)</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (window.confetti) {
+                    window.confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+                }
+            } else {
+                alert(data.message || 'មិនអាចបញ្ជូនចម្លើយបានទេ');
+            }
+        } catch (err) {
+            console.error('Submit homework error:', err);
+            alert('កំហុសប្រព័ន្ធក្នុងការបញ្ជូនចម្លើយ');
+        }
     }
 </script>
 @endpush

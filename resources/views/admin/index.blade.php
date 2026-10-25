@@ -1583,18 +1583,46 @@
 </div>
 
 <!-- ====================================================================== -->
-<!-- 15. NEWS & ANNOUNCEMENTS (ADMIN POSTS)                                 -->
+<!-- 15. HOMEWORK & ASSIGNMENTS (ADMIN TOPICS & REVIEW)                     -->
 <!-- ====================================================================== -->
-<div id="admin-tab-news" class="admin-tab-pane d-none">
+<div id="admin-tab-homework" class="admin-tab-pane d-none">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
         <div>
-            <h4 class="fw-bolder mb-0">Campus News & Announcements (ព័ត៌មាន & សេចក្តីជូនដំណឹង)</h4>
-            <small class="text-secondary">ចុះផ្សាយព័ត៌មានសាលា សេចក្តីប្រកាសប្រឡង និងព្រឹត្តិការណ៍នានា • បង្ហាញក្នុង Client News</small>
+            <h4 class="fw-bolder mb-0">Homework & Assignments (គ្រប់គ្រងកិច្ចការផ្ទះ)</h4>
+            <small class="text-secondary">ដាក់ Topic កិច្ចការផ្ទះ អោយសិស្ស ជាមួយកាលបរិច្ឆេទចាប់ផ្តើម និង Deadline • ពិនិត្យចម្លើយសិស្ស និងវាយបញ្ចូលពិន្ទុ</small>
         </div>
-        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-xs" data-bs-toggle="modal" data-bs-target="#addPostModal">
+        <button class="btn btn-primary btn-sm rounded-pill px-3.5 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#addHomeworkModal">
             <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-            <span>Create New Post</span>
+            <span>+ Create New Homework (ដាក់កិច្ចការផ្ទះថ្មី)</span>
         </button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row row-cols-2 row-cols-md-4 g-3 mb-3">
+        <div class="col">
+            <div class="p-3 rounded-4 border bg-body-tertiary">
+                <small class="text-secondary d-block">Total Homework Topics</small>
+                <h4 class="fw-bold mb-0 text-primary">{{ $homeworks->count() }}</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="p-3 rounded-4 border bg-body-tertiary">
+                <small class="text-secondary d-block">Active Topics</small>
+                <h4 class="fw-bold mb-0 text-success">{{ $homeworks->where('status', 'Active')->count() }}</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="p-3 rounded-4 border bg-body-tertiary">
+                <small class="text-secondary d-block">Student Submissions</small>
+                <h4 class="fw-bold mb-0 text-info">{{ $homeworkSubmissions->count() }}</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="p-3 rounded-4 border bg-body-tertiary">
+                <small class="text-secondary d-block">Graded Submissions</small>
+                <h4 class="fw-bold mb-0 text-warning-emphasis">{{ $homeworkSubmissions->where('status', 'Graded')->count() }}</h4>
+            </div>
+        </div>
     </div>
 
     <div class="admin-card overflow-hidden">
@@ -1602,46 +1630,97 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light text-secondary small">
                     <tr>
-                        <th class="ps-3">Post Title</th>
-                        <th>Category</th>
-                        <th>Author</th>
-                        <th>Pinned</th>
-                        <th>Published Date</th>
+                        <th class="ps-3">Homework Topic & Subject</th>
+                        <th>Target Class</th>
+                        <th>Start Date (Cambodia)</th>
+                        <th>Deadline (Cambodia)</th>
+                        <th>Status</th>
+                        <th>Submissions</th>
                         <th class="text-end pe-3">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($posts as $pt)
+                    @php $nowCambodia = \Carbon\Carbon::now('Asia/Phnom_Penh'); @endphp
+                    @forelse($homeworks as $hw)
+                        @php
+                            $hwDeadline = \Carbon\Carbon::parse($hw->deadline)->timezone('Asia/Phnom_Penh');
+                            $hwStart = $hw->start_date ? \Carbon\Carbon::parse($hw->start_date)->timezone('Asia/Phnom_Penh') : null;
+                            $isExpired = $nowCambodia->greaterThan($hwDeadline);
+                            $subsForThisHw = $homeworkSubmissions->where('homework_id', $hw->id);
+                        @endphp
                         <tr>
                             <td class="ps-3">
-                                <span class="fw-bold d-block">{{ $pt->title }}</span>
-                                <small class="text-secondary">{{ Str::limit($pt->content, 70) }}</small>
+                                <span class="fw-bold d-block text-body fs-6">{{ $hw->title }}</span>
+                                <div class="d-flex align-items-center gap-1.5 mt-0.5">
+                                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 10px;">{{ $hw->subject }}</span>
+                                    <span class="badge bg-secondary-subtle text-secondary" style="font-size: 10px;">Max: {{ $hw->max_score }} ពិន្ទុ</span>
+                                </div>
                             </td>
-                            <td><span class="badge {{ $pt->category === 'ANNOUNCEMENT' ? 'bg-primary' : ($pt->category === 'EVENT' ? 'bg-info text-dark' : 'bg-success') }} fw-bold">{{ $pt->category }}</span></td>
-                            <td class="small">{{ $pt->author }}</td>
                             <td>
-                                @if($pt->is_pinned)
-                                    <span class="badge bg-warning text-dark fw-bold"><i data-lucide="pin" style="width: 11px; height: 11px;" class="me-1"></i> Pinned</span>
+                                @if($hw->class_code)
+                                    <span class="badge bg-info-subtle text-info fw-bold">{{ $hw->class_code }}</span>
                                 @else
-                                    <span class="text-secondary small">Normal</span>
+                                    <span class="badge bg-secondary-subtle text-secondary">ថ្នាក់ទាំងអស់ (All Classes)</span>
                                 @endif
                             </td>
-                            <td class="small">{{ \Carbon\Carbon::parse($pt->created_at)->format('M d, Y') }}</td>
+                            <td class="small text-secondary font-monospace">
+                                @if($hwStart)
+                                    <i class="bi bi-calendar3 me-1"></i>{{ $hwStart->format('d/m/Y h:i A') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="small font-monospace">
+                                <span class="{{ $isExpired ? 'text-danger fw-bold' : 'text-body' }}">
+                                    <i class="bi bi-clock me-1"></i>{{ $hwDeadline->format('d/m/Y h:i A') }}
+                                </span>
+                            </td>
+                            <td>
+                                @if($hw->status === 'Closed')
+                                    <span class="badge bg-secondary fw-bold">Closed</span>
+                                @elseif($isExpired)
+                                    <span class="badge bg-danger-subtle text-danger fw-bold">Expired</span>
+                                @else
+                                    <span class="badge bg-success fw-bold">Active</span>
+                                @endif
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#reviewHwModal_{{ $hw->id }}">
+                                    <i data-lucide="eye" style="width: 13px; height: 13px;"></i>
+                                    <span>{{ $subsForThisHw->count() }} Submissions</span>
+                                    @if($subsForThisHw->where('status', 'Graded')->count() > 0)
+                                        <span class="badge bg-success text-white rounded-pill ms-1" style="font-size: 9px;">{{ $subsForThisHw->where('status', 'Graded')->count() }} Graded</span>
+                                    @endif
+                                </button>
+                            </td>
                             <td class="text-end pe-3">
-                                <form action="{{ route('admin.posts.delete', $pt->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this post?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" title="Delete">
-                                        <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
-                                        <span style="font-size: 11px;">Delete</span>
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-2.5 py-1 fw-bold" data-bs-toggle="modal" data-bs-target="#reviewHwModal_{{ $hw->id }}" title="Review Submissions & Grade">
+                                        <i data-lucide="check-square" style="width: 13px; height: 13px;" class="me-1"></i> ពិនិត្យចម្លើយ
                                     </button>
-                                </form>
+
+                                    <form action="{{ route('admin.homework.toggle', $hw->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1" title="Toggle Status">
+                                            {{ $hw->status === 'Active' ? 'Close' : 'Reopen' }}
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ route('admin.homework.delete', $hw->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this homework topic?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Delete">
+                                            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-secondary">
-                                No news posts published yet. Click "Create New Post" to add.
+                            <td colspan="7" class="text-center py-5 text-secondary">
+                                <i data-lucide="clipboard-list" style="width: 44px; height: 44px;" class="mb-2 opacity-50"></i>
+                                <p class="mb-0">មិនទាន់មានកិច្ចការផ្ទះ (Homework) ត្រូវបានដាក់នៅឡើយទេ។ ចុចប៊ូតុង "+ Create New Homework" ដើម្បីដាក់ប្រធានបទថ្មី។</p>
                             </td>
                         </tr>
                     @endforelse
@@ -1650,6 +1729,9 @@
         </div>
     </div>
 </div>
+
+<!-- Fallback Alias for Legacy Admin Tab News -->
+<div id="admin-tab-news" class="admin-tab-pane d-none" style="display:none !important;"></div>
 
 <!-- ====================================================================== -->
 <!-- ALL MODALS FOR 13 ADVANCED ADMIN MODULES                              -->
@@ -2766,6 +2848,171 @@
     </div>
 </div>
 
+<!-- 16. Create Homework Assignment Modal -->
+<div class="modal fade" id="addHomeworkModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-3 p-md-4 rounded-4 shadow-lg border-0">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold fs-6">Create New Homework Assignment (ដាក់កិច្ចការផ្ទះថ្មី)</h5>
+                    <small class="text-secondary">កំណត់ Topic, កាលបរិច្ឆេទចាប់ផ្តើម, Deadline និងសំណួរសម្រាប់សិស្ស</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('admin.homework.store') }}" method="POST">
+                @csrf
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Homework Topic / Title (ប្រធានបទកិច្ចការផ្ទះ) <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" required placeholder="e.g. UI/UX Interaction Design & Case Study">
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Target Class (ថ្នាក់រៀន)</label>
+                            <select name="class_code" class="form-select">
+                                <option value="ALL">ថ្នាក់ទាំងអស់ (All Classes)</option>
+                                @foreach($classes as $c)
+                                    <option value="{{ $c->code }}">{{ $c->title }} ({{ $c->code }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Subject / Course (មុខវិជ្ជា)</label>
+                            <input type="text" name="subject" class="form-control" value="Digital Media & Tech" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Max Score (ពិន្ទុពេញ)</label>
+                            <input type="number" name="max_score" class="form-control" value="100" min="1" max="1000" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Start Date & Time (កាលបរិច្ឆេទចាប់ផ្តើម)</label>
+                            <input type="datetime-local" name="start_date" class="form-control" value="{{ \Carbon\Carbon::now('Asia/Phnom_Penh')->format('Y-m-d\TH:i') }}">
+                            <small class="text-secondary" style="font-size: 11px;">ម៉ោងនៅកម្ពុជា (Cambodia Time)</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Deadline Date & Time (កាលបរិច្ឆេទផុតកំណត់) <span class="text-danger">*</span></label>
+                            <input type="datetime-local" name="deadline" class="form-control" value="{{ \Carbon\Carbon::now('Asia/Phnom_Penh')->addDays(7)->setTime(23, 59)->format('Y-m-d\TH:i') }}" required>
+                            <small class="text-danger" style="font-size: 11px;">សិស្សមិនអាច Submit បានទេពេលហួស Deadline</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Questions & Instructions (សំណួរ និងសេចក្តីណែនាំទាំងអស់) <span class="text-danger">*</span></label>
+                        <textarea name="questions" rows="6" class="form-control" placeholder="1. ចូរពន្យល់ពីគោលការណ៍ចម្បងនៃ...&#10;2. តើអ្វីជាភាពខុសគ្នារវាង...&#10;3. ចូរលើកឧទាហរណ៍ជាក់ស្តែង..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2.5">
+                        <i data-lucide="check-circle-2" style="width: 17px; height: 17px;" class="me-1"></i> បង្កើត និងដាក់កិច្ចការផ្ទះ (Publish Homework)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 17. Review Submissions Modals for Each Homework -->
+@foreach($homeworks as $hw)
+    @php
+        $subs = $homeworkSubmissions->where('homework_id', $hw->id);
+        $hwDeadline = \Carbon\Carbon::parse($hw->deadline)->timezone('Asia/Phnom_Penh');
+    @endphp
+    <div class="modal fade" id="reviewHwModal_{{ $hw->id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content rounded-4 shadow-lg border-0">
+                <div class="modal-header border-bottom">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary-subtle text-primary fw-bold">{{ $hw->subject }}</span>
+                            <span class="badge bg-secondary-subtle text-secondary">{{ $hw->class_code ?? 'All Classes' }}</span>
+                            <span class="badge bg-info-subtle text-info">Max: {{ $hw->max_score }} ពិន្ទុ</span>
+                        </div>
+                        <h5 class="modal-title fw-bold fs-6 mb-0">{{ $hw->title }}</h5>
+                        <small class="text-secondary">Deadline: <span class="text-danger fw-bold font-monospace">{{ $hwDeadline->format('d/m/Y h:i A') }}</span> • Submissions: {{ $subs->count() }} ({{ $subs->where('status', 'Graded')->count() }} Graded)</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-3 p-md-4">
+                    <!-- Homework Questions Review Box -->
+                    <div class="p-3.5 rounded-4 bg-body-tertiary border mb-4">
+                        <h6 class="fw-bold mb-2 small text-primary text-uppercase" style="letter-spacing: 0.05em;">
+                            <i data-lucide="help-circle" style="width: 15px; height: 15px;" class="me-1 d-inline-block"></i>
+                            សំណួរដែលបានដាក់ជូនសិស្ស (Homework Questions):
+                        </h6>
+                        <div class="text-body fw-medium lh-base" style="white-space: pre-wrap;">{!! nl2br(e($hw->questions)) !!}</div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+                        <span>ចម្លើយរបស់សិស្សដែលបានបញ្ជូន (Student Submissions - {{ $subs->count() }}):</span>
+                        <small class="text-secondary fw-normal">វាយបញ្ចូលពិន្ទុលើឈ្មោះសិស្សនីមួយៗ រួចចុច "រក្សាទុកពិន្ទុ"</small>
+                    </h6>
+
+                    @forelse($subs as $sub)
+                        @php
+                            $subTime = \Carbon\Carbon::parse($sub->submitted_at)->timezone('Asia/Phnom_Penh');
+                        @endphp
+                        <div class="p-3.5 rounded-4 border bg-body mb-3 shadow-xs">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mb-3 pb-2 border-bottom">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ $sub->student_avatar ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150' }}" class="rounded-circle object-fit-cover shadow-sm" style="width: 44px; height: 44px;">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <strong class="fs-6">{{ $sub->student_name }}</strong>
+                                            @include('partials.verified-badge', ['size' => 14, 'border' => false])
+                                            <span id="sub_status_badge_{{ $sub->id }}" class="badge {{ $sub->status === 'Graded' ? 'bg-success' : 'bg-warning text-dark' }} fw-bold" style="font-size: 10px;">
+                                                {{ $sub->status === 'Graded' ? 'Graded (' . $sub->score . ' pts)' : 'Pending Review' }}
+                                            </span>
+                                        </div>
+                                        <small class="text-secondary font-monospace">{{ $sub->student_id }}</small>
+                                    </div>
+                                </div>
+
+                                <div class="text-md-end">
+                                    <span class="badge bg-secondary-subtle text-secondary fw-bold px-2.5 py-1.5 font-monospace">
+                                        <i class="bi bi-clock-history me-1"></i> បានបញ្ជូននៅ: {{ $subTime->format('d/m/Y h:i:s A') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Student Answer Text -->
+                            <div class="mb-3">
+                                <small class="text-secondary fw-bold d-block mb-1.5">ចម្លើយដែលសិស្សបានវាយបញ្ចូល (Student's Typed Answer):</small>
+                                <div class="p-3 rounded-3 bg-body-tertiary border text-body" style="white-space: pre-wrap; font-size: 13.5px; line-height: 1.6;">{{ $sub->answer_text }}</div>
+                            </div>
+
+                            <!-- Admin Scoring & Feedback Form -->
+                            <div class="p-3 rounded-3 bg-light border d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                    <label class="small fw-bold text-nowrap text-primary mb-0"><i class="bi bi-award me-1"></i> វាយបញ្ចូលពិន្ទុ:</label>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <input type="number" step="0.5" min="0" max="{{ $hw->max_score }}" id="score_val_{{ $sub->id }}" value="{{ $sub->score }}" class="form-control form-control-sm text-center fw-bold" style="width: 85px;" placeholder="0-{{ $hw->max_score }}">
+                                        <span class="small fw-bold text-secondary">/ {{ $hw->max_score }}</span>
+                                    </div>
+                                    <input type="text" id="feedback_val_{{ $sub->id }}" value="{{ $sub->feedback }}" class="form-control form-control-sm ms-2" placeholder="មតិយោបល់ / Feedback ជូនសិស្ស...">
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold text-nowrap shadow-xs" onclick="saveHomeworkScoreAJAX({{ $sub->id }})">
+                                    <i data-lucide="check" style="width: 14px; height: 14px;" class="me-1"></i> រក្សាទុកពិន្ទុ (Save Score)
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-5 text-secondary">
+                            <i data-lucide="inbox" style="width: 48px; height: 48px;" class="mb-2 opacity-40"></i>
+                            <p class="mb-0">មិនទាន់មានសិស្សបញ្ជូនចម្លើយសម្រាប់កិច្ចការផ្ទះនេះនៅឡើយទេ។</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
+
 @endsection
 
 @push('scripts')
@@ -3550,6 +3797,55 @@
         const loadingOverlay = document.getElementById('admin-preview-loading');
         if (loadingOverlay) loadingOverlay.style.display = 'flex';
         initAdminSlidePreview();
+    }
+
+    // =========================================================================
+    // 16. Admin Grade Homework Submission (AJAX)
+    // =========================================================================
+    function saveHomeworkScoreAJAX(subId) {
+        const scoreInput = document.getElementById(`score_val_${subId}`);
+        const feedbackInput = document.getElementById(`feedback_val_${subId}`);
+        if (!scoreInput) return;
+
+        const scoreVal = scoreInput.value;
+        const feedbackVal = feedbackInput ? feedbackInput.value : '';
+
+        if (scoreVal === '' || scoreVal === null || isNaN(scoreVal)) {
+            alert('សូមបញ្ចូលពិន្ទុជាលេខត្រឹមត្រូវ!');
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`${window.BASE_URL}/admin/homework/submissions/${subId}/score`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                score: parseFloat(scoreVal),
+                feedback: feedbackVal
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const badge = document.getElementById(`sub_status_badge_${subId}`);
+                if (badge) {
+                    badge.className = 'badge bg-success';
+                    badge.textContent = `Graded (${data.score} pts)`;
+                }
+                showAdminToast(data.message || 'ពិន្ទុត្រូវបានបញ្ចូលជោគជ័យ!');
+            } else {
+                alert(data.message || 'មានបញ្ហាក្នុងការបញ្ចូលពិន្ទុ');
+            }
+        })
+        .catch(err => {
+            console.error('Grade error:', err);
+            alert('កំហុសប្រព័ន្ធក្នុងការបញ្ចូលពិន្ទុ');
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {

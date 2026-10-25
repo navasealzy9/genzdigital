@@ -113,4 +113,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // 15. News & Announcements Posts Management
     Route::post('/posts', [AdminController::class, 'storePost'])->name('posts.store');
     Route::delete('/posts/{id}', [AdminController::class, 'deletePost'])->name('posts.delete');
+
+    // 16. Homework & Assignments Management (Admin)
+    Route::post('/homework', [AdminController::class, 'storeHomework'])->name('homework.store');
+    Route::post('/homework/{id}/toggle', [AdminController::class, 'toggleHomeworkStatus'])->name('homework.toggle');
+    Route::delete('/homework/{id}', [AdminController::class, 'deleteHomework'])->name('homework.delete');
+    Route::get('/homework/{id}/submissions', [AdminController::class, 'getHomeworkSubmissions'])->name('homework.submissions');
+    Route::post('/homework/submissions/{id}/score', [AdminController::class, 'gradeHomeworkSubmission'])->name('homework.submissions.score');
 });
+
+// Client: Submit Homework Answer
+Route::post('/api/homework/{id}/submit', [CampusController::class, 'submitHomework'])->name('campus.homework.submit');
+

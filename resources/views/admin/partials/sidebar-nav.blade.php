@@ -107,7 +107,7 @@
         <span>Collaboration Teams</span>
     </button>
 
-    <div class="sidebar-section-title mt-2">5. Library & News Media</div>
+    <div class="sidebar-section-title mt-2">5. Library & Homework</div>
     <button class="admin-nav-item d-flex align-items-center justify-content-between" data-admin-tab="library" onclick="switchAdminTab('library')">
         <div class="d-flex align-items-center gap-2.5">
             <i data-lucide="book" style="width: 17px; height: 17px;"></i>
@@ -117,13 +117,13 @@
             {{ isset($books) ? $books->count() : 0 }}
         </span>
     </button>
-    <button class="admin-nav-item d-flex align-items-center justify-content-between" data-admin-tab="news" onclick="switchAdminTab('news')">
+    <button class="admin-nav-item d-flex align-items-center justify-content-between" data-admin-tab="homework" onclick="switchAdminTab('homework')">
         <div class="d-flex align-items-center gap-2.5">
-            <i data-lucide="newspaper" style="width: 17px; height: 17px;"></i>
-            <span>Campus News & Posts</span>
+            <i data-lucide="clipboard-list" style="width: 17px; height: 17px;"></i>
+            <span>Homework (កិច្ចការផ្ទះ)</span>
         </div>
-        <span class="badge bg-body-secondary text-secondary rounded-pill" style="font-size: 10px;">
-            {{ isset($posts) ? $posts->count() : 0 }}
+        <span class="badge bg-primary text-white rounded-pill" style="font-size: 10px;">
+            {{ isset($homeworks) ? $homeworks->count() : 0 }} Topics
         </span>
     </button>
 </div>

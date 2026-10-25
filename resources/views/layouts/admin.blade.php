@@ -478,16 +478,24 @@
             renderIcons();
         }
 
-        // Tab Switching for 13 Admin Modules
+        // Tab Switching for Admin Modules
         function switchAdminTab(tabId) {
             document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.add('d-none'));
-            const target = document.getElementById('admin-tab-' + tabId);
+            let target = document.getElementById('admin-tab-' + tabId);
+            if (!target && tabId === 'news') {
+                target = document.getElementById('admin-tab-homework');
+                tabId = 'homework';
+            }
+            if (!target && tabId === 'homework') {
+                target = document.getElementById('admin-tab-news');
+            }
             if (target) {
                 target.classList.remove('d-none');
             }
 
             document.querySelectorAll('.admin-nav-item').forEach(btn => {
-                if (btn.getAttribute('data-admin-tab') === tabId) {
+                const itemTab = btn.getAttribute('data-admin-tab');
+                if (itemTab === tabId || (tabId === 'homework' && itemTab === 'news') || (tabId === 'news' && itemTab === 'homework')) {
                     btn.classList.add('active');
                 } else {
                     btn.classList.remove('active');

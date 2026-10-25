@@ -1352,7 +1352,13 @@
         function switchTab(tabId, pushHistory = true) {
             // Hide all sections, show target section
             document.querySelectorAll('.screen-section').forEach(sec => sec.classList.add('d-none'));
-            const target = document.getElementById('screen-' + tabId);
+            let target = document.getElementById('screen-' + tabId);
+            if (!target && tabId === 'news') {
+                target = document.getElementById('screen-homework');
+            }
+            if (!target && tabId === 'homework') {
+                target = document.getElementById('screen-news');
+            }
             if (target) {
                 target.classList.remove('d-none');
             } else {

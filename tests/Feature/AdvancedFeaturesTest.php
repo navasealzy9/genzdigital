@@ -19,7 +19,7 @@ class AdvancedFeaturesTest extends TestCase
         $response->assertSee('user-class-filter');
 
         // Test Checkbox Batch Enroll feature
-        $newStudentId = 'GZ_TEST_' . rand(1000, 9999);
+        $newStudentId = 'GZ_TEST_' . uniqid() . '_' . rand(100, 999);
         DB::table('campus_students')->insert([
             'name' => 'Kosal Dev',
             'student_id' => $newStudentId,
@@ -702,6 +702,118 @@ class AdvancedFeaturesTest extends TestCase
         // Section 3: Challenge Arena
         $response->assertSee('score-sec-challenges', false);
         $response->assertSee('លទ្ធផលប្រកួតប្រជែង Challenges', false);
+
+        while (ob_get_level() > 1) {
+            ob_end_flush();
+        }
+    }
+
+    /**
+     * Test 23. Homework Feature: Admin Topic Creation, Student Typing Text Answer,
+     * Submission Timestamp, Deadline Enforcement, and Admin Scoring
+     */
+    public function test_homework_management_submission_deadline_and_grading(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        if (!$admin) {
+            $admin = \App\Models\User::create([
+                'name' => 'Campus Admin',
+                'email' => 'admin.hw.' . uniqid() . '@genzdigital.edu',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
+            ]);
+        }
+
+        $student = \App\Models\User::where('role', 'student')->first();
+        if (!$student) {
+            $student = \App\Models\User::create([
+                'name' => 'Chhai Mengly',
+                'email' => 'mengly.hw.' . uniqid() . '@genzdigital.edu',
+                'password' => bcrypt('password'),
+                'student_id' => 'GZ-2026-081',
+                'role' => 'student',
+            ]);
+        }
+
+        // 1. Admin creates new Homework Topic with start date and deadline
+        $deadlineFuture = \Carbon\Carbon::now('Asia/Phnom_Penh')->addDays(5)->format('Y-m-d\TH:i');
+        $createResponse = $this->actingAs($admin)->post('/admin/homework', [
+            'title' => 'Mobile UX & Spring Physics Research',
+            'subject' => 'UI/UX Design',
+            'class_code' => 'CS101',
+            'max_score' => 100,
+            'start_date' => \Carbon\Carbon::now('Asia/Phnom_Penh')->subHour()->format('Y-m-d\TH:i'),
+            'deadline' => $deadlineFuture,
+            'questions' => "1. What are spring physics in micro-interactions?\n2. Provide examples of 60fps animations.",
+        ]);
+        $createResponse->assertRedirect('/admin?tab=homework');
+
+        $homework = DB::table('campus_homeworks')->where('title', 'Mobile UX & Spring Physics Research')->first();
+        $this->assertNotNull($homework);
+
+        // 2. Student views Homework screen on Campus Portal
+        $studentPortalResponse = $this->actingAs($student)->get('/');
+        $studentPortalResponse->assertStatus(200);
+        $studentPortalResponse->assertSee('Mobile UX & Spring Physics Research');
+        $studentPortalResponse->assertSee('id="screen-homework"', false);
+        $studentPortalResponse->assertSee('id="screen-news"', false);
+
+        // 3. Student submits typed text answer
+        $answerText = "1. Spring physics use damped harmonic oscillator models.\n2. iOS swipe to dismiss and bouncy sheet modal.";
+        $submitResponse = $this->actingAs($student)->postJson("/api/homework/{$homework->id}/submit", [
+            'answer_text' => $answerText,
+        ]);
+        $submitResponse->assertStatus(200);
+        $submitResponse->assertJson(['success' => true]);
+        $this->assertNotNull($submitResponse->json('submitted_at'));
+
+        // Verify in database that submission has timestamp
+        $sub = DB::table('campus_homework_submissions')
+            ->where('homework_id', $homework->id)
+            ->where('student_id', $student->student_id)
+            ->first();
+        $this->assertNotNull($sub);
+        $this->assertEquals($answerText, $sub->answer_text);
+        $this->assertNotNull($sub->submitted_at);
+
+        // 4. Test Deadline Enforcement: past deadline cannot submit
+        $expiredHwId = DB::table('campus_homeworks')->insertGetId([
+            'title' => 'Expired Homework Topic',
+            'subject' => 'History of Web',
+            'questions' => 'Who created WWW?',
+            'start_date' => \Carbon\Carbon::now('Asia/Phnom_Penh')->subDays(10),
+            'deadline' => \Carbon\Carbon::now('Asia/Phnom_Penh')->subDay(), // Expired yesterday
+            'max_score' => 100,
+            'status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $expiredSubmitResponse = $this->actingAs($student)->postJson("/api/homework/{$expiredHwId}/submit", [
+            'answer_text' => 'Tim Berners-Lee',
+        ]);
+        $expiredSubmitResponse->assertStatus(422);
+        $expiredSubmitResponse->assertJson(['success' => false]);
+        $this->assertStringContainsString('ហួសកាលបរិច្ឆេទផុតកំណត់', $expiredSubmitResponse->json('message'));
+
+        // 5. Admin grades student's submission and inputs score
+        $gradeResponse = $this->actingAs($admin)->postJson("/admin/homework/submissions/{$sub->id}/score", [
+            'score' => 95,
+            'feedback' => 'Excellent understanding of animation physics!',
+        ]);
+        $gradeResponse->assertStatus(200);
+        $gradeResponse->assertJson([
+            'success' => true,
+            'score' => 95,
+            'status' => 'Graded',
+        ]);
+
+        // 6. Student visits portal and sees their graded score
+        $studentGradedResponse = $this->actingAs($student)->get('/');
+        $studentGradedResponse->assertStatus(200);
+        $studentGradedResponse->assertSee('95');
+        $studentGradedResponse->assertSee('Graded');
+        $studentGradedResponse->assertSee('Excellent understanding of animation physics!');
 
         while (ob_get_level() > 1) {
             ob_end_flush();
