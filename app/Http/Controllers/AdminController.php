@@ -37,7 +37,8 @@ class AdminController extends Controller
         $exams = DB::table('campus_exams')->orderBy('id', 'asc')->get();
         $examQuestions = DB::table('campus_exam_questions')->orderBy('id', 'asc')->get();
         $challenges = DB::table('campus_challenges')->orderBy('id', 'desc')->get();
-        $certificates = DB::table('campus_certificates')->orderBy('id', 'desc')->get();
+        $totalCertificatesCount = DB::table('campus_certificates')->count();
+        $certificates = DB::table('campus_certificates')->orderBy('id', 'desc')->take(100)->get();
         $resources = DB::table('campus_resources')->orderBy('id', 'desc')->get();
         $collaborations = DB::table('campus_collaborations')->orderBy('id', 'desc')->get();
         $qrCodes = DB::table('campus_qr_codes')->orderBy('id', 'desc')->get();
@@ -55,7 +56,7 @@ class AdminController extends Controller
             'ongoing_classes' => $classes->where('status', 'Ongoing')->count(),
             'overall_attendance' => '88.7%',
             'active_challenges' => $challenges->where('status', 'Active')->count(),
-            'issued_certificates' => $certificates->count(),
+            'issued_certificates' => $totalCertificatesCount,
             'total_downloads' => $resources->sum('download_count'),
             'spotlight_count' => $screenSpotlights->count(),
         ];

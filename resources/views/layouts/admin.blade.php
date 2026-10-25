@@ -80,6 +80,7 @@
             border-right: 1px solid #e2e8f0;
             min-height: calc(100vh - 65px);
             transition: all 0.3s ease;
+            overflow-y: auto;
         }
 
         [data-bs-theme="dark"] .admin-sidebar {
@@ -87,17 +88,33 @@
             border-right-color: #1e293b;
         }
 
+        /* Status Indicator Live Pulse */
+        .status-indicator-live {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: livePulse 2s infinite;
+        }
+        @keyframes livePulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
         .admin-nav-item {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.65rem 1rem;
+            padding: 0.65rem 0.9rem;
             border-radius: 12px;
             color: #64748b;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 0.85rem;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
             border: none;
             background: transparent;
@@ -108,11 +125,13 @@
         .admin-nav-item:hover {
             color: #2563eb;
             background: rgba(37, 99, 235, 0.08);
+            transform: translateX(2px);
         }
 
         .admin-nav-item.active {
             color: #2563eb !important;
             background: rgba(37, 99, 235, 0.12) !important;
+            font-weight: 700;
         }
 
         [data-bs-theme="dark"] .admin-nav-item {
@@ -122,34 +141,79 @@
         [data-bs-theme="dark"] .admin-nav-item:hover {
             color: #60a5fa;
             background: rgba(96, 165, 250, 0.1);
+            transform: translateX(2px);
         }
 
         [data-bs-theme="dark"] .admin-nav-item.active {
             color: #60a5fa !important;
             background: rgba(96, 165, 250, 0.18) !important;
+            font-weight: 700;
         }
 
         .sidebar-section-title {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             color: #94a3b8;
-            padding: 0.75rem 1rem 0.25rem;
+            padding: 0.75rem 0.9rem 0.25rem;
         }
 
         /* Admin Content Cards */
         .admin-card {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(226, 232, 240, 0.85);
             border-radius: 20px;
-            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .admin-card:hover {
+            box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06), 0 4px 8px -4px rgba(15, 23, 42, 0.03);
         }
 
         [data-bs-theme="dark"] .admin-card {
             background: #0f172a;
-            border-color: #1e293b;
+            border-color: rgba(51, 65, 85, 0.7);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-bs-theme="dark"] .admin-card:hover {
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.5);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        /* Tables Refinement */
+        .table > :not(caption) > * > * {
+            padding: 0.85rem 1rem;
+        }
+        .table thead th {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        [data-bs-theme="dark"] .table thead th {
+            border-bottom-color: #334155;
+            color: #94a3b8;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.7);
         }
 
         /* Toast Alert */
@@ -248,6 +312,14 @@
                         <small class="text-secondary d-none d-sm-block" style="font-size: 11px;">Campus Management & Live Classroom Hub</small>
                     </div>
                 </a>
+            </div>
+
+            <!-- System Live Status Pill -->
+            <div class="d-none d-lg-flex align-items-center gap-2 px-3 py-1 bg-body-tertiary border rounded-pill shadow-xs">
+                <span class="status-indicator-live"></span>
+                <span class="fw-bold" style="font-size: 11.5px;">Live Classroom OS</span>
+                <span class="text-secondary opacity-50">•</span>
+                <span class="text-secondary" style="font-size: 11px;">v26.0 Synced</span>
             </div>
 
             <!-- Right Controls: Switch to Student Portal, Theme Toggle, Admin User -->

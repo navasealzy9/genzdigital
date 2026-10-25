@@ -21,101 +21,135 @@
         </div>
     </div>
 
-    <!-- 4 KPI Stat Cards -->
+    <!-- 4 Enterprise KPI Stat Cards -->
     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 mb-4">
         <div class="col">
-            <div class="admin-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="text-secondary small fw-bold text-uppercase">Total Students</span>
-                    <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+            <div class="admin-card p-3 p-md-4 h-100 position-relative overflow-hidden cursor-pointer" onclick="switchAdminTab('users')">
+                <div class="d-flex justify-content-between align-items-start mb-2.5">
+                    <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 11px;">Total Students</span>
+                    <div class="p-2.5 rounded-3 bg-primary-subtle text-primary shadow-xs">
                         <i data-lucide="users" style="width: 20px; height: 20px;"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1">{{ $stats['total_students'] }}</h3>
-                <small class="text-success fw-semibold"><i class="bi bi-arrow-up-right"></i> {{ $stats['active_students'] }} Active Enrolled</small>
+                <h2 class="fw-bolder mb-1.5 text-body tracking-tight">{{ $stats['total_students'] }}</h2>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="badge bg-success-subtle text-success fw-bold rounded-pill" style="font-size: 10px;">
+                        <i class="bi bi-arrow-up-right me-0.5"></i> {{ $stats['active_students'] }} Active
+                    </span>
+                    <small class="text-secondary" style="font-size: 11px;">Enrolled Students</small>
+                </div>
             </div>
         </div>
 
         <div class="col">
-            <div class="admin-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="text-secondary small fw-bold text-uppercase">Today Attendance</span>
-                    <div class="p-2 rounded-3 bg-success-subtle text-success">
+            <div class="admin-card p-3 p-md-4 h-100 position-relative overflow-hidden cursor-pointer" onclick="switchAdminTab('attendance')">
+                <div class="d-flex justify-content-between align-items-start mb-2.5">
+                    <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 11px;">Today Attendance</span>
+                    <div class="p-2.5 rounded-3 bg-success-subtle text-success shadow-xs">
                         <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1">{{ $stats['overall_attendance'] }}</h3>
-                <small class="text-success fw-semibold"><i class="bi bi-check2"></i> Real-time synced</small>
+                <h2 class="fw-bolder mb-1.5 text-body tracking-tight">{{ $stats['overall_attendance'] }}</h2>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="badge bg-success-subtle text-success fw-bold rounded-pill" style="font-size: 10px;">
+                        <i class="bi bi-check2 me-0.5"></i> 2 Sessions Live
+                    </span>
+                    <small class="text-secondary" style="font-size: 11px;">Morning & Afternoon</small>
+                </div>
             </div>
         </div>
 
         <div class="col">
-            <div class="admin-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="text-secondary small fw-bold text-uppercase">Classes Running</span>
-                    <div class="p-2 rounded-3 bg-info-subtle text-info">
+            <div class="admin-card p-3 p-md-4 h-100 position-relative overflow-hidden cursor-pointer" onclick="switchAdminTab('classes')">
+                <div class="d-flex justify-content-between align-items-start mb-2.5">
+                    <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 11px;">Classes Active</span>
+                    <div class="p-2.5 rounded-3 bg-info-subtle text-info shadow-xs">
                         <i data-lucide="book-open" style="width: 20px; height: 20px;"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1">{{ $stats['total_classes'] }}</h3>
-                <small class="text-primary fw-semibold">{{ $stats['ongoing_classes'] }} Ongoing In-Session</small>
+                <h2 class="fw-bolder mb-1.5 text-body tracking-tight">{{ $stats['total_classes'] }}</h2>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="badge bg-primary-subtle text-primary fw-bold rounded-pill" style="font-size: 10px;">
+                        {{ $stats['ongoing_classes'] }} Ongoing
+                    </span>
+                    <small class="text-secondary" style="font-size: 11px;">In Session Now</small>
+                </div>
             </div>
         </div>
 
         <div class="col">
-            <div class="admin-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="text-secondary small fw-bold text-uppercase">Active Challenges</span>
-                    <div class="p-2 rounded-3 bg-warning-subtle text-warning">
+            <div class="admin-card p-3 p-md-4 h-100 position-relative overflow-hidden cursor-pointer" onclick="switchAdminTab('challenges')">
+                <div class="d-flex justify-content-between align-items-start mb-2.5">
+                    <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 11px;">Live Challenges</span>
+                    <div class="p-2.5 rounded-3 bg-warning-subtle text-warning shadow-xs">
                         <i data-lucide="trophy" style="width: 20px; height: 20px;"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1">{{ $stats['active_challenges'] }}</h3>
-                <small class="text-warning-emphasis fw-semibold">+500 Points Rewards</small>
+                <h2 class="fw-bolder mb-1.5 text-body tracking-tight">{{ $stats['active_challenges'] }}</h2>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="badge bg-warning-subtle text-warning-emphasis fw-bold rounded-pill" style="font-size: 10px;">
+                        +500 XP Rewards
+                    </span>
+                    <small class="text-secondary" style="font-size: 11px;">Campus Competition</small>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Quick Launch Classroom Tools -->
     <div class="admin-card p-4 mb-4">
-        <h5 class="fw-bold mb-3 fs-6">Interactive Classroom Quick Launch</h5>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-0 fs-6">Interactive Classroom Quick Launch</h5>
+                <small class="text-secondary">Projectors, AI Camera Gesture Tracking, Real-Time Leaderboards & Roulette</small>
+            </div>
+            <span class="badge bg-body-secondary text-secondary rounded-pill fw-semibold px-2.5 py-1" style="font-size: 10px;">Live Tools</span>
+        </div>
         <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3">
             <div class="col">
-                <a href="{{ route('admin.screen.fullscreen') }}" target="_blank" class="btn btn-light border w-100 p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between text-decoration-none">
-                    <i data-lucide="monitor" class="text-primary mb-2" style="width: 24px; height: 24px;"></i>
+                <a href="{{ route('admin.screen.fullscreen') }}" target="_blank" class="admin-card p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between text-decoration-none">
+                    <div class="p-2 rounded-3 bg-primary-subtle text-primary d-inline-block mb-3" style="width: fit-content;">
+                        <i data-lucide="monitor" style="width: 22px; height: 22px;"></i>
+                    </div>
                     <div>
-                        <span class="fw-bold small d-block text-dark">Show on Screen</span>
-                        <small class="text-secondary" style="font-size: 11px;">4-User Fullscreen Projector &rarr;</small>
+                        <span class="fw-bold small d-block text-body mb-0.5">Show on Screen</span>
+                        <small class="text-secondary" style="font-size: 11px;">4-User Rotation &rarr;</small>
                     </div>
                 </a>
             </div>
 
             <div class="col">
-                <a href="{{ route('admin.slides.fullscreen') }}" target="_blank" class="btn btn-light border w-100 p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between text-decoration-none">
-                    <i data-lucide="presentation" class="text-info mb-2" style="width: 24px; height: 24px;"></i>
+                <a href="{{ route('admin.slides.fullscreen') }}" target="_blank" class="admin-card p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between text-decoration-none">
+                    <div class="p-2 rounded-3 bg-info-subtle text-info d-inline-block mb-3" style="width: fit-content;">
+                        <i data-lucide="presentation" style="width: 22px; height: 22px;"></i>
+                    </div>
                     <div>
-                        <span class="fw-bold small d-block text-dark">Slide Teaching</span>
-                        <small class="text-secondary" style="font-size: 11px;">AI Camera Gesture (☝️ / ✌️) &rarr;</small>
+                        <span class="fw-bold small d-block text-body mb-0.5">Slide Teaching</span>
+                        <small class="text-secondary" style="font-size: 11px;">AI Gesture (☝️ / ✌️) &rarr;</small>
                     </div>
                 </a>
             </div>
 
             <div class="col">
-                <a href="{{ route('admin.challenges.fullscreen') }}" target="_blank" class="btn btn-light border w-100 p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between text-decoration-none">
-                    <i data-lucide="trophy" class="text-warning mb-2" style="width: 24px; height: 24px;"></i>
+                <a href="{{ route('admin.challenges.fullscreen') }}" target="_blank" class="admin-card p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between text-decoration-none">
+                    <div class="p-2 rounded-3 bg-warning-subtle text-warning-emphasis d-inline-block mb-3" style="width: fit-content;">
+                        <i data-lucide="trophy" style="width: 22px; height: 22px;"></i>
+                    </div>
                     <div>
-                        <span class="fw-bold small d-block text-dark">Live Challenge</span>
+                        <span class="fw-bold small d-block text-body mb-0.5">Live Challenge</span>
                         <small class="text-secondary" style="font-size: 11px;">Fullscreen Leaderboard &rarr;</small>
                     </div>
                 </a>
             </div>
 
             <div class="col">
-                <button class="btn btn-light border w-100 p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between" onclick="switchAdminTab('game')">
-                    <i data-lucide="dices" class="text-success mb-2" style="width: 24px; height: 24px;"></i>
+                <button class="admin-card p-3 rounded-3 text-start h-100 d-flex flex-column justify-content-between w-100 border text-start" onclick="switchAdminTab('game')">
+                    <div class="p-2 rounded-3 bg-success-subtle text-success d-inline-block mb-3" style="width: fit-content;">
+                        <i data-lucide="dices" style="width: 22px; height: 22px;"></i>
+                    </div>
                     <div>
-                        <span class="fw-bold small d-block">Game Random</span>
-                        <small class="text-secondary" style="font-size: 11px;">Pick Random Student & Profile</small>
+                        <span class="fw-bold small d-block text-body mb-0.5">Game Random</span>
+                        <small class="text-secondary" style="font-size: 11px;">Pick Random & Profile &rarr;</small>
                     </div>
                 </button>
             </div>
@@ -144,6 +178,12 @@
                     <i data-lucide="users" style="width: 13px; height: 13px;" class="me-1"></i>
                     <span>សិស្សទាំងអស់ ({{ $students->count() }})</span>
                 </button>
+            </div>
+
+            <!-- Instant Search by Student Name or ID -->
+            <div class="position-relative">
+                <input type="text" id="student-search-input" class="form-control form-control-sm rounded-pill ps-4" style="min-width: 190px;" placeholder="ស្វែងរកសិស្ស (Search)..." onkeyup="searchStudents(this.value)">
+                <i data-lucide="search" style="width: 13px; height: 13px; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8;"></i>
             </div>
 
             <!-- Filter Students by Class -->
@@ -213,7 +253,7 @@
                     </thead>
                     <tbody id="tbody-students-pending">
                         @forelse($pendingStudents as $st)
-                            <tr class="student-row-pending">
+                            <tr class="student-row student-row-pending" data-classes="" data-name="{{ strtolower($st->name) }}" data-id="{{ strtolower($st->student_id) }}">
                                 <td class="text-center">
                                     <input type="checkbox" name="student_ids[]" value="{{ $st->student_id }}" class="student-select-chk form-check-input cursor-pointer" onchange="updateSelectedCount()">
                                 </td>
@@ -279,7 +319,7 @@
                     <!-- All Registered Students List (Initially Hidden, Viewable via Toggle) -->
                     <tbody id="tbody-students-all" class="d-none">
                         @foreach($students as $st)
-                            <tr class="student-row-all">
+                            <tr class="student-row student-row-all" data-classes="{{ $st->enrolled_classes->pluck('course_code')->join(',') }}" data-name="{{ strtolower($st->name) }}" data-id="{{ strtolower($st->student_id) }}">
                                 <td class="text-center">
                                     <input type="checkbox" name="student_ids[]" value="{{ $st->student_id }}" class="student-select-chk-all form-check-input cursor-pointer" onchange="updateSelectedCount()">
                                 </td>
@@ -668,6 +708,9 @@
             <small class="text-secondary">Generate Auto បានម្តងច្រើននាក់តាមថ្នាក់/ការប្រឡង ហើយសិស្សអាចចូលមើលក្នុង Account បានភ្លាមៗ</small>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 11px;">
+                Showing latest {{ $certificates->count() }} of {{ $stats['issued_certificates'] }} credentials
+            </span>
             <!-- Batch Auto Generate Button -->
             <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow" data-bs-toggle="modal" data-bs-target="#batchCertModal">
                 <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
@@ -882,6 +925,13 @@
                 @endforeach
             </select>
 
+            <!-- Filter by 2 Sessions per day -->
+            <select id="attendance-session-filter" class="form-select form-select-sm" style="min-width: 155px;" onchange="filterAttendanceSession(this.value)">
+                <option value="ALL">វេនទាំងអស់ (All Sessions)</option>
+                <option value="Session 1">☀️ Session 1 (ព្រឹក)</option>
+                <option value="Session 2">🌙 Session 2 (រសៀល)</option>
+            </select>
+
             <!-- 3 Export Options: Excel, PDF, Print -->
             <a href="{{ route('admin.attendance.export', ['format' => 'excel']) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1" id="btn-export-excel">
                 <i data-lucide="file-spreadsheet" style="width: 15px; height: 15px;"></i>
@@ -908,6 +958,7 @@
                         <th>Student Name</th>
                         <th>Student ID</th>
                         <th>Subject & Class Code</th>
+                        <th>Session (វេន)</th>
                         <th>Check-in Time</th>
                         <th>Status</th>
                         <th class="text-end">Quick Update</th>
@@ -915,10 +966,21 @@
                 </thead>
                 <tbody>
                     @foreach($attendances as $att)
-                        <tr class="att-row" data-code="{{ $att->code }}">
+                        <tr class="att-row" data-code="{{ $att->code }}" data-session="{{ $att->session_name ?? 'Session 1' }}">
                             <td class="fw-bold">{{ $att->student_name }}</td>
                             <td><span class="badge bg-body-secondary text-secondary font-monospace">{{ $att->student_id }}</span></td>
                             <td>{{ $att->subject }} <span class="badge bg-primary-subtle text-primary">{{ $att->code }}</span></td>
+                            <td>
+                                @if(str_contains($att->session_name ?? '', '2') || str_contains($att->session_name ?? '', 'Afternoon'))
+                                    <span class="badge bg-warning-subtle text-warning-emphasis fw-bold" style="font-size: 11px;">
+                                        🌙 {{ $att->session_name ?? 'Session 2 (រសៀល)' }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-info-subtle text-info-emphasis fw-bold" style="font-size: 11px;">
+                                        ☀️ {{ $att->session_name ?? 'Session 1 (ព្រឹក)' }}
+                                    </span>
+                                @endif
+                            </td>
                             <td class="small">{{ $att->check_in_time }}</td>
                             <td>
                                 <span class="badge {{ $att->status === 'Present' ? 'bg-success' : ($att->status === 'Late' ? 'bg-warning text-dark' : 'bg-danger') }} fw-bold" id="att-badge-{{ $att->id }}">
@@ -2085,13 +2147,38 @@
     const allStudentsData = @json($students);
 
     // =========================================================================
-    // 1. Manage Users: Filter by Class
+    // 1. Manage Users: Filter by Class & Instant Search
     // =========================================================================
     function filterUsersByClass(selectedClass) {
+        const isPendingView = !document.getElementById('tbody-students-pending').classList.contains('d-none');
+        
+        // If filtering by a specific class while on pending view, switch to all view
+        if (selectedClass !== 'ALL' && isPendingView) {
+            toggleStudentListView('all');
+        }
+
         const rows = document.querySelectorAll('.student-row');
         rows.forEach(r => {
             const classes = r.getAttribute('data-classes') || '';
             if (selectedClass === 'ALL' || classes.includes(selectedClass)) {
+                r.style.display = '';
+            } else {
+                r.style.display = 'none';
+            }
+        });
+    }
+
+    function searchStudents(query) {
+        const q = (query || '').toLowerCase().trim();
+        const activeTbody = document.getElementById('tbody-students-pending').classList.contains('d-none')
+            ? document.getElementById('tbody-students-all')
+            : document.getElementById('tbody-students-pending');
+
+        const rows = activeTbody.querySelectorAll('.student-row');
+        rows.forEach(r => {
+            const name = (r.getAttribute('data-name') || '');
+            const id = (r.getAttribute('data-id') || '');
+            if (!q || name.includes(q) || id.includes(q)) {
                 r.style.display = '';
             } else {
                 r.style.display = 'none';
@@ -2258,6 +2345,18 @@
             excelBtn.href = `{{ route('admin.attendance.export') }}?format=excel&class_code=${classCode}`;
             pdfBtn.href = `{{ route('admin.attendance.export') }}?format=pdf&class_code=${classCode}`;
         }
+    }
+
+    function filterAttendanceSession(sessionName) {
+        const rows = document.querySelectorAll('.att-row');
+        rows.forEach(r => {
+            const sess = r.getAttribute('data-session') || '';
+            if (sessionName === 'ALL' || sess.includes(sessionName)) {
+                r.style.display = '';
+            } else {
+                r.style.display = 'none';
+            }
+        });
     }
 
     function updateAttStatus(id, newStatus) {
