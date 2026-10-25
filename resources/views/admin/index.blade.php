@@ -261,8 +261,11 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <img src="{{ $st->avatar }}" alt="{{ $st->name }}" class="rounded-circle object-fit-cover shadow-sm" style="width: 38px; height: 38px;">
                                         <div>
-                                            <span class="fw-bold d-block">{{ $st->name }}</span>
-                                            <small class="text-secondary">{{ $st->email }}</small>
+                                            <span class="fw-bold d-inline-flex align-items-center gap-1">
+                                                <span>{{ $st->name }}</span>
+                                                @include('partials.verified-badge', ['size' => 14, 'border' => false])
+                                            </span>
+                                            <small class="text-secondary d-block">{{ $st->email }}</small>
                                         </div>
                                     </div>
                                 </td>
@@ -327,8 +330,11 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <img src="{{ $st->avatar }}" alt="{{ $st->name }}" class="rounded-circle object-fit-cover shadow-sm" style="width: 38px; height: 38px;">
                                         <div>
-                                            <span class="fw-bold d-block">{{ $st->name }}</span>
-                                            <small class="text-secondary">{{ $st->email }}</small>
+                                            <span class="fw-bold d-inline-flex align-items-center gap-1">
+                                                <span>{{ $st->name }}</span>
+                                                @include('partials.verified-badge', ['size' => 14, 'border' => false])
+                                            </span>
+                                            <small class="text-secondary d-block">{{ $st->email }}</small>
                                         </div>
                                     </div>
                                 </td>
@@ -2147,8 +2153,11 @@
                                                     <img src="{{ $sub->student_avatar ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250' }}" 
                                                          class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;" alt="Avatar">
                                                     <div>
-                                                        <div class="fw-bold fs-7">{{ $sub->student_name }}</div>
-                                                        <small class="text-secondary font-monospace" style="font-size: 11px;">{{ $sub->course_code }}</small>
+                                                        <div class="fw-bold fs-7 d-inline-flex align-items-center gap-1">
+                                                            <span>{{ $sub->student_name }}</span>
+                                                            @include('partials.verified-badge', ['size' => 13, 'border' => false])
+                                                        </div>
+                                                        <small class="text-secondary font-monospace d-block" style="font-size: 11px;">{{ $sub->course_code }}</small>
                                                     </div>
                                                 </div>
                                             </td>

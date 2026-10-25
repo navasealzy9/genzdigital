@@ -294,7 +294,10 @@
                         </div>
 
                         <div class="overflow-hidden w-100">
-                            <h3 class="fs-4 fw-bolder mb-1 text-white tracking-tight text-truncate" style="letter-spacing: -0.01em;">{{ $student['name'] }}</h3>
+                            <h3 class="fs-4 fw-bolder mb-1 text-white tracking-tight d-flex align-items-center gap-1.5" style="letter-spacing: -0.01em;">
+                                <span class="text-truncate">{{ $student['name'] }}</span>
+                                @include('partials.verified-badge', ['size' => 19])
+                            </h3>
                             
                             <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                 <span class="font-monospace fw-medium text-white opacity-90" style="font-size: 12px; letter-spacing: 0.02em;">
@@ -612,7 +615,10 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 class="fw-bolder mb-0 text-white fs-5 tracking-tight">{{ $student['name'] }}</h4>
+                                    <h4 class="fw-bolder mb-0 text-white fs-5 tracking-tight d-flex align-items-center gap-1.5">
+                                        <span>{{ $student['name'] }}</span>
+                                        @include('partials.verified-badge', ['size' => 16])
+                                    </h4>
                                     <small class="text-white-50 font-monospace d-block" style="font-size: 11px;">ID • {{ $student['id'] }}</small>
                                     <small class="badge bg-white bg-opacity-15 text-white fw-semibold mt-1" style="font-size: 10.5px;">{{ $student['major'] }}</small>
                                 </div>
@@ -2002,7 +2008,10 @@
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow" style="width: 76px; height: 76px; border: 3px solid rgba(255, 255, 255, 0.5);">
                     <div>
-                        <h3 class="fs-4 fw-bold mb-0 text-white">{{ $student['name'] }}</h3>
+                        <h3 class="fs-4 fw-bold mb-0 text-white d-flex align-items-center gap-1.5">
+                            <span>{{ $student['name'] }}</span>
+                            @include('partials.verified-badge', ['size' => 18])
+                        </h3>
                         <small class="text-white-50">ID • {{ $student['id'] }}</small>
                         <small class="d-block text-white opacity-90">{{ $student['major'] }}</small>
                     </div>
@@ -2062,7 +2071,10 @@
                         <i data-lucide="camera" style="width: 13px; height: 13px;"></i>
                     </span>
                 </div>
-                <h4 class="fw-bold mb-0 fs-5">{{ $student['name'] }}</h4>
+                <h4 class="fw-bold mb-0 fs-5 d-flex align-items-center justify-content-center gap-1.5">
+                    <span>{{ $student['name'] }}</span>
+                    @include('partials.verified-badge', ['size' => 16])
+                </h4>
                 <small class="text-primary fw-bold d-block">ID • {{ $student['id'] }}</small>
                 <small class="text-secondary d-block mt-1">{{ $student['major'] }} Department</small>
                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-2 fw-bold" onclick="bootstrap.Modal.getInstance(document.getElementById('qrPassModal')).hide(); openAvatarCropModal();">

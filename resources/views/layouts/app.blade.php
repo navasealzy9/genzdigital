@@ -1409,7 +1409,10 @@
                     <div class="cursor-pointer d-flex align-items-center gap-2" onclick="switchTab('profile')">
                         <img src="{{ Auth::user()->avatar ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250' }}" alt="{{ Auth::user()->name }}" class="user-avatar-element rounded-circle object-fit-cover shadow-sm" style="width: 34px; height: 34px; border: 2px solid #2563eb;">
                         <div class="d-none d-lg-block text-start lh-sm">
-                            <span class="fw-bold fs-7 d-block">{{ Auth::user()->name }}</span>
+                            <span class="fw-bold fs-7 d-inline-flex align-items-center gap-1">
+                                <span>{{ Auth::user()->name }}</span>
+                                @include('partials.verified-badge', ['size' => 13, 'border' => false])
+                            </span>
                             <small class="badge {{ Auth::user()->role === 'admin' ? 'bg-danger' : 'bg-primary-subtle text-primary' }}" style="font-size: 9px;">
                                 {{ strtoupper(Auth::user()->role) }}
                             </small>
