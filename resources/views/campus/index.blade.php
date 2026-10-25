@@ -1288,6 +1288,18 @@
 <!-- 6. SCORE & GPA TRANSCRIPT DEDICATED PAGE                               -->
 <!-- ====================================================================== -->
 <div id="screen-score" class="screen-section d-none">
+    @php
+        $totalExamsCount = isset($exams) ? $exams->count() : 0;
+        $completedExamsCount = isset($myExamSubmissions) ? $myExamSubmissions->count() : 0;
+        $passedExamsCount = isset($myExamSubmissions) ? $myExamSubmissions->where('is_passed', 1)->count() : 0;
+        $avgExamScore = $completedExamsCount > 0 ? round($myExamSubmissions->avg('percentage')) : 0;
+
+        $totalChallengesCount = isset($challenges) ? $challenges->count() : 0;
+        $completedChallengesCount = isset($myChallengeParticipations) ? $myChallengeParticipations->count() : 0;
+        $totalChallengePoints = isset($myChallengeParticipations) ? $myChallengeParticipations->sum('score') : 0;
+        $bestChallengeRank = ($completedChallengesCount > 0 && isset($myChallengeParticipations)) ? $myChallengeParticipations->min('rank') : null;
+    @endphp
+
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
             <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
@@ -1295,75 +1307,606 @@
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Academic Score & Official Transcript</h4>
-                <small class="text-secondary">ព្រឹត្តិបត្រពិន្ទុ & លទ្ធផលការសិក្សា • Cumulative Record</small>
+                <small class="text-secondary">ព្រឹត្តិបត្រពិន្ទុ & លទ្ធផលការសិក្សា • Course Grades, Exams & Live Challenges</small>
             </div>
         </div>
-        <a href="{{ route('campus.transcript.download') }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3.5 py-2 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs">
-            <i data-lucide="download" style="width: 15px; height: 15px;"></i>
-            <span>Download Official Transcript (PDF)</span>
-        </a>
-    </div>
-
-    <!-- Dean's Honors List Banner -->
-    <div class="p-4 rounded-4 mb-4 text-white d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 shadow" style="background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);">
-        <div>
-            <span class="badge bg-white bg-opacity-25 rounded-pill px-3 py-1.5 mb-2 small fw-bold">
-                🏆 DEAN'S HONORS LIST • TOP 1%
-            </span>
-            <h2 class="fw-bolder mb-1 fs-1">GPA {{ $gpa }} <span class="fs-5 opacity-75">/ 4.00</span></h2>
-            <p class="text-light opacity-80 mb-0 small" style="max-width: 520px;">
-                Outstanding Academic Standing in Visual Communication & Media. All credit hours verified by the Registrar Office.
-            </p>
-        </div>
-        <div class="text-md-end border-top border-md-top-0 pt-3 pt-md-0 border-white border-opacity-25">
-            <small class="d-block text-light opacity-75 text-uppercase fw-semibold" style="font-size: 10.5px;">Completed Credits</small>
-            <span class="fs-4 fw-bolder">{{ $totalCredits }} Credits</span>
-            <small class="d-block text-light opacity-75">Standing: 1st Class Honours</small>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('campus.transcript.download') }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3.5 py-2 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs">
+                <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+                <span>Download Official Transcript (PDF)</span>
+            </a>
         </div>
     </div>
 
-    <!-- Subject Scores Table -->
-    <div class="tool-card overflow-hidden mb-4">
-        <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="fw-bold mb-0">Course Grade Breakdown (ឆមាសទី១)</h6>
-            <span class="badge bg-success-subtle text-success fw-bold">Passing Grade: ≥ 60</span>
+    <!-- Category Filter Pills -->
+    <div class="d-flex align-items-center gap-2 mb-4 overflow-x-auto pb-1" id="score-filter-pills" style="scrollbar-width: thin;">
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold btn-primary text-white shadow-xs score-filter-btn" data-sec="all" onclick="filterScoreView('all', this)">
+            <i data-lucide="layout-grid" style="width: 14px; height: 14px;" class="me-1"></i> ទាំងអស់ (All Overview)
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold btn-outline-secondary text-secondary score-filter-btn" data-sec="grades" onclick="filterScoreView('grades', this)">
+            <i data-lucide="book-open" style="width: 14px; height: 14px;" class="me-1"></i> ពិន្ទុមុខវិជ្ជា (Course Grades)
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold btn-outline-secondary text-secondary score-filter-btn" data-sec="exams" onclick="filterScoreView('exams', this)">
+            <i data-lucide="file-check" style="width: 14px; height: 14px;" class="me-1"></i> លទ្ធផលប្រឡង (Exam Results)
+            @if($completedExamsCount > 0)
+                <span class="badge bg-success ms-1 rounded-pill">{{ $completedExamsCount }}</span>
+            @endif
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold btn-outline-secondary text-secondary score-filter-btn" data-sec="challenges" onclick="filterScoreView('challenges', this)">
+            <i data-lucide="trophy" style="width: 14px; height: 14px;" class="me-1"></i> លទ្ធផល Challenges (Live Arena)
+            @if($completedChallengesCount > 0)
+                <span class="badge bg-warning text-dark ms-1 rounded-pill">+{{ $totalChallengePoints }} PTS</span>
+            @endif
+        </button>
+    </div>
+
+    <!-- KPI Summary Row -->
+    <div class="row g-3 mb-4" id="score-kpi-summary">
+        <!-- Dean's Honors List Banner -->
+        <div class="col-12 col-lg-6">
+            <div class="p-4 rounded-4 text-white h-100 d-flex flex-column justify-content-between shadow" style="background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);">
+                <div>
+                    <span class="badge bg-white bg-opacity-25 rounded-pill px-3 py-1.5 mb-2 small fw-bold">
+                        🏆 DEAN'S HONORS LIST • TOP 1%
+                    </span>
+                    <h2 class="fw-bolder mb-1 fs-1">GPA {{ $gpa }} <span class="fs-5 opacity-75">/ 4.00</span></h2>
+                    <p class="text-light opacity-80 mb-0 small" style="max-width: 520px;">
+                        Outstanding Academic Standing in Visual Communication & Media. All credit hours verified by the Registrar Office.
+                    </p>
+                </div>
+                <div class="pt-3 mt-3 border-top border-white border-opacity-25 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="d-block text-light opacity-75 text-uppercase fw-semibold" style="font-size: 10.5px;">Completed Credits</small>
+                        <span class="fs-5 fw-bolder">{{ $totalCredits }} Credits</span>
+                    </div>
+                    <div class="text-end">
+                        <small class="d-block text-light opacity-75 text-uppercase fw-semibold" style="font-size: 10.5px;">Academic Standing</small>
+                        <span class="badge bg-success-subtle text-success fw-bold px-2.5 py-1">1st Class Honours</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-secondary">
-                    <tr>
-                        <th class="ps-4">Course Title</th>
-                        <th>Code</th>
-                        <th class="text-center">Credits</th>
-                        <th class="text-center">Mid-Term (30%)</th>
-                        <th class="text-center">Assignment (20%)</th>
-                        <th class="text-center">Final (50%)</th>
-                        <th class="text-center">Total (100)</th>
-                        <th class="text-end pe-4">Grade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($scores as $sc)
+
+        <!-- Exam Performance Summary -->
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-success">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-success-subtle text-success fw-bold">EXAMS COMPLETED</span>
+                        <i data-lucide="file-check" style="width: 20px; height: 20px;" class="text-success"></i>
+                    </div>
+                    <h2 class="fw-bolder mb-0 text-success">
+                        @if($completedExamsCount > 0)
+                            {{ $avgExamScore }}%
+                        @else
+                            100%
+                        @endif
+                    </h2>
+                    <small class="text-secondary d-block mt-1">Average QCM Exam Score</small>
+                </div>
+                <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center small">
+                    <span class="text-secondary">បានប្រឡង: <strong class="text-dark">{{ $completedExamsCount }} / {{ $totalExamsCount }}</strong></span>
+                    <span class="badge bg-success text-white fw-bold">{{ $passedExamsCount }} ជាប់ (Pass)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenge Arena Summary -->
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-warning">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-warning-subtle text-warning-emphasis fw-bold">CHALLENGE ARENA</span>
+                        <i data-lucide="trophy" style="width: 20px; height: 20px;" class="text-warning"></i>
+                    </div>
+                    <h2 class="fw-bolder mb-0 text-warning-emphasis">
+                        +{{ $totalChallengePoints }} <span class="fs-6 fw-normal text-secondary">PTS</span>
+                    </h2>
+                    <small class="text-secondary d-block mt-1">Total Arena Points Won</small>
+                </div>
+                <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center small">
+                    <span class="text-secondary">ចំណាត់ថ្នាក់: <strong class="text-warning-emphasis">{{ $bestChallengeRank ? '#'.$bestChallengeRank.' Rank' : '#1 Rank' }}</strong></span>
+                    <span class="badge bg-warning text-dark fw-bold">{{ $completedChallengesCount }} Quests Done</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 1: Course Grade Breakdown -->
+    <div id="score-sec-grades" class="score-display-section mb-4">
+        <div class="tool-card overflow-hidden">
+            <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="fw-bold mb-0">Course Grade Breakdown (ឆមាសទី១)</h6>
+                    <small class="text-secondary">ពិន្ទុតាមមុខវិជ្ជាប្រចាំឆមាស • Assignment (20%), Mid-Term (30%), Final (50%)</small>
+                </div>
+                <span class="badge bg-success-subtle text-success fw-bold">Passing Grade: ≥ 60</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-secondary">
                         <tr>
-                            <td class="ps-4">
-                                <span class="fw-bold small d-block">{{ $sc->subject }}</span>
-                                <small class="text-secondary" style="font-size: 11px;">{{ $sc->semester }}</small>
-                            </td>
-                            <td><span class="badge bg-body-secondary text-secondary">{{ $sc->code }}</span></td>
-                            <td class="text-center small">{{ $sc->credits }}</td>
-                            <td class="text-center small">{{ $sc->mid_term }}</td>
-                            <td class="text-center small">{{ $sc->assignment }}</td>
-                            <td class="text-center small">{{ $sc->final_exam }}</td>
-                            <td class="text-center fw-bold text-primary">{{ $sc->score }}</td>
-                            <td class="text-end pe-4">
-                                <span class="badge {{ str_contains($sc->grade, 'A') ? 'bg-success' : 'bg-primary' }} fw-bolder fs-7 px-2.5 py-1">
-                                    {{ $sc->grade }}
-                                </span>
-                            </td>
+                            <th class="ps-4">Course Title</th>
+                            <th>Code</th>
+                            <th class="text-center">Credits</th>
+                            <th class="text-center">Mid-Term (30%)</th>
+                            <th class="text-center">Assignment (20%)</th>
+                            <th class="text-center">Final (50%)</th>
+                            <th class="text-center">Total (100)</th>
+                            <th class="text-end pe-4">Grade</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($scores as $sc)
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="fw-bold small d-block">{{ $sc->subject }}</span>
+                                    <small class="text-secondary" style="font-size: 11px;">{{ $sc->semester }}</small>
+                                </td>
+                                <td><span class="badge bg-body-secondary text-secondary">{{ $sc->code }}</span></td>
+                                <td class="text-center small">{{ $sc->credits }}</td>
+                                <td class="text-center small">{{ $sc->mid_term }}</td>
+                                <td class="text-center small">{{ $sc->assignment }}</td>
+                                <td class="text-center small">{{ $sc->final_exam }}</td>
+                                <td class="text-center fw-bold text-primary">{{ $sc->score }}</td>
+                                <td class="text-end pe-4">
+                                    <span class="badge {{ str_contains($sc->grade, 'A') ? 'bg-success' : 'bg-primary' }} fw-bolder fs-7 px-2.5 py-1">
+                                        {{ $sc->grade }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-secondary">មិនទាន់មានទិន្នន័យពិន្ទុមុខវិជ្ជា។</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: All Exam Results (លទ្ធផលប្រឡងទាំងអស់) -->
+    <div id="score-sec-exams" class="score-display-section mb-4">
+        <div class="tool-card overflow-hidden">
+            <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="fw-bold mb-0">
+                        <i data-lucide="file-check" style="width: 18px; height: 18px;" class="text-primary me-1.5 d-inline-block"></i>
+                        លទ្ធផលប្រឡងទាំងអស់ (All Examination Results & QCM Submissions)
+                    </h6>
+                    <small class="text-secondary">ពិន្ទុ និងលទ្ធផលប្រឡង Midterm, Final, Lesson Quiz, Test & Dig4.0 exam ទាំងអស់</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary-subtle text-primary fw-bold">
+                        {{ $completedExamsCount }} / {{ $totalExamsCount }} ប្រឡងរួច
+                    </span>
+                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2.5 py-1 fw-bold" onclick="switchTab('exam')">
+                        <i data-lucide="external-link" style="width: 12px; height: 12px;" class="me-1"></i> កន្លែងប្រឡង
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-secondary">
+                        <tr>
+                            <th class="ps-4">Exam Title & Subject</th>
+                            <th>Category</th>
+                            <th class="text-center">Total Points</th>
+                            <th class="text-center">Score Earned</th>
+                            <th class="text-center">Percentage / Grade</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Exam Date / Time</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $renderedExamIds = [];
+                        @endphp
+                        @forelse($exams as $exam)
+                            @php
+                                $renderedExamIds[] = $exam->id;
+                                $mySub = isset($myExamSubmissions) ? $myExamSubmissions->get($exam->id) : null;
+                                $isOpen = ($exam->status === 'Active');
+                                if (!$isOpen && !empty($exam->exam_date)) {
+                                    $cleanDate = str_replace(['•', '|'], ' ', $exam->exam_date);
+                                    $examTs = strtotime($cleanDate);
+                                    if ($examTs && $examTs <= time()) {
+                                        $isOpen = true;
+                                    }
+                                }
+                                $canReExam = $mySub && !empty($mySub->allow_reexam);
+
+                                $cat = $exam->category ?: 'Midterm exam';
+                                $catBadgeClass = 'bg-primary-subtle text-primary';
+                                if (stripos($cat, 'Final') !== false) {
+                                    $catBadgeClass = 'bg-indigo-subtle text-indigo';
+                                } elseif (stripos($cat, 'Dig') !== false) {
+                                    $catBadgeClass = 'bg-info-subtle text-info';
+                                } elseif (stripos($cat, 'Lesson') !== false) {
+                                    $catBadgeClass = 'bg-success-subtle text-success';
+                                } elseif (stripos($cat, 'Test') !== false) {
+                                    $catBadgeClass = 'bg-warning-subtle text-warning-emphasis';
+                                }
+                            @endphp
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="p-2 rounded-2 bg-light border d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                            <i data-lucide="file-text" style="width: 17px; height: 17px;" class="text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold small d-block">{{ $exam->title }}</span>
+                                            <small class="text-secondary" style="font-size: 11px;">
+                                                {{ $exam->course }} • {{ $exam->room ?: 'Design Lab' }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge {{ $catBadgeClass }} fw-bold px-2 py-1 rounded-pill" style="font-size: 10.5px;">
+                                        {{ $cat }}
+                                    </span>
+                                </td>
+                                <td class="text-center small fw-semibold">
+                                    {{ $exam->total_points ?: 100 }} PTS
+                                </td>
+                                <td class="text-center">
+                                    @if($mySub)
+                                        <span class="fw-bolder fs-6 {{ $mySub->is_passed ? 'text-success' : 'text-danger' }}">
+                                            {{ $mySub->earned_score }}
+                                        </span>
+                                        <span class="text-secondary small">/ {{ $mySub->total_possible }}</span>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($mySub)
+                                        <span class="badge {{ $mySub->is_passed ? 'bg-success' : 'bg-danger' }} fw-bold px-2.5 py-1">
+                                            {{ $mySub->percentage }}% • Grade {{ $mySub->grade }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-light text-secondary border fw-normal" style="font-size: 11px;">មិនទាន់ប្រឡង</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($mySub)
+                                        @if($canReExam)
+                                            <span class="badge bg-warning text-dark fw-bold">
+                                                <i data-lucide="rotate-ccw" style="width: 11px; height: 11px;" class="me-1"></i> ReExam Allowed
+                                            </span>
+                                        @elseif($mySub->is_passed)
+                                            <span class="badge bg-success-subtle text-success fw-bold">
+                                                <i data-lucide="check-circle" style="width: 11px; height: 11px;" class="me-1"></i> ជាប់ (Passed)
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger-subtle text-danger fw-bold">
+                                                <i data-lucide="x-circle" style="width: 11px; height: 11px;" class="me-1"></i> ធ្លាក់ (Failed)
+                                            </span>
+                                        @endif
+                                    @elseif($isOpen)
+                                        <span class="badge bg-success text-white fw-bold">
+                                            <i data-lucide="unlock" style="width: 11px; height: 11px;" class="me-1"></i> កំពុងបើក (Open)
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary-subtle text-secondary fw-semibold">
+                                            <i data-lucide="lock" style="width: 11px; height: 11px;" class="me-1"></i> រង់ចាំបើក
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-center small text-secondary">
+                                    @if($mySub && !empty($mySub->submitted_at))
+                                        <i data-lucide="check" style="width: 12px; height: 12px;" class="text-success me-0.5"></i>
+                                        {{ $mySub->submitted_at }}
+                                    @else
+                                        <i data-lucide="calendar" style="width: 12px; height: 12px;" class="me-0.5"></i>
+                                        {{ $exam->exam_date ?: 'TBD' }}
+                                    @endif
+                                </td>
+                                <td class="text-end pe-4">
+                                    @if($mySub)
+                                        <div class="d-flex justify-content-end align-items-center gap-1.5">
+                                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="showCompletedExamResult({{ json_encode($mySub) }}, '{{ addslashes($exam->title) }}')">
+                                                <i data-lucide="award" style="width: 13px; height: 13px;"></i>
+                                                <span>មើលលទ្ធផល</span>
+                                            </button>
+                                            @if($canReExam)
+                                                <button type="button" class="btn btn-sm btn-warning text-dark rounded-pill px-2.5 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})">
+                                                    <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i>
+                                                    <span>ReExam</span>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    @elseif($isOpen)
+                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})">
+                                            <i data-lucide="pencil-line" style="width: 13px; height: 13px;"></i>
+                                            <span>ចូលប្រឡង</span>
+                                        </button>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 fw-semibold opacity-75" disabled>
+                                            <i data-lucide="lock" style="width: 13px; height: 13px;"></i>
+                                            <span>Locked</span>
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-secondary">មិនទាន់មានទិន្នន័យប្រឡង។</td>
+                            </tr>
+                        @endforelse
+
+                        {{-- Additional standalone exam submissions not matching $exams --}}
+                        @if(isset($myExamSubmissions))
+                            @foreach($myExamSubmissions as $subExamId => $extraSub)
+                                @if(!in_array($subExamId, $renderedExamIds))
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="p-2 rounded-2 bg-light border d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                                    <i data-lucide="file-check" style="width: 17px; height: 17px;" class="text-success"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="fw-bold small d-block">{{ $extraSub->exam_title ?: 'Assessment' }}</span>
+                                                    <small class="text-secondary" style="font-size: 11px;">
+                                                        {{ $extraSub->course_code ?: 'EXAM' }} • Student: {{ $extraSub->student_name }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary-subtle text-secondary fw-bold px-2 py-1 rounded-pill" style="font-size: 10.5px;">
+                                                QCM Exam
+                                            </span>
+                                        </td>
+                                        <td class="text-center small fw-semibold">
+                                            {{ $extraSub->total_possible ?: 100 }} PTS
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="fw-bolder fs-6 {{ $extraSub->is_passed ? 'text-success' : 'text-danger' }}">
+                                                {{ $extraSub->earned_score }}
+                                            </span>
+                                            <span class="text-secondary small">/ {{ $extraSub->total_possible }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge {{ $extraSub->is_passed ? 'bg-success' : 'bg-danger' }} fw-bold px-2.5 py-1">
+                                                {{ $extraSub->percentage }}% • Grade {{ $extraSub->grade }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($extraSub->is_passed)
+                                                <span class="badge bg-success-subtle text-success fw-bold">
+                                                    <i data-lucide="check-circle" style="width: 11px; height: 11px;" class="me-1"></i> ជាប់ (Passed)
+                                                </span>
+                                            @else
+                                                <span class="badge bg-danger-subtle text-danger fw-bold">
+                                                    <i data-lucide="x-circle" style="width: 11px; height: 11px;" class="me-1"></i> ធ្លាក់ (Failed)
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center small text-secondary">
+                                            {{ $extraSub->submitted_at ?: 'Completed' }}
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="showCompletedExamResult({{ json_encode($extraSub) }}, '{{ addslashes($extraSub->exam_title) }}')">
+                                                <i data-lucide="award" style="width: 13px; height: 13px;"></i>
+                                                <span>មើលលទ្ធផល</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Challenge Arena Results (លទ្ធផល Challenges ផងដែរ) -->
+    <div id="score-sec-challenges" class="score-display-section mb-4">
+        <div class="tool-card overflow-hidden">
+            <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="fw-bold mb-0">
+                        <i data-lucide="trophy" style="width: 18px; height: 18px;" class="text-warning me-1.5 d-inline-block"></i>
+                        លទ្ធផលប្រកួតប្រជែង Challenges (Campus Challenge Arena Results)
+                    </h6>
+                    <small class="text-secondary">ពិន្ទុ និងចំណាត់ថ្នាក់ដែលទទួលបានពីការប្រកួតប្រជែង Live Quests, UI Audits & Speed Tasks</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-warning-subtle text-warning-emphasis fw-bold">
+                        <i data-lucide="sparkles" style="width: 12px; height: 12px;" class="me-1"></i> Total: +{{ $totalChallengePoints }} PTS
+                    </span>
+                    <button type="button" class="btn btn-xs btn-outline-warning text-dark rounded-pill px-2.5 py-1 fw-bold" onclick="switchTab('challenge')">
+                        <i data-lucide="swords" style="width: 12px; height: 12px;" class="me-1"></i> Challenge Arena
+                    </button>
+                    <a href="{{ route('admin.challenges.fullscreen') }}" target="_blank" class="btn btn-xs btn-warning text-dark rounded-pill px-2.5 py-1 fw-bold">
+                        <i data-lucide="maximize" style="width: 12px; height: 12px;" class="me-1"></i> Leaderboard
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-secondary">
+                        <tr>
+                            <th class="ps-4">Challenge Quest</th>
+                            <th>Description</th>
+                            <th class="text-center">Max Points</th>
+                            <th class="text-center">Earned Points</th>
+                            <th class="text-center">Completion Speed</th>
+                            <th class="text-center">Classroom Rank</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $renderedChallengeIds = [];
+                        @endphp
+                        @forelse($challenges as $ch)
+                            @php
+                                $renderedChallengeIds[] = $ch->id;
+                                $part = isset($myChallengeParticipations) ? $myChallengeParticipations->get($ch->id) : null;
+                            @endphp
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="p-2 rounded-2 bg-warning bg-opacity-10 border border-warning border-opacity-25 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                            <i data-lucide="trophy" style="width: 18px; height: 18px;" class="text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <div class="d-flex align-items-center gap-1.5">
+                                                <span class="fw-bold small">{{ $ch->title }}</span>
+                                                <span class="badge bg-warning text-dark fw-bold" style="font-size: 10px;">{{ $ch->badge ?: 'QUEST' }}</span>
+                                            </div>
+                                            <small class="text-secondary" style="font-size: 11px;">
+                                                ⏱️ {{ $ch->duration_minutes ?: 15 }} Mins • Real-Time Arena
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-secondary small d-inline-block text-truncate" style="max-width: 260px;">
+                                        {{ $ch->description ?: 'Campus interactive challenge' }}
+                                    </span>
+                                </td>
+                                <td class="text-center small fw-semibold text-secondary">
+                                    +{{ $ch->points }} PTS
+                                </td>
+                                <td class="text-center">
+                                    @if($part)
+                                        <span class="badge bg-warning text-dark fw-bolder fs-7 px-2.5 py-1 shadow-xs">
+                                            +{{ $part->score }} PTS
+                                        </span>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($part)
+                                        <span class="small fw-bold text-dark d-inline-flex align-items-center gap-1">
+                                            <i data-lucide="timer" style="width: 13px; height: 13px;" class="text-warning"></i>
+                                            {{ $part->completion_time }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($part)
+                                        @if($part->rank == 1)
+                                            <span class="badge bg-warning text-dark fw-bold px-2.5 py-1">
+                                                🏆 #1 Champion
+                                            </span>
+                                        @elseif($part->rank == 2)
+                                            <span class="badge bg-secondary text-white fw-bold px-2 py-1">
+                                                🥈 #2 Rank
+                                            </span>
+                                        @elseif($part->rank == 3)
+                                            <span class="badge bg-dark text-white fw-bold px-2 py-1">
+                                                🥉 #3 Rank
+                                            </span>
+                                        @else
+                                            <span class="badge bg-body-secondary text-secondary fw-bold px-2 py-1">
+                                                #{{ $part->rank }} Rank
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="badge bg-light text-secondary border fw-normal" style="font-size: 11px;">
+                                            មិនទាន់ចូលរួម
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($part)
+                                        <span class="badge bg-success-subtle text-success fw-bold">
+                                            <i data-lucide="check-circle" style="width: 11px; height: 11px;" class="me-1"></i> បានចូលរួមរួច
+                                        </span>
+                                    @else
+                                        <span class="badge bg-primary-subtle text-primary fw-bold">
+                                            <i data-lucide="sparkles" style="width: 11px; height: 11px;" class="me-1"></i> កំពុងបើក
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-end pe-4">
+                                    @if($part)
+                                        <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="showChallengeScoreSummary('{{ addslashes($ch->title) }}', {{ $part->score }}, '{{ $part->rank }}', '{{ $part->completion_time }}')">
+                                            <i data-lucide="trophy" style="width: 13px; height: 13px;"></i>
+                                            <span>មើលពិន្ទុ</span>
+                                        </button>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="switchTab('challenge')">
+                                            <i data-lucide="play" style="width: 13px; height: 13px;"></i>
+                                            <span>ចូលប្រកួត</span>
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-secondary">មិនទាន់មានទិន្នន័យ Challenge នៅឡើយ។</td>
+                            </tr>
+                        @endforelse
+
+                        {{-- Additional standalone participations not matching $challenges --}}
+                        @if(isset($myChallengeParticipations))
+                            @foreach($myChallengeParticipations as $chId => $extraPart)
+                                @if(!in_array($chId, $renderedChallengeIds))
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="p-2 rounded-2 bg-warning bg-opacity-10 border border-warning border-opacity-25 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                                    <i data-lucide="trophy" style="width: 18px; height: 18px;" class="text-warning"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="fw-bold small d-block">Campus Arena Quest #{{ $chId }}</span>
+                                                    <small class="text-secondary" style="font-size: 11px;">Participant: {{ $extraPart->student_name }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="text-secondary small">Campus Arena Live Quest</span>
+                                        </td>
+                                        <td class="text-center small fw-semibold text-secondary">
+                                            +500 PTS
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-warning text-dark fw-bolder fs-7 px-2.5 py-1 shadow-xs">
+                                                +{{ $extraPart->score }} PTS
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="small fw-bold text-dark d-inline-flex align-items-center gap-1">
+                                                <i data-lucide="timer" style="width: 13px; height: 13px;" class="text-warning"></i>
+                                                {{ $extraPart->completion_time }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-warning text-dark fw-bold px-2 py-1">
+                                                #{{ $extraPart->rank }} Rank
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success-subtle text-success fw-bold">
+                                                <i data-lucide="check-circle" style="width: 11px; height: 11px;" class="me-1"></i> បានចូលរួមរួច
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" onclick="showChallengeScoreSummary('Campus Arena Quest', {{ $extraPart->score }}, '{{ $extraPart->rank }}', '{{ $extraPart->completion_time }}')">
+                                                <i data-lucide="trophy" style="width: 13px; height: 13px;"></i>
+                                                <span>មើលពិន្ទុ</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        @endif
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -4615,6 +5158,59 @@
         document.getElementById('post-view-content').textContent = content;
         const modal = new bootstrap.Modal(document.getElementById('postViewModal'));
         modal.show();
+        renderIcons();
+    }
+
+    // ==============================================================
+    // 10. Filter Score View & Challenge Result Modal (Feature Score)
+    // ==============================================================
+    function filterScoreView(category, btn) {
+        document.querySelectorAll('.score-filter-btn').forEach(b => {
+            b.classList.remove('btn-primary', 'text-white');
+            b.classList.add('btn-outline-secondary', 'text-secondary');
+        });
+        if (btn) {
+            btn.classList.remove('btn-outline-secondary', 'text-secondary');
+            btn.classList.add('btn-primary', 'text-white');
+        }
+
+        const secGrades = document.getElementById('score-sec-grades');
+        const secExams = document.getElementById('score-sec-exams');
+        const secChallenges = document.getElementById('score-sec-challenges');
+
+        if (category === 'all') {
+            if (secGrades) secGrades.classList.remove('d-none');
+            if (secExams) secExams.classList.remove('d-none');
+            if (secChallenges) secChallenges.classList.remove('d-none');
+        } else if (category === 'grades') {
+            if (secGrades) secGrades.classList.remove('d-none');
+            if (secExams) secExams.classList.add('d-none');
+            if (secChallenges) secChallenges.classList.add('d-none');
+        } else if (category === 'exams') {
+            if (secGrades) secGrades.classList.add('d-none');
+            if (secExams) secExams.classList.remove('d-none');
+            if (secChallenges) secChallenges.classList.add('d-none');
+        } else if (category === 'challenges') {
+            if (secGrades) secGrades.classList.add('d-none');
+            if (secExams) secExams.classList.add('d-none');
+            if (secChallenges) secChallenges.classList.remove('d-none');
+        }
+        renderIcons();
+    }
+
+    function showChallengeScoreSummary(title, points, rank, time) {
+        const titleEl = document.getElementById('challenge-score-title');
+        const ptsEl = document.getElementById('challenge-score-points');
+        if (titleEl) titleEl.textContent = title;
+        if (ptsEl) ptsEl.textContent = `+${points} PTS`;
+        const rankEl = document.querySelector('#challengeScoreModal .text-info');
+        if (rankEl) rankEl.textContent = `#${rank || 1}`;
+
+        const modalEl = document.getElementById('challengeScoreModal');
+        if (modalEl && window.bootstrap) {
+            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
         renderIcons();
     }
 </script>

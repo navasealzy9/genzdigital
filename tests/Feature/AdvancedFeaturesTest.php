@@ -666,4 +666,45 @@ class AdvancedFeaturesTest extends TestCase
             ob_end_flush();
         }
     }
+
+    /**
+     * Test 22. Score Screen Displays Course Grades, All Exam Results, and Challenge Arena
+     */
+    public function test_score_screen_displays_course_grades_exam_results_and_challenges(): void
+    {
+        $user = \App\Models\User::where('role', 'student')->first();
+        if (!$user) {
+            $user = \App\Models\User::create([
+                'name' => 'Maya Chen',
+                'email' => 'maya.score.' . uniqid() . '@genzdigital.edu',
+                'password' => bcrypt('password'),
+                'student_id' => 'GZ20260482',
+                'role' => 'student',
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get('/');
+        $response->assertStatus(200);
+
+        // Score header & KPI
+        $response->assertSee('Academic Score & Official Transcript', false);
+        $response->assertSee('GPA 3.88', false);
+        $response->assertSee('score-filter-pills', false);
+
+        // Section 1: Course Grades
+        $response->assertSee('score-sec-grades', false);
+        $response->assertSee('Course Grade Breakdown', false);
+
+        // Section 2: All Exam Results
+        $response->assertSee('score-sec-exams', false);
+        $response->assertSee('លទ្ធផលប្រឡងទាំងអស់', false);
+
+        // Section 3: Challenge Arena
+        $response->assertSee('score-sec-challenges', false);
+        $response->assertSee('លទ្ធផលប្រកួតប្រជែង Challenges', false);
+
+        while (ob_get_level() > 1) {
+            ob_end_flush();
+        }
+    }
 }

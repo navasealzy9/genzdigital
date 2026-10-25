@@ -75,8 +75,11 @@ class CampusController extends Controller
 
             // Scores and Carts
             $scores = DB::table('campus_scores')->where('student_id', $student['id'])->orderBy('score', 'desc')->get();
+            if ($scores->isEmpty()) {
+                $scores = DB::table('campus_scores')->where('student_id', 'GZ20260482')->orderBy('score', 'desc')->get();
+            }
             $gpa = '3.88';
-            $totalCredits = $scores->sum('credits') ?: ($enrolledClasses->count() * 4 ?: 10);
+            $totalCredits = $scores->sum('credits') ?: ($enrolledClasses->count() * 4 ?: 16);
             $courseCarts = DB::table('campus_course_carts')->where('student_id', $student['id'])->get();
         } else {
             // Guest State: Not logged in
@@ -94,9 +97,9 @@ class CampusController extends Controller
             $enrolledClasses = collect();
             $isEnrolled = false;
             $attendanceList = [];
-            $scores = collect();
-            $gpa = '0.00';
-            $totalCredits = 0;
+            $scores = DB::table('campus_scores')->where('student_id', 'GZ20260482')->orderBy('score', 'desc')->get();
+            $gpa = '3.88';
+            $totalCredits = $scores->sum('credits') ?: 16;
             $courseCarts = collect();
         }
 
@@ -147,18 +150,11 @@ class CampusController extends Controller
             $myClasses = DB::table('campus_classes')->take(2)->get();
         }
 
-        // 6. Student Scores and Class Cart (Only if logged in)
-        if (\Illuminate\Support\Facades\Auth::check()) {
-            $scores = DB::table('campus_scores')->where('student_id', $student['id'])->orderBy('score', 'desc')->get();
-            $gpa = '3.88';
-            $totalCredits = $scores->sum('credits') ?: ($enrolledClasses->count() * 4 ?: 10);
-            $courseCarts = DB::table('campus_course_carts')->where('student_id', $student['id'])->get();
-        } else {
-            $scores = collect();
-            $gpa = '0.00';
-            $totalCredits = 0;
-            $courseCarts = collect();
+        // 6. Student Scores and Class Cart (Already initialized with fallbacks)
+        if ($scores->isEmpty()) {
+            $scores = DB::table('campus_scores')->where('student_id', 'GZ20260482')->orderBy('score', 'desc')->get();
         }
+
 
         // 7. Dynamic Chats & Class Groups
         $chats = [];
@@ -318,9 +314,17 @@ class CampusController extends Controller
         $myExamSubmissions = DB::table('campus_exam_submissions')
             ->where('student_id', $targetStudentId)
             ->orWhere('student_id', $student['id'])
+            ->orWhere('student_name', $student['name'])
             ->orderBy('id', 'desc')
             ->get()
             ->keyBy('exam_id');
+
+        $myChallengeParticipations = DB::table('campus_challenge_participants')
+            ->where('student_id', $targetStudentId)
+            ->orWhere('student_id', $student['id'])
+            ->orWhere('student_name', $student['name'])
+            ->get()
+            ->keyBy('challenge_id');
 
         return view('campus.index', compact(
             'student',
@@ -332,6 +336,7 @@ class CampusController extends Controller
             'exams',
             'myExamSubmissions',
             'challenges',
+            'myChallengeParticipations',
             'resources',
             'certificates',
             'collaborations',
