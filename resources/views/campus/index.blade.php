@@ -280,65 +280,56 @@
         <div class="row g-3 g-md-4">
             <!-- Left Column: Student Pass (Desktop: col-lg-4 col-xl-4) -->
             <div class="col-12 col-lg-4 col-xl-4">
-                <!-- User's Digital Profile Pass Card -->
+                <!-- User's Digital Profile Pass Card (iOS 26 Ultra-Clean Design) -->
                 <div class="student-pass-card student-pass-sticky" onclick="switchTab('qrpass')">
                     <div class="pass-glow-1"></div>
-                    <div class="pass-glow-2"></div>
-
-                    <!-- Contactless / Chip Pattern Background Watermark -->
-                    <div class="pass-chip-pattern">
-                        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3"/>
-                            <path d="M5 18a6 6 0 0 0 6-6c0-2.5-1-4-2-6"/>
-                            <path d="M2 21a9.5 9.5 0 0 0 9.5-9.5c0-4-2-7-3.5-9.5"/>
-                        </svg>
-                    </div>
 
                     <!-- Top Card Header: Brand & Live Status -->
                     <div class="d-flex justify-content-between align-items-center mb-3.5 position-relative z-1">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Logo" style="width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));">
+                            <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow-xs p-1" style="width: 26px; height: 26px;">
+                                <img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
                             <div>
-                                <span class="d-block text-uppercase fw-bold text-white lh-1" style="font-size: 10.5px; letter-spacing: 0.14em;">
+                                <span class="d-block text-uppercase fw-bold text-white lh-1" style="font-size: 10.5px; letter-spacing: 0.12em;">
                                     GENZ DIGITAL STUDENT PASS
                                 </span>
-                                <small class="text-white-50 font-monospace" style="font-size: 9px; letter-spacing: 0.08em;">SMART ACADEMIC OS • 2026</small>
+                                <small class="text-white-50 font-monospace" style="font-size: 9px; letter-spacing: 0.05em;">SMART ACADEMIC OS • 2026</small>
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill" style="background: rgba(16, 185, 129, 0.22); border: 1px solid rgba(52, 211, 153, 0.45); backdrop-filter: blur(8px);">
-                            <span class="rounded-circle bg-success position-relative" style="width: 7px; height: 7px; box-shadow: 0 0 8px #10b981;"></span>
-                            <span class="fw-bold text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">{{ $student['status'] }}</span>
-                        </div>
+                        <!-- Clean Active Pill with separated glowing dot -->
+                        <span class="badge rounded-pill fw-bold text-uppercase d-inline-flex align-items-center shadow-xs" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(52, 211, 153, 0.4); color: #ffffff; font-size: 10px; letter-spacing: 0.08em; padding: 4px 10px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; display: inline-block; margin-right: 6px; box-shadow: 0 0 6px #10b981; flex-shrink: 0;"></span>
+                            {{ $student['status'] }}
+                        </span>
                     </div>
 
                     <!-- Profile Info Row -->
                     <div class="d-flex align-items-center gap-3 mb-3.5 position-relative z-1">
                         <div class="position-relative cursor-pointer flex-shrink-0" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
-                            <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow-lg" style="width: 70px; height: 70px; border: 3px solid rgba(255, 255, 255, 0.85); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;">
-                            <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 24px; height: 24px; border: 2px solid #ffffff;">
-                                <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+                            <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow-lg" style="width: 68px; height: 68px; border: 3px solid rgba(255, 255, 255, 0.85); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35) !important;">
+                            <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 22px; height: 22px; border: 2px solid #ffffff;">
+                                <i data-lucide="camera" style="width: 11px; height: 11px;"></i>
                             </div>
                         </div>
 
                         <div class="overflow-hidden w-100">
                             <h3 class="fs-4 fw-bolder mb-1 text-white tracking-tight text-truncate" style="letter-spacing: -0.01em;">{{ $student['name'] }}</h3>
-                            <div class="d-flex align-items-center gap-1.5 mb-2 flex-wrap">
-                                <span class="badge font-monospace fw-semibold px-2 py-0.5 rounded-pill text-white" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 10.5px;">
+                            
+                            <div class="mb-2">
+                                <span class="badge rounded-pill fw-semibold font-monospace px-2.5 py-0.5 text-white" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 11px;">
                                     ID • {{ $student['id'] }}
-                                </span>
-                                <span class="badge font-monospace px-2 py-0.5 rounded-pill text-white-50" style="background: rgba(0, 0, 0, 0.25); font-size: 10px;">
-                                    PASS #{{ $student['pass_id'] ?? 'GZ-01' }}
                                 </span>
                             </div>
 
-                            <!-- Modern Action Pill Buttons -->
+                            <!-- iOS Frosted Action Buttons -->
                             <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                                <button type="button" class="btn btn-sm text-white rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1 shadow-xs" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); font-size: 11px; font-weight: 600; backdrop-filter: blur(8px);" onclick="event.stopPropagation(); switchTab('qrpass');">
+                                <button type="button" class="btn btn-sm rounded-pill text-white d-inline-flex align-items-center gap-1 shadow-xs fw-semibold" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.28); font-size: 11px; padding: 4px 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);" onclick="event.stopPropagation(); switchTab('qrpass');">
                                     <i data-lucide="qr-code" style="width: 12px; height: 12px;"></i>
                                     <span>View Pass</span>
                                 </button>
-                                <button type="button" class="btn btn-sm text-white rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1 shadow-xs" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); font-size: 11px; font-weight: 600; backdrop-filter: blur(8px);" onclick="event.stopPropagation(); openAvatarCropModal();">
+                                <button type="button" class="btn btn-sm rounded-pill text-white d-inline-flex align-items-center gap-1 shadow-xs fw-semibold" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.28); font-size: 11px; padding: 4px 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);" onclick="event.stopPropagation(); openAvatarCropModal();">
                                     <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
                                     <span>Change Photo</span>
                                 </button>
@@ -354,7 +345,7 @@
                                 <span class="fw-bold fs-6 text-white">{{ $student['gender'] }}</span>
                             </div>
                             <div class="col-8 ps-3">
-                                <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Department / Major</small>
+                                <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Major</small>
                                 <span class="fw-bold fs-6 text-truncate d-block text-white" title="{{ $student['major'] }}">{{ $student['major'] }}</span>
                             </div>
                         </div>
