@@ -1308,6 +1308,63 @@
             </div>
         </div>
     </div>
+
+    <!-- 3. My Personal Attendance Scan History (ប្រវត្តិស្កេនវត្តមានរបស់ខ្លួនតាមថ្ងៃ និងម៉ោង) -->
+    <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 mt-4 bg-body-tertiary">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+                <div class="p-2 rounded-circle bg-primary-subtle text-primary">
+                    <i data-lucide="history" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bolder mb-0 fs-6">ប្រវត្តិនៃការស្កេនវត្តមានរបស់ខ្ញុំ (My Scan History)</h5>
+                    <small class="text-secondary">កំណត់ត្រាការស្កេន QR និងវាយលេខកូដទាំងអស់តាមថ្ងៃ និងម៉ោងជាក់ស្តែង</small>
+                </div>
+            </div>
+            <span class="badge bg-primary text-white px-3 py-1.5 rounded-pill fw-bold">
+                {{ isset($myAttendanceHistory) ? $myAttendanceHistory->count() : 0 }} Logs
+            </span>
+        </div>
+
+        @if(isset($myAttendanceHistory) && $myAttendanceHistory->count() > 0)
+            <div class="row row-cols-1 row-cols-md-2 g-2.5" id="scan-history-list">
+                @foreach($myAttendanceHistory as $history)
+                    <div class="col">
+                        <div class="p-3 rounded-4 bg-body border d-flex justify-content-between align-items-center shadow-xs">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="rounded-circle {{ str_contains($history->session_name ?? '', '2') ? 'bg-warning-subtle text-warning-emphasis' : 'bg-primary-subtle text-primary' }} d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                                    <i data-lucide="{{ str_contains($history->session_name ?? '', '2') ? 'sunset' : 'sun' }}" style="width: 18px; height: 18px;"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                        <span class="badge bg-primary-subtle text-primary font-monospace small" style="font-size: 11px;">{{ $history->code }}</span>
+                                        <span class="fw-bold fs-7">{{ $history->subject }}</span>
+                                    </div>
+                                    <div class="small text-secondary mt-1">
+                                        <span class="badge bg-body-secondary text-body fw-normal" style="font-size: 10.5px;">
+                                            {{ $history->session_name ?: 'Session 1 (ព្រឹក)' }}
+                                        </span>
+                                        <span class="ms-1 font-monospace" style="font-size: 11px;">
+                                            📅 {{ $history->session_date ?: ($history->created_at ? date('Y-m-d', strtotime($history->created_at)) : date('Y-m-d')) }}
+                                            • ⏰ {{ $history->check_in_time ?: ($history->created_at ? date('h:i A', strtotime($history->created_at)) : date('h:i A')) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="badge bg-success-subtle text-success fw-bold px-2.5 py-1.5 rounded-pill flex-shrink-0">
+                                <i data-lucide="check" style="width: 12px; height: 12px;" class="me-0.5"></i> {{ $history->status }}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="text-center py-4 text-secondary">
+                <i data-lucide="clock-alert" class="opacity-50 mb-2" style="width: 36px; height: 36px;"></i>
+                <p class="mb-0 small">មិនទាន់មានប្រវត្តិនៃការស្កេនវត្តមាននៅឡើយទេ! សូមជ្រើសរើសស្កេន QR ឬវាយលេខកូដសម្ងាត់ ៤ ខ្ទង់ខាងលើ។</p>
+            </div>
+        @endif
+    </div>
 </div>
 
 <!-- ====================================================================== -->
@@ -3743,6 +3800,7 @@
                 if (window.confetti) {
                     window.confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
                 }
+                setTimeout(() => window.location.reload(), 1400);
             } else {
                 feedback.classList.remove('d-none', 'alert-success');
                 feedback.classList.add('alert-danger');

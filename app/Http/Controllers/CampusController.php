@@ -308,8 +308,19 @@ class CampusController extends Controller
                   ->orWhere('short_code', $code)
                   ->orWhere('class_code', $code);
             })
-            ->where('status', 'Active')
             ->first();
+
+        // Check if QR code has expired
+        if ($qr && self::isQrExpired($qr)) {
+            if ($qr->status !== 'Expired') {
+                DB::table('campus_qr_codes')->where('id', $qr->id)->update(['status' => 'Expired', 'updated_at' => now()]);
+            }
+            return response()->json([
+                'success' => false,
+                'error_code' => 'QR_EXPIRED',
+                'message' => "⚠️ QR Code នេះបានផុតកំណត់ម៉ោងហើយ! សិស្សមិនអាចស្កេន ឬចុះវត្តមានបានទៀតទេ។ សូមទាក់ទងគ្រូ/Admin ដើម្បីបើក ឬពន្យារពេល។",
+            ], 422);
+        }
 
         // If no active QR found by code, look for any QR matching class
         if (!$qr && $code) {
@@ -818,6 +829,60 @@ class CampusController extends Controller
     }
 
     /**
+     * Check if a QR Code or short passcode has expired
+     */
+    public static function isQrExpired($qr): bool
+    {
+        if (!$qr) {
+            return true;
+        }
+        if ($qr->status === 'Expired' || $qr->status === 'Inactive') {
+            return true;
+        }
+        if (empty($qr->expires_at)) {
+            return false;
+        }
+
+        $now = time();
+        $raw = trim($qr->expires_at);
+
+        // Standard datetime format like "2026-10-25 11:30:00"
+        if (preg_match('/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/', $raw)) {
+            return $now > strtotime($raw);
+        }
+
+        // Relative formats like "Within 15 Mins" or "Within 1 Hour"
+        if (preg_match('/Within\s+(\d+)\s*Min/i', $raw, $m)) {
+            $createdTs = strtotime($qr->created_at ?: 'now');
+            return $now > ($createdTs + ($m[1] * 60));
+        }
+        if (preg_match('/Within\s+(\d+)\s*Hour/i', $raw, $m)) {
+            $createdTs = strtotime($qr->created_at ?: 'now');
+            return $now > ($createdTs + ($m[1] * 3600));
+        }
+
+        // "Today HH:MM AM/PM"
+        if (preg_match('/Today\s+(\d{1,2}:\d{2}\s*(?:AM|PM)?)/i', $raw, $m)) {
+            $todayTime = strtotime(date('Y-m-d') . ' ' . $m[1]);
+            if ($todayTime !== false) {
+                return $now > $todayTime;
+            }
+        }
+
+        // "HH:MM AM/PM Today"
+        if (preg_match('/(\d{1,2}:\d{2}\s*(?:AM|PM)?)\s+Today/i', $raw, $m)) {
+            if (!empty($qr->session_date) && $qr->session_date === date('Y-m-d')) {
+                $todayTime = strtotime(date('Y-m-d') . ' ' . $m[1]);
+                if ($todayTime !== false) {
+                    return $now > $todayTime;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Client: Check-in using 4-digit Short Passcode (Option 2)
      */
     public function checkInWithPasscode(Request $request)
@@ -829,21 +894,31 @@ class CampusController extends Controller
         $passcode = trim($request->input('passcode'));
         $qr = DB::table('campus_qr_codes')
             ->where('short_code', $passcode)
-            ->where('status', 'Active')
             ->first();
 
         // If not found by short_code, also check code_value
         if (!$qr) {
             $qr = DB::table('campus_qr_codes')
                 ->where('code_value', $passcode)
-                ->where('status', 'Active')
                 ->first();
         }
 
         if (!$qr) {
             return response()->json([
                 'success' => false,
-                'message' => 'លេខកូដសម្ងាត់មិនត្រឹមត្រូវ ឬផុតកំណត់ហើយ! សូមពិនិត្យលេខកូដនៅលើអេក្រង់សាជាថ្មី។',
+                'error_code' => 'INVALID_CODE',
+                'message' => 'លេខកូដសម្ងាត់មិនត្រឹមត្រូវ! សូមពិនិត្យលេខកូដនៅលើអេក្រង់សាជាថ្មី។',
+            ], 422);
+        }
+
+        if (self::isQrExpired($qr)) {
+            if ($qr->status !== 'Expired') {
+                DB::table('campus_qr_codes')->where('id', $qr->id)->update(['status' => 'Expired', 'updated_at' => now()]);
+            }
+            return response()->json([
+                'success' => false,
+                'error_code' => 'QR_EXPIRED',
+                'message' => "⚠️ លេខកូដខ្លី [{$passcode}] បានផុតកំណត់ម៉ោងហើយ! សិស្សមិនអាចស្កេន ឬចុះវត្តមានបានទៀតទេ។ សូមទាក់ទងគ្រូ/Admin ដើម្បីបើក ឬពន្យារពេល។",
             ], 422);
         }
 

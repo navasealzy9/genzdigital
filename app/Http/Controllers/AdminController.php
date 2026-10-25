@@ -1002,11 +1002,6 @@ class AdminController extends Controller
     // =========================================================================
     public function storeQrCode(Request $request)
     {
-        if ($request->input('expires_at') === 'custom' && $request->filled('expires_custom_time')) {
-            $timeFormatted = date('h:i A', strtotime($request->expires_custom_time));
-            $request->merge(['expires_at' => "Today {$timeFormatted}"]);
-        }
-
         $request->validate([
             'title' => 'required|string|max:191',
             'type' => 'required|string|max:50',
@@ -1016,6 +1011,35 @@ class AdminController extends Controller
             'expires_at' => 'required|string|max:100',
         ]);
 
+        $expiresOption = $request->input('expires_at', 'Today 11:59 PM');
+        $sessionDate = $request->input('session_date', date('Y-m-d'));
+        $expiresAt = null;
+
+        if ($expiresOption === '15_mins' || $expiresOption === 'Within 15 Mins') {
+            $expiresAt = date('Y-m-d H:i:s', time() + 15 * 60);
+        } elseif ($expiresOption === '30_mins' || $expiresOption === 'Within 30 Mins') {
+            $expiresAt = date('Y-m-d H:i:s', time() + 30 * 60);
+        } elseif ($expiresOption === '1_hour' || $expiresOption === 'Within 1 Hour') {
+            $expiresAt = date('Y-m-d H:i:s', time() + 3600);
+        } elseif ($expiresOption === '2_hours' || $expiresOption === 'Within 2 Hours') {
+            $expiresAt = date('Y-m-d H:i:s', time() + 7200);
+        } elseif ($expiresOption === 'Today 11:30 AM' || $expiresOption === '11:30_am') {
+            $expiresAt = date('Y-m-d 11:30:00', strtotime($sessionDate . ' 11:30 AM'));
+        } elseif ($expiresOption === 'Today 05:00 PM' || $expiresOption === '05:00_pm') {
+            $expiresAt = date('Y-m-d 17:00:00', strtotime($sessionDate . ' 05:00 PM'));
+        } elseif ($expiresOption === 'Today 11:59 PM' || $expiresOption === '11:59_pm') {
+            $expiresAt = date('Y-m-d 23:59:59', strtotime($sessionDate . ' 23:59:59'));
+        } elseif ($expiresOption === 'custom' && $request->filled('expires_custom_time')) {
+            $expiresAt = date('Y-m-d H:i:00', strtotime($sessionDate . ' ' . $request->expires_custom_time));
+        } else {
+            $ts = strtotime($expiresOption);
+            if ($ts !== false && $ts > 1000000000) {
+                $expiresAt = date('Y-m-d H:i:s', $ts);
+            } else {
+                $expiresAt = date('Y-m-d 23:59:59', strtotime($sessionDate . ' 23:59:59'));
+            }
+        }
+
         $shortCode = str_pad((string)rand(1000, 9999), 4, '0', STR_PAD_LEFT);
         $codeValue = 'GZ-QR-' . strtoupper($request->type) . '-' . ($request->class_code ?: 'CAMPUS') . '-' . rand(1000, 9999);
 
@@ -1024,17 +1048,18 @@ class AdminController extends Controller
             'type' => $request->type,
             'class_code' => $request->class_code,
             'session_name' => $request->input('session_name', 'Session 1 (ព្រឹក)'),
-            'session_date' => $request->input('session_date', date('Y-m-d')),
+            'session_date' => $sessionDate,
             'code_value' => $codeValue,
             'short_code' => $shortCode,
-            'expires_at' => $request->expires_at,
+            'expires_at' => $expiresAt,
             'scans_count' => 0,
             'status' => 'Active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return redirect()->route('admin.index', ['tab' => 'qr'])->with('success', "QR Code & លេខកូដខ្លី [{$shortCode}] សម្រាប់ {$request->input('session_name', 'Session 1 (ព្រឹក)')} ត្រូវបានបង្កើតដោយជោគជ័យ!");
+        $formattedExpire = date('h:i A (M d)', strtotime($expiresAt));
+        return redirect()->route('admin.index', ['tab' => 'qr'])->with('success', "QR Code & លេខកូដខ្លី [{$shortCode}] សម្រាប់ {$request->input('session_name', 'Session 1 (ព្រឹក)')} ត្រូវបានបង្កើតដោយជោគជ័យ! (ផុតកំណត់: {$formattedExpire})");
     }
 
     public function activateQrCode($id)
@@ -1043,6 +1068,60 @@ class AdminController extends Controller
         DB::table('campus_qr_codes')->where('id', $id)->update(['status' => 'Active', 'updated_at' => now()]);
 
         return response()->json(['success' => true, 'message' => 'QR Code activated for classroom projection!']);
+    }
+
+    public function updateQrExpiration(Request $request, $id)
+    {
+        $qr = DB::table('campus_qr_codes')->where('id', $id)->first();
+        if (!$qr) {
+            return redirect()->route('admin.index', ['tab' => 'qr'])->with('error', 'QR Code not found.');
+        }
+
+        $action = $request->input('action', 'extend');
+
+        if ($action === 'expire_now') {
+            DB::table('campus_qr_codes')->where('id', $id)->update([
+                'status' => 'Expired',
+                'expires_at' => date('Y-m-d H:i:s', time() - 60),
+                'updated_at' => now(),
+            ]);
+            return redirect()->route('admin.index', ['tab' => 'qr'])->with('success', "QR Code & លេខកូដខ្លី [{$qr->short_code}] ត្រូវបានបិទផុតកំណត់ (Expired) រួចរាល់! សិស្សមិនអាចស្កេនបានឡើយ។");
+        }
+
+        if ($action === 'reactivate') {
+            $newExpire = date('Y-m-d H:i:s', time() + 3600); // 1 hr from now
+            DB::table('campus_qr_codes')->where('id', $id)->update([
+                'status' => 'Active',
+                'expires_at' => $newExpire,
+                'updated_at' => now(),
+            ]);
+            return redirect()->route('admin.index', ['tab' => 'qr'])->with('success', "QR Code & លេខកូដខ្លី [{$qr->short_code}] ត្រូវបានបើកដំណើរការឡើងវិញ (Active រយៈពេល ១ ម៉ោង)! សិស្សអាចស្កេនបាន។");
+        }
+
+        // Custom time or minutes extend
+        $sessionDate = $qr->session_date ?: date('Y-m-d');
+        if ($request->filled('custom_time')) {
+            $newExpire = date('Y-m-d H:i:00', strtotime($sessionDate . ' ' . $request->input('custom_time')));
+        } else {
+            $minutes = (int)$request->input('extend_minutes', 30);
+            $baseTs = max(time(), strtotime($qr->expires_at ?: 'now'));
+            $newExpire = date('Y-m-d H:i:s', $baseTs + ($minutes * 60));
+        }
+
+        DB::table('campus_qr_codes')->where('id', $id)->update([
+            'status' => 'Active',
+            'expires_at' => $newExpire,
+            'updated_at' => now(),
+        ]);
+
+        $formatted = date('M d, Y • h:i A', strtotime($newExpire));
+        return redirect()->route('admin.index', ['tab' => 'qr'])->with('success', "ម៉ោងផុតកំណត់របស់ QR Code [{$qr->short_code}] ត្រូវបានកំណត់ទៅ {$formatted} ដោយជោគជ័យ!");
+    }
+
+    public function deleteQrCode($id)
+    {
+        DB::table('campus_qr_codes')->where('id', $id)->delete();
+        return redirect()->route('admin.index', ['tab' => 'qr'])->with('success', 'QR Code ត្រូវបានលុបចេញដោយជោគជ័យ។');
     }
 
     // =========================================================================

@@ -288,6 +288,29 @@ class AdvancedFeaturesTest extends TestCase
         ]);
         $unenrolledResponse->assertStatus(403);
         $unenrolledResponse->assertJson(['success' => false, 'error_code' => 'NOT_ENROLLED_IN_CLASS']);
+
+        // 6. Expired QR / Passcode rejection (422 QR_EXPIRED)
+        $expiredQrId = DB::table('campus_qr_codes')->insertGetId([
+            'title' => 'Expired Test QR',
+            'type' => 'Attendance',
+            'class_code' => 'DES302',
+            'session_name' => 'Session 2 (រសៀល)',
+            'session_date' => date('Y-m-d'),
+            'code_value' => 'GZ-QR-EXP-9999',
+            'short_code' => '9999',
+            'expires_at' => date('Y-m-d H:i:s', time() - 300),
+            'scans_count' => 0,
+            'status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $expiredResponse = $this->postJson('/api/attendance/passcode', [
+            'passcode' => '9999',
+            'student_id' => 'GZ20260482',
+        ]);
+        $expiredResponse->assertStatus(422);
+        $expiredResponse->assertJson(['success' => false, 'error_code' => 'QR_EXPIRED']);
     }
 
     /**

@@ -1188,48 +1188,182 @@
 
     <div class="row row-cols-1 row-cols-md-3 g-3">
         @foreach($qrCodes as $qr)
+            @php
+                $isExpired = \App\Http\Controllers\CampusController::isQrExpired($qr);
+                $expiresTs = strtotime($qr->expires_at);
+                $formattedExpires = ($expiresTs && $expiresTs > 1000000000) ? date('M d, Y • h:i A', $expiresTs) : ($qr->expires_at ?: 'Today 11:59 PM');
+                $remainingSeconds = $expiresTs ? ($expiresTs - time()) : 0;
+            @endphp
             <div class="col">
-                <div class="admin-card p-4 text-center h-100 d-flex flex-column justify-content-between">
+                <div class="admin-card p-4 text-center h-100 d-flex flex-column justify-content-between position-relative border-start border-4 {{ $isExpired ? 'border-danger' : 'border-success' }}">
                     <div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
                             <span class="badge bg-primary-subtle text-primary fw-bold">{{ $qr->class_code ?: $qr->type }}</span>
                             <span class="badge {{ str_contains($qr->session_name ?? '', '2') ? 'bg-warning-subtle text-warning-emphasis' : 'bg-info-subtle text-info-emphasis' }} fw-bold">
                                 {{ $qr->session_name ?? 'Session 1 (ព្រឹក)' }}
                             </span>
-                            <span class="badge bg-success-subtle text-success fw-bold">{{ $qr->status }}</span>
+                            @if($isExpired)
+                                <span class="badge bg-danger text-white fw-bold"><i data-lucide="alert-triangle" style="width: 12px; height: 12px;" class="me-1"></i> Expired (ផុតកំណត់)</span>
+                            @else
+                                <span class="badge bg-success text-white fw-bold"><i data-lucide="check-circle" style="width: 12px; height: 12px;" class="me-1"></i> Active (អាចស្កេនបាន)</span>
+                            @endif
                         </div>
-                        <h6 class="fw-bold fs-6 mb-2">{{ $qr->title }}</h6>
-                        <small class="text-secondary d-block mb-3">Session Date: {{ $qr->session_date ?: date('Y-m-d') }}</small>
+                        <h6 class="fw-bold fs-6 mb-1">{{ $qr->title }}</h6>
+                        <small class="text-secondary d-block mb-2">Session Date: {{ $qr->session_date ?: date('Y-m-d') }}</small>
 
-                        <!-- Simulated QR Code Graphic -->
-                        <div class="bg-white p-3 rounded-4 shadow-sm border d-inline-block mb-3">
-                            <svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="5" height="5" x="3" y="3" rx="1"/>
-                                <rect width="5" height="5" x="16" y="3" rx="1"/>
-                                <rect width="5" height="5" x="3" y="16" rx="1"/>
-                                <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
-                                <path d="M21 21v.01"/>
-                                <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
-                                <path d="M3 12h.01"/>
-                                <path d="M12 3h.01"/>
-                                <path d="M12 16v.01"/>
-                                <path d="M16 12h1"/>
-                                <path d="M21 12v.01"/>
-                                <path d="M12 21v-1"/>
-                            </svg>
+                        <!-- Simulated QR Code Graphic (with Expired Overlay if expired) -->
+                        <div class="position-relative d-inline-block mb-2">
+                            <div class="bg-white p-3 rounded-4 shadow-sm border {{ $isExpired ? 'opacity-50' : '' }}">
+                                <svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="5" height="5" x="3" y="3" rx="1"/>
+                                    <rect width="5" height="5" x="16" y="3" rx="1"/>
+                                    <rect width="5" height="5" x="3" y="16" rx="1"/>
+                                    <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
+                                    <path d="M21 21v.01"/>
+                                    <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
+                                    <path d="M3 12h.01"/>
+                                    <path d="M12 3h.01"/>
+                                    <path d="M12 16v.01"/>
+                                    <path d="M16 12h1"/>
+                                    <path d="M21 12v.01"/>
+                                    <path d="M12 21v-1"/>
+                                </svg>
+                            </div>
+                            @if($isExpired)
+                                <div class="position-absolute top-50 start-50 translate-middle bg-danger text-white fw-bolder px-2.5 py-1 rounded-pill shadow small" style="font-size: 11px; white-space: nowrap;">
+                                    ⚠️ EXPIRED
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Short 4-Digit Passcode Prominent Box -->
-                        <div class="p-2.5 rounded-3 bg-primary-subtle border border-primary border-opacity-25 mb-2">
-                            <small class="text-primary fw-bold d-block" style="font-size: 11px;">លេខកូដខ្លី (SHORT PASSCODE)</small>
-                            <span class="fs-4 fw-bolder font-monospace text-primary tracking-widest">{{ $qr->short_code ?: '8492' }}</span>
+                        <div class="p-2.5 rounded-3 {{ $isExpired ? 'bg-danger-subtle border border-danger-subtle' : 'bg-primary-subtle border border-primary border-opacity-25' }} mb-2">
+                            <small class="{{ $isExpired ? 'text-danger' : 'text-primary' }} fw-bold d-block" style="font-size: 11px;">លេខកូដខ្លី (SHORT PASSCODE)</small>
+                            <span class="fs-4 fw-bolder font-monospace {{ $isExpired ? 'text-danger' : 'text-primary' }} tracking-widest">{{ $qr->short_code ?: '8492' }}</span>
+                        </div>
+
+                        <!-- Expiration Time Status Card -->
+                        <div class="p-2 rounded-3 {{ $isExpired ? 'bg-danger-subtle border border-danger-subtle text-danger' : 'bg-body-secondary text-secondary border' }} small text-start mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold"><i data-lucide="clock" style="width: 13px; height: 13px;" class="me-1"></i> ផុតកំណត់:</span>
+                                <span class="font-monospace fw-bold">{{ $formattedExpires }}</span>
+                            </div>
+                            @if($isExpired)
+                                <div class="small fw-bold text-danger mt-1">❌ សិស្សមិនអាច Scan ឬវាយលេខកូដនេះបានឡើយ (ផុតកំណត់ហើយ)</div>
+                            @elseif($remainingSeconds > 0)
+                                @php
+                                    $remM = ceil($remainingSeconds / 60);
+                                    $remH = floor($remM / 60);
+                                    $remML = $remM % 60;
+                                    $timeStr = $remH > 0 ? "{$remH}h {$remML}m" : "{$remM}m";
+                                @endphp
+                                <div class="small fw-semibold text-success mt-1">⏳ នៅសល់ពេល: <strong>{{ $timeStr }}</strong> (សិស្សអាចស្កេនបាន)</div>
+                            @endif
                         </div>
                         <small class="text-secondary font-monospace" style="font-size: 10px;">{{ $qr->code_value }}</small>
                     </div>
 
-                    <button class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold mt-3" onclick="activateQrCodeAJAX({{ $qr->id }}, '{{ addslashes($qr->title) }}')">
-                        <i data-lucide="cast" style="width: 14px; height: 14px;" class="me-1"></i> Project on Screen
-                    </button>
+                    <div class="pt-2 border-top mt-2 d-flex flex-column gap-1.5">
+                        <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                            @if(!$isExpired)
+                                <button class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1 fw-bold" onclick="activateQrCodeAJAX({{ $qr->id }}, '{{ addslashes($qr->title) }}')">
+                                    <i data-lucide="cast" style="width: 13px; height: 13px;" class="me-1"></i> Project
+                                </button>
+                                <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST" class="d-inline" onsubmit="return confirm('តើអ្នកពិតជាចង់បិទ QR និងលេខកូដនេះភ្លាមៗមែនទេ? (Expire Now)')">
+                                    @csrf
+                                    <input type="hidden" name="action" value="expire_now">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 fw-bold" title="ចុចដើម្បីបិទ QR នេះភ្លាមៗ (Expire Now)">
+                                        <i data-lucide="stop-circle" style="width: 13px; height: 13px;"></i> បិទភ្លាម
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST" class="d-inline flex-grow-1">
+                                    @csrf
+                                    <input type="hidden" name="action" value="reactivate">
+                                    <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill fw-bold shadow-xs">
+                                        <i data-lucide="play-circle" style="width: 13px; height: 13px;" class="me-1"></i> បើកឡើងវិញ (+1h)
+                                    </button>
+                                </form>
+                            @endif
+
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 fw-bold" data-bs-toggle="modal" data-bs-target="#editQrExpireModal_{{ $qr->id }}" title="កំណត់ឬបន្ថែមម៉ោង Expire">
+                                <i data-lucide="clock-4" style="width: 13px; height: 13px;"></i> ម៉ោង
+                            </button>
+
+                            <form action="{{ route('admin.qrCodes.delete', $qr->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this QR code?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" title="Delete">
+                                    <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit QR Expiration Modal -->
+            <div class="modal fade" id="editQrExpireModal_{{ $qr->id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content p-3 p-md-4 rounded-4 shadow-lg border-0">
+                        <div class="modal-header border-0 pb-2">
+                            <div>
+                                <h5 class="modal-title fw-bold fs-6">កំណត់ម៉ោងផុតកំណត់ (Expire Time)</h5>
+                                <small class="text-secondary">QR Code [{{ $qr->short_code }}] • {{ $qr->title }} ({{ $qr->class_code }})</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body py-3">
+                            <p class="small text-secondary mb-3">
+                                ម៉ោងផុតកំណត់បច្ចុប្បន្ន: <strong>{{ $formattedExpires }}</strong>
+                            </p>
+
+                            <!-- Quick Extend Buttons -->
+                            <label class="form-label small fw-bold mb-2">ពន្យារពេលរហ័ស (Quick Extend):</label>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="extend_minutes" value="15">
+                                        <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 rounded-3">+ 15 នាទី</button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="extend_minutes" value="30">
+                                        <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 rounded-3">+ 30 នាទី</button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="extend_minutes" value="60">
+                                        <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 rounded-3">+ 1 ម៉ោង</button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="extend_minutes" value="120">
+                                        <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 rounded-3">+ 2 ម៉ោង</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Custom Time Picker Form -->
+                            <form action="{{ route('admin.qrCodes.expire', $qr->id) }}" method="POST" class="pt-3 border-top">
+                                @csrf
+                                <label class="form-label small fw-bold mb-1">ឬជ្រើសរើសម៉ោងជាក់លាក់ (Custom Expiration Time):</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text bg-body-secondary"><i data-lucide="clock" style="width: 14px; height: 14px;"></i></span>
+                                    <input type="time" name="custom_time" class="form-control" required value="{{ date('H:i', strtotime('+30 minutes')) }}">
+                                    <button type="submit" class="btn btn-primary fw-bold px-3">រក្សាទុក</button>
+                                </div>
+                                <small class="text-secondary" style="font-size: 11px;">នៅពេលដល់ម៉ោងនេះ សិស្សនឹងមិនអាច Scan ឬវាយលេខកូដចូលរៀនបានទៀតទេ។</small>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         @endforeach
@@ -2198,12 +2332,13 @@
                             <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
                         </label>
                         <select name="expires_at" id="qr_expires_select" class="form-select mb-2" onchange="handleQrExpiresChange(this.value)" required>
-                            <option value="Today 11:59 PM" selected>🌙 Today 11:59 PM (ដាច់យប់នេះ)</option>
-                            <option value="Today 11:30 AM">🌅 Today 11:30 AM (ចប់វេនព្រឹក Session 1)</option>
-                            <option value="Today 05:00 PM">🌇 Today 05:00 PM (ចប់វេនរសៀល Session 2)</option>
-                            <option value="Within 1 Hour">⏱️ Within 1 Hour (ក្នុងរយៈពេល ១ ម៉ោង)</option>
-                            <option value="Within 2 Hours">⏱️ Within 2 Hours (ក្នុងរយៈពេល ២ ម៉ោង)</option>
-                            <option value="Within 4 Hours">⏱️ Within 4 Hours (ក្នុងរយៈពេល ៤ ម៉ោង)</option>
+                            <option value="15_mins">⏱️ ក្នុងរយៈពេល ១៥ នាទី (Within 15 Mins)</option>
+                            <option value="30_mins">⏱️ ក្នុងរយៈពេល ៣០ នាទី (Within 30 Mins)</option>
+                            <option value="1_hour">⏱️ ក្នុងរយៈពេល ១ ម៉ោង (Within 1 Hour)</option>
+                            <option value="2_hours">⏱️ ក្នុងរយៈពេល ២ ម៉ោង (Within 2 Hours)</option>
+                            <option value="Today 11:30 AM">🌅 ម៉ោង 11:30 AM (ចប់វេនព្រឹក Session 1)</option>
+                            <option value="Today 05:00 PM">🌇 ម៉ោង 05:00 PM (ចប់វេនរសៀល Session 2)</option>
+                            <option value="Today 11:59 PM" selected>🌙 ម៉ោង 11:59 PM (ដាច់យប់នេះ)</option>
                             <option value="custom">⚙️ ជ្រើសរើសម៉ោងជាក់លាក់ (Custom Time Picker)</option>
                         </select>
                         <div id="qr_custom_time_box" class="d-none mt-1">

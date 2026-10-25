@@ -90,6 +90,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // 11. QR Code Manage
     Route::post('/qr-codes', [AdminController::class, 'storeQrCode'])->name('qrCodes.store');
     Route::post('/qr-codes/{id}/activate', [AdminController::class, 'activateQrCode'])->name('qrCodes.activate');
+    Route::post('/qr-codes/{id}/expire', [AdminController::class, 'updateQrExpiration'])->name('qrCodes.expire');
+    Route::delete('/qr-codes/{id}', [AdminController::class, 'deleteQrCode'])->name('qrCodes.delete');
 
     // 12. Resource
     Route::post('/resources', [AdminController::class, 'storeResource'])->name('resources.store');
