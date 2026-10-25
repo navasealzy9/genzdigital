@@ -701,6 +701,16 @@ class CampusController extends Controller
         DB::table('campus_resources')->where('id', $id)->increment('download_count');
 
         $fileName = $resource->file_name;
+
+        // 1. If actual uploaded file exists on disk, serve the real file
+        if (!empty($resource->file_url) && file_exists(public_path($resource->file_url))) {
+            $mimeType = str_ends_with(strtolower($resource->file_url), '.pdf') ? 'application/pdf' : 'application/octet-stream';
+            return response()->download(public_path($resource->file_url), $fileName, [
+                'Content-Type' => $mimeType,
+            ]);
+        }
+
+        // 2. Fallback text response for default/mock seeded resources
         $content = "GENZ DIGITAL CAMPUS RESOURCE FILE\n" .
             "Course: {$resource->course}\n" .
             "Title: {$resource->title}\n" .

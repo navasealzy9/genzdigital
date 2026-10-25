@@ -453,11 +453,17 @@
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 justify-content-center">
-                            <a href="{{ route('admin.index', ['tab' => 'users']) }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
-                                <i data-lucide="shield-check" style="width: 16px; height: 16px;" class="me-1"></i> Go to Admin Portal to Assign Class
+                            <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" onclick="switchTab('resource')">
+                                <i data-lucide="folder-down" style="width: 16px; height: 16px;"></i>
+                                <span>View Learning Resources ({{ $resources->count() }} PDFs)</span>
+                            </button>
+                            <a href="{{ route('admin.index', ['tab' => 'users']) }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold d-inline-flex align-items-center gap-1.5">
+                                <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+                                <span>Go to Admin Portal to Assign Class</span>
                             </a>
-                            <button class="btn btn-light border rounded-pill px-4 fw-bold" onclick="location.reload()">
-                                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;" class="me-1"></i> Refresh Status
+                            <button type="button" class="btn btn-light border rounded-pill px-4 fw-bold d-inline-flex align-items-center gap-1.5" onclick="location.reload()">
+                                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                                <span>Refresh Status</span>
                             </button>
                         </div>
                     </div>
@@ -710,6 +716,17 @@
                         <span class="fw-bold" style="font-size: 13.5px;">Detailed Attendance Records</span>
                     </div>
                     <i data-lucide="chevron-right" class="text-secondary opacity-50" style="width: 18px; height: 18px;"></i>
+                </button>
+
+                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="switchTab('resource')">
+                    <div class="d-flex align-items-center gap-3">
+                        <i data-lucide="folder-down" class="text-primary" style="width: 20px; height: 20px;"></i>
+                        <div>
+                            <span class="fw-bold d-block" style="font-size: 13.5px;">Learning Resources & PDF Lessons</span>
+                            <small class="text-secondary" style="font-size: 11px;">បើកអានឯកសារ PDF មេរៀន និងទាញយក Download</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 9.5px;">{{ $resources->count() }} Files</span>
                 </button>
             </div>
         </div>
@@ -1124,15 +1141,15 @@
         <div class="col-12 col-md-6">
             <div class="position-relative">
                 <i data-lucide="search" class="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="width: 16px; height: 16px;"></i>
-                <input type="text" class="form-control rounded-pill ps-5 py-2" placeholder="Search file name or course code...">
+                <input type="text" id="resourceSearchInput" onkeyup="filterResourceList()" class="form-control rounded-pill ps-5 py-2" placeholder="Search file name or course code...">
             </div>
         </div>
     </div>
 
     <!-- Resources Grid -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="resourcesGridContainer">
         @forelse($resources as $res)
-            <div class="col">
+            <div class="col resource-card-item" data-search="{{ strtolower($res->title . ' ' . $res->file_name . ' ' . ($res->class_code ?: $res->course)) }}">
                 <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -1151,11 +1168,17 @@
                     </div>
                     
                     <div class="d-flex flex-column gap-2">
-                        <!-- View Online Button (Opens in New Page/Tab for Reading & Sharing) -->
+                        <!-- 1. Dedicated PDF Viewer Tab -->
                         <a href="{{ route('campus.resource.view', $res->id) }}" target="_blank" class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-1.5">
                             <i data-lucide="external-link" style="width: 15px; height: 15px;"></i>
                             <span>View PDF Online (បើកអានក្នុងផេកថ្មី)</span>
                         </a>
+
+                        <!-- 2. Quick Modal Viewer (Right on Page) -->
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold py-1.5 d-flex align-items-center justify-content-center gap-1.5" onclick="openPdfQuickModal('{{ asset($res->file_url ?: 'uploads/slides/slides_1792915639.pdf') }}', '{{ addslashes($res->title) }}', '{{ addslashes($res->file_name) }}', '{{ route('campus.resource.view', $res->id) }}', '{{ route('campus.resource.download', $res->id) }}')">
+                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                            <span>Quick View Modal (មើលលើផ្ទាំងនេះ)</span>
+                        </button>
 
                         <div class="d-flex gap-2">
                             <!-- Copy Link Share Button -->
@@ -2728,50 +2751,38 @@
 
 <!-- 3. PDF Online Reader Modal (Feature 12) -->
 <div class="modal fade" id="pdfViewerModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content p-3 p-md-4 rounded-4 shadow-lg border-0">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-lg-down">
+        <div class="modal-content p-3 p-md-4 rounded-4 shadow-lg border-0 bg-dark text-white">
             <div class="modal-header border-0 pb-2">
-                <div>
-                    <span class="badge bg-danger px-3 py-1 rounded-pill mb-1 fw-bold">PDF VIEWER ONLINE</span>
-                    <h5 class="modal-title fw-bold fs-5" id="pdf-viewer-title">Lesson Material</h5>
-                    <small class="text-secondary" id="pdf-viewer-subtitle">Reading Online • GenZ Campus PDF Reader</small>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger px-3 py-1 rounded-pill fw-bold">PDF VIEWER ONLINE</span>
+                    <div>
+                        <h5 class="modal-title fw-bold fs-5 text-white mb-0" id="pdf-viewer-title">Lesson Material</h5>
+                        <small class="text-white-50 font-monospace" id="pdf-viewer-subtitle">Reading Online • GenZ Campus PDF Reader</small>
+                    </div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="#" id="pdf-modal-newtab-btn" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                        <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                        <span class="d-none d-sm-inline">Full Screen Page</span>
+                    </a>
+                    <a href="#" id="pdf-modal-download-btn" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                        <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                        <span class="d-none d-sm-inline">Download PDF</span>
+                    </a>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
             </div>
 
-            <div class="modal-body p-0 my-3">
-                <!-- PDF Visual Reader Simulation Container -->
-                <div class="p-4 p-md-5 rounded-4 bg-dark text-white d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 480px; background: radial-gradient(circle at 50% 20%, #1e293b, #0f172a);">
-                    <div class="p-4 rounded-4 bg-white text-dark shadow-lg mb-4 text-start" style="width: 100%; max-width: 680px; min-height: 380px;">
-                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                            <span class="badge bg-primary" id="pdf-course-badge">DES302</span>
-                            <small class="text-secondary font-monospace" id="pdf-filename-badge">Lecture_04.pdf</small>
-                        </div>
-                        <h4 class="fw-bolder mb-2 text-primary" id="pdf-doc-title">Design Tokens & Component Hierarchy</h4>
-                        <p class="text-secondary small mb-3">
-                            Comprehensive study guide covering atomic design methodology, design token integration with Figma, and frontend component library maintenance.
-                        </p>
-                        <hr>
-                        <h6 class="fw-bold mb-2">Lesson Core Highlights:</h6>
-                        <ul class="small text-secondary ps-3 mb-3">
-                            <li>Understanding color tokens, semantic spacing, and optical typography curves.</li>
-                            <li>Building reusable component molecules (input groups, card heads, modal drawers).</li>
-                            <li>Ensuring 4.5:1 WCAG contrast standards for dark mode compatibility.</li>
-                            <li>Exporting W3C design tokens directly into production frontend code.</li>
-                        </ul>
-                        <div class="alert alert-info py-2 px-3 small rounded-3 mb-0">
-                            <i data-lucide="info" style="width: 14px; height: 14px;" class="me-1"></i>
-                            This PDF document is verified and authenticated by GenZ Digital Academic Portal.
-                        </div>
-                    </div>
-
-                    <span class="text-white-50 small mb-0">Showing Page 1 of 12 • GenZ Digital Campus OS PDF Reader Engine</span>
+            <div class="modal-body p-0 my-2">
+                <div class="w-100 rounded-3 overflow-hidden bg-black position-relative" style="height: 72vh;">
+                    <iframe id="pdf-modal-iframe" src="" class="w-100 h-100 border-0" allowfullscreen></iframe>
                 </div>
             </div>
 
             <div class="modal-footer border-0 pt-0 d-flex justify-content-between align-items-center">
-                <span class="text-secondary small">100% Zoom • Clean View</span>
-                <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close Reader</button>
+                <span class="text-white-50 small">GenZ Digital Campus PDF Viewer • Real-Time Reader</span>
+                <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -3657,15 +3668,45 @@
     // ==============================================================
     // 3. Online PDF Viewer Modal & Share Link (Feature 3 & 12)
     // ==============================================================
-    function openPdfViewerModal(title, fileName, course) {
-        document.getElementById('pdf-viewer-title').textContent = title;
-        document.getElementById('pdf-doc-title').textContent = title;
-        document.getElementById('pdf-course-badge').textContent = course;
-        document.getElementById('pdf-filename-badge').textContent = fileName;
+    function openPdfQuickModal(fileUrl, title, fileName, viewPageUrl, downloadUrl) {
+        const titleEl = document.getElementById('pdf-viewer-title');
+        const subtitleEl = document.getElementById('pdf-viewer-subtitle');
+        const iframeEl = document.getElementById('pdf-modal-iframe');
+        const newtabEl = document.getElementById('pdf-modal-newtab-btn');
+        const downloadEl = document.getElementById('pdf-modal-download-btn');
 
-        const modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
+        if (titleEl) titleEl.textContent = title;
+        if (subtitleEl) subtitleEl.textContent = fileName;
+        if (iframeEl) iframeEl.src = fileUrl + '#toolbar=1';
+        if (newtabEl) newtabEl.href = viewPageUrl;
+        if (downloadEl) downloadEl.href = downloadUrl;
+
+        const modalEl = document.getElementById('pdfViewerModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
         renderIcons();
+
+        // Clear iframe src on modal hide to stop memory/rendering leaks
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            if (iframeEl) iframeEl.src = '';
+        }, { once: true });
+    }
+
+    function openPdfViewerModal(title, fileName, course) {
+        openPdfQuickModal('/uploads/slides/slides_1792915639.pdf', title, fileName, '#', '#');
+    }
+
+    function filterResourceList() {
+        const query = (document.getElementById('resourceSearchInput')?.value || '').toLowerCase().trim();
+        const items = document.querySelectorAll('.resource-card-item');
+        items.forEach(item => {
+            const searchData = item.getAttribute('data-search') || '';
+            if (searchData.includes(query)) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+            }
+        });
     }
 
     function copyDirectResourceLink(url) {

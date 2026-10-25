@@ -1224,13 +1224,16 @@
                             <td class="small">{{ $res->file_size }}</td>
                             <td><span class="badge bg-success-subtle text-success fw-bold">{{ $res->download_count }} views</span></td>
                             <td class="text-end">
-                                <a href="{{ route('campus.resource.download', $res->id) }}" class="btn btn-sm btn-outline-primary" title="Download">
+                                <a href="{{ route('campus.resource.view', $res->id) }}" target="_blank" class="btn btn-sm btn-outline-info rounded-2 me-1" title="View PDF Online (បើកមើល)">
+                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                </a>
+                                <a href="{{ route('campus.resource.download', $res->id) }}" class="btn btn-sm btn-outline-primary rounded-2 me-1" title="Download Real PDF">
                                     <i data-lucide="download" style="width: 14px; height: 14px;"></i>
                                 </a>
                                 <form action="{{ route('admin.resources.delete', $res->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this resource?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <button class="btn btn-sm btn-outline-danger rounded-2" title="Delete">
                                         <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                     </button>
                                 </form>

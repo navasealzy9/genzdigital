@@ -1283,6 +1283,10 @@
                     <i data-lucide="calendar" style="width: 17px; height: 17px;"></i>
                     <span>Schedule</span>
                 </button>
+                <button class="desktop-nav-link" data-tab="resource" onclick="switchTab('resource')">
+                    <i data-lucide="folder-down" style="width: 17px; height: 17px;"></i>
+                    <span>Resources</span>
+                </button>
                 <button class="desktop-nav-link position-relative" data-tab="inbox" onclick="switchTab('inbox')">
                     <i data-lucide="message-square" style="width: 17px; height: 17px;"></i>
                     <span>Inbox</span>
@@ -1362,6 +1366,12 @@
             <button class="mobile-tab-btn" data-tab="schedule" onclick="switchTab('schedule')">
                 <i data-lucide="calendar" style="width: 20px; height: 20px;"></i>
                 <span>Schedule</span>
+                <div class="mobile-tab-dot"></div>
+            </button>
+
+            <button class="mobile-tab-btn" data-tab="resource" onclick="switchTab('resource')">
+                <i data-lucide="folder-down" style="width: 20px; height: 20px;"></i>
+                <span>Resources</span>
                 <div class="mobile-tab-dot"></div>
             </button>
 
