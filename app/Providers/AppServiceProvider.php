@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        date_default_timezone_set('Asia/Phnom_Penh');
         Schema::defaultStringLength(191);
     }
 }
