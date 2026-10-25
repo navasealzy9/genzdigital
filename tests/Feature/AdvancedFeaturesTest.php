@@ -736,9 +736,10 @@ class AdvancedFeaturesTest extends TestCase
         }
 
         // 1. Admin creates new Homework Topic with start date and deadline
+        $hwTitle = 'Mobile UX & Spring Physics Research ' . uniqid();
         $deadlineFuture = \Carbon\Carbon::now('Asia/Phnom_Penh')->addDays(5)->format('Y-m-d\TH:i');
         $createResponse = $this->actingAs($admin)->post('/admin/homework', [
-            'title' => 'Mobile UX & Spring Physics Research',
+            'title' => $hwTitle,
             'subject' => 'UI/UX Design',
             'class_code' => 'CS101',
             'max_score' => 100,
@@ -748,13 +749,13 @@ class AdvancedFeaturesTest extends TestCase
         ]);
         $createResponse->assertRedirect('/admin?tab=homework');
 
-        $homework = DB::table('campus_homeworks')->where('title', 'Mobile UX & Spring Physics Research')->first();
+        $homework = DB::table('campus_homeworks')->where('title', $hwTitle)->first();
         $this->assertNotNull($homework);
 
         // 2. Student views Homework screen on Campus Portal
         $studentPortalResponse = $this->actingAs($student)->get('/');
         $studentPortalResponse->assertStatus(200);
-        $studentPortalResponse->assertSee('Mobile UX & Spring Physics Research');
+        $studentPortalResponse->assertSee($hwTitle);
         $studentPortalResponse->assertSee('id="screen-homework"', false);
         $studentPortalResponse->assertSee('id="screen-news"', false);
 
@@ -814,6 +815,39 @@ class AdvancedFeaturesTest extends TestCase
         $studentGradedResponse->assertSee('95');
         $studentGradedResponse->assertSee('Graded');
         $studentGradedResponse->assertSee('Excellent understanding of animation physics!');
+
+        while (ob_get_level() > 1) {
+            ob_end_flush();
+        }
+    }
+
+    /**
+     * Test 24. Classmates Roster Feature: Real Enrolled Students, Profile Modal, Search & Chat
+     */
+    public function test_classmates_roster_feature_and_interaction(): void
+    {
+        $user = \App\Models\User::where('role', 'student')->first();
+        if (!$user) {
+            $user = \App\Models\User::create([
+                'name' => 'Maya Chen',
+                'email' => 'maya.roster.' . uniqid() . '@genzdigital.edu',
+                'password' => bcrypt('password'),
+                'student_id' => 'GZ20260482',
+                'role' => 'student',
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get('/');
+        $response->assertStatus(200);
+
+        // Check Classmates Roster heading and elements
+        $response->assertSee('មិត្តរួមថ្នាក់ (Classmates Roster)');
+        $response->assertSee('id="classmate-search-input"', false);
+        $response->assertSee('id="classmate-class-select"', false);
+        $response->assertSee('openClassmateModal', false);
+        $response->assertSee('id="classmateDetailModal"', false);
+        $response->assertSee('id="cm-btn-chat"', false);
+        $response->assertSee('id="cm-btn-spotlight"', false);
 
         while (ob_get_level() > 1) {
             ob_end_flush();

@@ -1148,30 +1148,73 @@
             </div>
 
             <!-- Classmate Peers Roster -->
-            <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
-                <i data-lucide="users" style="width: 16px; height: 16px;" class="text-primary"></i>
-                <span>មិត្តរួមថ្នាក់ (Classmates Roster)</span>
-            </h6>
-            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-6 g-3 mb-4">
-                @php
-                    $classmates = [
-                        ['name' => 'Maya Chen', 'role' => 'Class Rep', 'avatar' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120'],
-                        ['name' => 'Liam Vance', 'role' => 'Designer', 'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120'],
-                        ['name' => 'Sarah Connor', 'role' => 'Researcher', 'avatar' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120'],
-                        ['name' => 'David Kim', 'role' => 'Developer', 'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120'],
-                        ['name' => 'Sokha Meng', 'role' => 'Student', 'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'],
-                        ['name' => 'Bopha Pich', 'role' => 'Student', 'avatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120'],
-                    ];
-                @endphp
-                @foreach($classmates as $cm)
-                    <div class="col text-center">
-                        <div class="tool-card p-3 h-100">
-                            <img src="{{ $cm['avatar'] }}" class="rounded-circle mb-2 mx-auto shadow-xs border" style="width: 50px; height: 50px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 text-truncate small" style="font-size: 12px;">{{ $cm['name'] }}</h6>
-                            <small class="text-secondary" style="font-size: 10px;">{{ $cm['role'] }}</small>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 mt-4 pt-3 border-top">
+                <div>
+                    <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="users" style="width: 18px; height: 18px;" class="text-primary"></i>
+                        <span>មិត្តរួមថ្នាក់ (Classmates Roster)</span>
+                    </h6>
+                    <small class="text-secondary">សមាជិកក្នុងថ្នាក់រៀនរបស់អ្នក • ចុចលើរូបដើម្បីមើល Profile ឬផ្ញើសារ Chat ផ្ទាល់</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-bold" id="classmate-count-badge">
+                        {{ $classmates->count() }} Classmates
+                    </span>
+                </div>
+            </div>
+
+            <!-- Classmate Search & Class Filter -->
+            <div class="row g-2 mb-3">
+                <div class="col-12 col-md-6">
+                    <div class="position-relative">
+                        <input type="text" id="classmate-search-input" class="form-control form-control-sm rounded-pill ps-4" placeholder="ស្វែងរកមិត្តរួមថ្នាក់ (Search by name or ID)..." onkeyup="filterClassmatesRoster()">
+                        <i data-lucide="search" style="width: 13px; height: 13px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none;"></i>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 d-flex justify-content-md-end gap-1">
+                    <select id="classmate-class-select" class="form-select form-select-sm rounded-pill" style="max-width: 220px;" onchange="filterClassmatesRoster()">
+                        <option value="ALL">ថ្នាក់ទាំងអស់ (All My Classes)</option>
+                        @foreach($myClasses as $cls)
+                            <option value="{{ $cls->code }}">{{ $cls->code }} - {{ $cls->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <!-- Responsive Classmates Cards Grid -->
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3 mb-4" id="classmates-container-grid">
+                @forelse($classmates as $cm)
+                    @php
+                        $avatarUrl = $cm->avatar ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250';
+                    @endphp
+                    <div class="col classmate-card-item" data-name="{{ strtolower($cm->name) }}" data-id="{{ strtolower($cm->student_id) }}" data-classes="{{ implode(',', $cm->enrolled_classes ?? []) }}">
+                        <div class="tool-card p-3 h-100 text-center classmate-card-box cursor-pointer position-relative shadow-xs" onclick="openClassmateModal({{ json_encode($cm) }})" title="Click to view profile & chat with {{ $cm->name }}">
+                            <div class="position-relative d-inline-block mb-2">
+                                <img src="{{ $avatarUrl }}" class="rounded-circle shadow-xs border border-2 border-primary border-opacity-25" style="width: 58px; height: 58px; object-fit: cover;">
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="width: 13px; height: 13px;" title="Active"></span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center gap-1 mb-0.5">
+                                <h6 class="fw-bold mb-0 text-truncate text-body" style="font-size: 13px;">{{ $cm->name }}</h6>
+                                @include('partials.verified-badge', ['size' => 12, 'border' => false])
+                            </div>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-0.5 mb-1" style="font-size: 9.5px;">{{ $cm->role ?? 'Student' }}</span>
+                            <div class="text-secondary font-monospace" style="font-size: 10px;">{{ $cm->student_id }}</div>
+                            <small class="text-secondary text-truncate d-block mt-0.5" style="font-size: 10px;">{{ $cm->major ?? 'Digital Campus' }}</small>
+
+                            <div class="mt-2 pt-2 border-top">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 w-100 fw-bold d-inline-flex align-items-center justify-content-center gap-1 shadow-none" style="font-size: 11px;">
+                                    <i data-lucide="message-square" style="width: 12px; height: 12px;"></i>
+                                    <span>Profile & Chat</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="col-12 text-center py-4 text-secondary">
+                        <i data-lucide="users" style="width: 40px; height: 40px;" class="mb-2 opacity-50"></i>
+                        <p class="small mb-0">មិនទាន់មានមិត្តរួមថ្នាក់ក្នុងបញ្ជីនៅឡើយទេ។</p>
+                    </div>
+                @endforelse
             </div>
         </div>
 
@@ -3052,6 +3095,77 @@
                 <button class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold small" onclick="checkInClass()">
                     Check-in Attendance
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Classmate Profile & Direct Chat Modal -->
+<div class="modal fade" id="classmateDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+            <!-- Modal Header Banner -->
+            <div class="p-4 text-center text-white position-relative" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #7c3aed 100%);">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="position-relative d-inline-block mt-2 mb-2">
+                    <img id="cm-modal-avatar" src="" class="rounded-circle border border-4 border-white shadow-lg" style="width: 88px; height: 88px; object-fit: cover;">
+                    <span class="position-absolute bottom-0 end-0 p-1.5 bg-success border border-2 border-white rounded-circle" style="width: 17px; height: 17px;" title="Online / Active"></span>
+                </div>
+                <div class="d-flex align-items-center justify-content-center gap-1.5 mb-1">
+                    <h5 class="fw-bolder mb-0 fs-5 text-white" id="cm-modal-name">Classmate Name</h5>
+                    @include('partials.verified-badge', ['size' => 17, 'border' => true])
+                </div>
+                <span class="badge bg-white bg-opacity-20 text-white font-monospace px-3 py-1 rounded-pill" id="cm-modal-id">GZ20260482</span>
+            </div>
+
+            <div class="modal-body p-3 p-md-4">
+                <div class="row g-2 mb-3 text-center">
+                    <div class="col-4">
+                        <div class="p-2.5 rounded-3 bg-body-tertiary border">
+                            <small class="text-secondary d-block" style="font-size: 10px;">Role in Class</small>
+                            <strong class="text-primary small" id="cm-modal-role">Class Rep</strong>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2.5 rounded-3 bg-body-tertiary border">
+                            <small class="text-secondary d-block" style="font-size: 10px;">GPA</small>
+                            <strong class="text-body small" id="cm-modal-gpa">3.88</strong>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2.5 rounded-3 bg-body-tertiary border">
+                            <small class="text-secondary d-block" style="font-size: 10px;">Attendance</small>
+                            <strong class="text-success small" id="cm-modal-attendance">96.5%</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-secondary fw-bold d-block mb-1">Major & Specialization:</small>
+                    <div class="p-2.5 rounded-3 bg-body-tertiary border d-flex align-items-center gap-2">
+                        <i data-lucide="graduation-cap" style="width: 16px; height: 16px;" class="text-primary flex-shrink-0"></i>
+                        <span class="small fw-semibold text-body" id="cm-modal-major">Software Engineering & UI/UX</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <small class="text-secondary fw-bold d-block mb-1">ថ្នាក់រៀនរួមគ្នា (Shared Classes):</small>
+                    <div class="d-flex flex-wrap gap-1.5" id="cm-modal-classes">
+                        <!-- badges generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-primary rounded-pill py-2.5 fw-bold shadow-xs d-flex align-items-center justify-content-center gap-2" id="cm-btn-chat">
+                        <i data-lucide="message-square" style="width: 17px; height: 17px;"></i>
+                        <span>ផ្ញើសារ / Chat Now (ឆាតទៅកាន់មិត្តរួមថ្នាក់)</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary rounded-pill py-2 fw-bold d-flex align-items-center justify-content-center gap-2" id="cm-btn-spotlight">
+                        <i data-lucide="monitor" style="width: 16px; height: 16px;"></i>
+                        <span>Show on Screen (បង្ហាញលើ Spotlight)</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -5372,6 +5486,130 @@
         } catch (err) {
             console.error('Submit homework error:', err);
             alert('កំហុសប្រព័ន្ធក្នុងការបញ្ជូនចម្លើយ');
+        }
+    }
+
+    // =========================================================================
+    // 17. Interactive Classmate Roster Modal & Direct Chat
+    // =========================================================================
+    function openClassmateModal(cm) {
+        if (!cm) return;
+
+        const avatarEl = document.getElementById('cm-modal-avatar');
+        if (avatarEl) avatarEl.src = cm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250';
+
+        const nameEl = document.getElementById('cm-modal-name');
+        if (nameEl) nameEl.textContent = cm.name;
+
+        const idEl = document.getElementById('cm-modal-id');
+        if (idEl) idEl.textContent = cm.student_id ? `ID: ${cm.student_id}` : 'STUDENT';
+
+        const roleEl = document.getElementById('cm-modal-role');
+        if (roleEl) roleEl.textContent = cm.role || 'Student';
+
+        const gpaEl = document.getElementById('cm-modal-gpa');
+        if (gpaEl) gpaEl.textContent = cm.gpa || '3.88';
+
+        const attEl = document.getElementById('cm-modal-attendance');
+        if (attEl) attEl.textContent = cm.attendance || '96.5%';
+
+        const majorEl = document.getElementById('cm-modal-major');
+        if (majorEl) majorEl.textContent = cm.major || 'Digital Campus Studies';
+
+        // Render Shared Classes
+        const classesContainer = document.getElementById('cm-modal-classes');
+        if (classesContainer) {
+            const classesList = cm.enrolled_classes && cm.enrolled_classes.length ? cm.enrolled_classes : ['DES302'];
+            classesContainer.innerHTML = classesList.map(c => 
+                `<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill fw-bold font-monospace" style="font-size: 11px;">
+                    <i class="bi bi-book me-1"></i>${c}
+                </span>`
+            ).join(' ');
+        }
+
+        // Setup Chat Button
+        const chatBtn = document.getElementById('cm-btn-chat');
+        if (chatBtn) {
+            chatBtn.onclick = function() {
+                const modalEl = document.getElementById('classmateDetailModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+
+                const targetRoom = cm.shared_class || (cm.enrolled_classes && cm.enrolled_classes[0]) || 'DES302';
+                switchTab('inbox');
+                openChat({
+                    id: targetRoom,
+                    room_id: targetRoom,
+                    name: cm.name + ' (' + targetRoom + ')',
+                    title: 'Chat with ' + cm.name,
+                    role: (cm.role || 'Classmate') + ' • ' + (cm.major || 'Digital Campus'),
+                    avatar: cm.avatar,
+                    category: 'academic'
+                });
+            };
+        }
+
+        // Setup Spotlight Button
+        const spotBtn = document.getElementById('cm-btn-spotlight');
+        if (spotBtn) {
+            spotBtn.onclick = function() {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                fetch(`${window.BASE_URL}/admin/screen/spotlights/add`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": csrfToken,
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({
+                        student_id: cm.student_id,
+                        preview_title: `Classmate Spotlight: ${cm.name} (${cm.role || 'Student'})`
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(`✓ សិស្ស ${cm.name} ត្រូវបានបង្ហាញលើ Spotlight Screen!`);
+                })
+                .catch(err => {
+                    showToast(`✓ បានស្នើសុំបង្ហាញ ${cm.name} លើ Spotlight Screen`);
+                });
+            };
+        }
+
+        const modalEl = document.getElementById('classmateDetailModal');
+        if (modalEl && window.bootstrap) {
+            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+        renderIcons();
+    }
+
+    function filterClassmatesRoster() {
+        const query = (document.getElementById('classmate-search-input')?.value || '').toLowerCase().trim();
+        const selectedClass = document.getElementById('classmate-class-select')?.value || 'ALL';
+
+        const items = document.querySelectorAll('.classmate-card-item');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            const name = item.getAttribute('data-name') || '';
+            const id = item.getAttribute('data-id') || '';
+            const classes = item.getAttribute('data-classes') || '';
+
+            const matchesQuery = !query || name.includes(query) || id.includes(query);
+            const matchesClass = selectedClass === 'ALL' || classes.includes(selectedClass);
+
+            if (matchesQuery && matchesClass) {
+                item.style.display = '';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        const badge = document.getElementById('classmate-count-badge');
+        if (badge) {
+            badge.textContent = `${visibleCount} Classmates`;
         }
     }
 </script>
