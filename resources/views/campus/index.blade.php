@@ -362,47 +362,6 @@
                             </div>
                         @endforeach
                     </div>
-
-                    <!-- Campus Interactive Spotlight: Live Challenge & Slide Broadcast Cards -->
-                    <div class="row g-3">
-                        <!-- Spotlight Card 1: UI Challenge -->
-                        <div class="col-12 col-md-6">
-                            <div class="spotlight-card p-3 p-md-3.5 h-100" onclick="switchTab('challenge')" style="cursor: pointer;">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-warning-subtle text-warning-emphasis fw-bold d-inline-flex align-items-center gap-1" style="font-size: 10px;">
-                                        <i data-lucide="trophy" style="width: 12px; height: 12px;"></i>
-                                        <span>ACTIVE CHALLENGE</span>
-                                    </span>
-                                    <small class="text-secondary" style="font-size: 11px;">Ends in 2 days</small>
-                                </div>
-                                <h6 class="fw-bold mb-1 fs-6">UI/UX Campus Hackathon 2026</h6>
-                                <p class="text-secondary small mb-3 text-truncate">Design interactive educational campus dashboards. +500 Reward Points!</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-body-secondary text-secondary fw-semibold">Team Gamma • 4 / 5</span>
-                                    <span class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" style="font-size: 11px;">View Challenge &rarr;</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Spotlight Card 2: Classroom Screen / Slides -->
-                        <div class="col-12 col-md-6">
-                            <div class="spotlight-card p-3 p-md-3.5 h-100" onclick="switchTab('showscreen')" style="cursor: pointer;">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-danger-subtle text-danger fw-bold d-inline-flex align-items-center gap-1" style="font-size: 10px;">
-                                        <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" style="width: 6px; height: 6px;"></span>
-                                        <span>CLASSROOM BROADCAST</span>
-                                    </span>
-                                    <small class="text-secondary" style="font-size: 11px;">Studio A</small>
-                                </div>
-                                <h6 class="fw-bold mb-1 fs-6">Teaching Slides: Design Systems v2</h6>
-                                <p class="text-secondary small mb-3 text-truncate">Live lecture screen broadcast with Dr. Alex Vance.</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-body-secondary text-secondary fw-semibold">28 Students Viewing</span>
-                                    <span class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" style="font-size: 11px;">View Screen &rarr;</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 @else
                     <!-- Pending Class Assignment Notification Card (Only Profile Card is visible on left!) -->
                     <div class="tool-card p-4 p-md-5 text-center">
