@@ -797,9 +797,8 @@
 <div id="screen-classCart" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Class Cart & Course Enrollment</h4>
@@ -1027,9 +1026,8 @@
 <div id="screen-score" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Academic Score & Official Transcript</h4>
@@ -1112,9 +1110,8 @@
 <div id="screen-resource" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Course Resources & Files</h4>
@@ -1201,9 +1198,8 @@
 <div id="screen-scan" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Campus Check-in (ជម្រើស ២ ៖ ស្កេន QR ឬ វាយលេខកូដខ្លី)</h4>
@@ -1344,9 +1340,8 @@
 <div id="screen-exam" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Examinations & QCM Assessments</h4>
@@ -1413,9 +1408,8 @@
 <div id="screen-certificates" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Achievements & Certificates</h4>
@@ -1470,9 +1464,8 @@
 <div id="screen-showscreen" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Classroom Screen Spotlight</h4>
@@ -1540,9 +1533,8 @@
 <div id="screen-collab" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Campus Team Collaborations & QCM</h4>
@@ -1598,9 +1590,8 @@
 <div id="screen-challenge" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Campus Challenges & Live Leaderboard</h4>
@@ -1659,9 +1650,8 @@
 <div id="screen-attendance" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Attendance Records & Health</h4>
@@ -1782,9 +1772,8 @@
 <div id="screen-library" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Digital Campus Library</h4>
@@ -1837,9 +1826,8 @@
 <div id="screen-news" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Campus News & Announcements</h4>
@@ -1890,9 +1878,8 @@
 <div id="screen-qrpass" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button class="btn btn-light rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-xs border text-body" onclick="switchTab('home')">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>ត្រឡប់ទៅ Home</span>
+            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Digital Student ID Pass</h4>
