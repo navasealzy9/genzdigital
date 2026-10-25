@@ -995,47 +995,6 @@
             color: #ffffff;
         }
 
-        /* 1-Click Fast Demo Cards */
-        .demo-chip-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 0.65rem 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            width: 100%;
-        }
-        .demo-chip-card:hover {
-            background: #ffffff;
-            border-color: #3b82f6;
-            transform: translateY(-1.5px);
-            box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.12);
-        }
-        [data-bs-theme="dark"] .demo-chip-card {
-            background: #101726;
-            border-color: #1e293b;
-        }
-        [data-bs-theme="dark"] .demo-chip-card:hover {
-            background: #162035;
-            border-color: #60a5fa;
-        }
-        .demo-chip-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 12px;
-            color: #ffffff;
-            flex-shrink: 0;
-        }
-
         /* ---------------- Tablet Responsive Adjustments (576px - 991.98px) ---------------- */
         .tablet-brand-banner {
             display: none;
@@ -1209,121 +1168,6 @@
             flex-shrink: 0;
         }
 
-        /* Splash Screen */
-        .mobile-splash-screen {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(150deg, #0b0f19 0%, #1e1b4b 55%, #020617 100%);
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1060;
-            padding: 2rem;
-            cursor: pointer;
-            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .mobile-splash-screen.splash-exit {
-            opacity: 0;
-            transform: scale(1.08);
-            pointer-events: none;
-        }
-
-        .splash-logo-wrapper {
-            position: relative;
-            width: 115px;
-            height: 115px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .splash-glow-ring {
-            position: absolute;
-            inset: -12px;
-            border-radius: 36px;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.7), rgba(217, 70, 239, 0.7));
-            filter: blur(20px);
-            animation: splashPulse 2.5s infinite ease-in-out;
-        }
-
-        @keyframes splashPulse {
-            0%, 100% { transform: scale(0.92); opacity: 0.6; }
-            50% { transform: scale(1.08); opacity: 0.95; }
-        }
-
-        .splash-app-logo {
-            position: relative;
-            width: 95px;
-            height: 95px;
-            border-radius: 26px;
-            object-fit: contain;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            background: #ffffff;
-            padding: 8px;
-            z-index: 2;
-            animation: logoFloat 3s infinite ease-in-out;
-        }
-
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .splash-progress-track {
-            width: 150px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 1.25rem auto 0;
-        }
-
-        .splash-progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899);
-            border-radius: 10px;
-            animation: progressFill 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-        }
-
-        @keyframes progressFill {
-            0% { width: 0%; }
-            40% { width: 50%; }
-            80% { width: 85%; }
-            100% { width: 100%; }
-        }
-
-        /* Login Screen Inside Mobile App */
-        .mobile-login-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 0.85rem 1.4rem 1.5rem;
-            opacity: 0;
-            transform: translateY(18px);
-            transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .mobile-login-screen.login-active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .mobile-login-screen::-webkit-scrollbar {
-            width: 4px;
-        }
-        .mobile-login-screen::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.3);
-            border-radius: 4px;
-        }
-
         .mobile-brand-icon-box {
             width: 64px;
             height: 64px;
@@ -1489,48 +1333,6 @@
         setInterval(updateMobileClock, 1000);
         updateMobileClock();
 
-        // Flash / Splash Screen Controller
-        function skipSplash() {
-            const splash = document.getElementById('app-splash-screen');
-            const login = document.getElementById('app-login-screen');
-            if (!splash || !login) return;
-            splash.classList.add('splash-exit');
-            login.classList.add('login-active');
-            setTimeout(() => {
-                splash.style.display = 'none';
-            }, 550);
-        }
-
-        function replaySplash() {
-            const splash = document.getElementById('app-splash-screen');
-            const login = document.getElementById('app-login-screen');
-            if (!splash || !login) return;
-            splash.style.display = 'flex';
-            splash.classList.remove('splash-exit');
-            login.classList.remove('login-active');
-            
-            const progressFill = splash.querySelector('.splash-progress-fill');
-            if (progressFill) {
-                progressFill.style.animation = 'none';
-                void progressFill.offsetWidth;
-                progressFill.style.animation = 'progressFill 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards';
-            }
-
-            setTimeout(() => {
-                skipSplash();
-            }, 1850);
-        }
-
-        // Auto transition splash screen on initial page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const splash = document.getElementById('app-splash-screen');
-            if (splash) {
-                setTimeout(() => {
-                    skipSplash();
-                }, 1850);
-            }
-        });
-
         // Mobile Login Helpers
         function togglePasswordVisibility() {
             const passInput = document.getElementById('guest-login-password');
@@ -1544,17 +1346,6 @@
                 passIcon.setAttribute('data-lucide', 'eye');
             }
             renderIcons();
-        }
-
-        function quickLogin(email, password) {
-            const emailField = document.getElementById('guest-login-email');
-            const passField = document.getElementById('guest-login-password');
-            const form = document.getElementById('guest-login-form');
-            if (emailField && passField && form) {
-                emailField.value = email;
-                passField.value = password;
-                form.submit();
-            }
         }
 
         // Tab & Page Switching (Synchronized with Desktop Header, Mobile Bottom Bar & URL Hash)

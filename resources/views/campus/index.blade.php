@@ -179,7 +179,7 @@
                                 <span class="clean-input-icon">
                                     <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
                                 </span>
-                                <input type="email" name="email" id="guest-login-email" placeholder="user@genzdigital.edu" value="{{ old('email', 'maya.chen@genzdigital.edu') }}" required autofocus>
+                                <input type="email" name="email" id="guest-login-email" placeholder="name@genzdigital.edu" value="{{ old('email') }}" required autofocus>
                             </div>
                         </div>
 
@@ -187,26 +187,24 @@
                         <div class="clean-field-group">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="clean-field-label mb-0" for="guest-login-password">PASSWORD</label>
-                                <span class="text-secondary" style="font-size: 11px;">Default: password</span>
                             </div>
                             <div class="clean-input-box">
                                 <span class="clean-input-icon">
                                     <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
                                 </span>
-                                <input type="password" name="password" id="guest-login-password" placeholder="••••••••" value="password" required>
+                                <input type="password" name="password" id="guest-login-password" placeholder="••••••••" value="" required>
                                 <button type="button" class="btn btn-link p-0 text-secondary clean-input-icon" onclick="togglePasswordVisibility()" title="Show/Hide Password">
                                     <i id="pass-toggle-icon" data-lucide="eye" style="width: 16px; height: 16px;"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Remember me & Status -->
+                        <!-- Remember me -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" name="remember" id="rememberMeGuest" checked>
                                 <label class="form-check-label small text-secondary" for="rememberMeGuest" style="font-size: 12px;">Remember me</label>
                             </div>
-                            <span class="badge bg-primary-subtle text-primary fw-semibold" style="font-size: 10px;">Auto-Detect Role</span>
                         </div>
 
                         <!-- Submit Button -->
@@ -216,48 +214,11 @@
                         </button>
                     </form>
 
-                    <!-- 1-Click Fast Demo Accounts -->
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <hr class="flex-grow-1 my-0 opacity-25">
-                            <span class="text-uppercase fw-bold text-secondary" style="font-size: 10px; letter-spacing: 0.08em;">
-                                ⚡ 1-Click Fast Demo
-                            </span>
-                            <hr class="flex-grow-1 my-0 opacity-25">
-                        </div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div class="demo-chip-card" onclick="quickLogin('maya.chen@genzdigital.edu', 'password')" title="Click to sign in as Student">
-                                    <div class="demo-chip-avatar bg-primary">M</div>
-                                    <div class="lh-sm text-truncate">
-                                        <span class="fw-bold d-block text-truncate text-body" style="font-size: 12px;">Maya Chen</span>
-                                        <small class="text-secondary" style="font-size: 10.5px;">Student Pass</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="demo-chip-card" onclick="quickLogin('admin@genzdigital.edu', 'password')" title="Click to sign in as Admin">
-                                    <div class="demo-chip-avatar bg-danger">A</div>
-                                    <div class="lh-sm text-truncate">
-                                        <span class="fw-bold d-block text-truncate text-body" style="font-size: 12px;">Faculty Lead</span>
-                                        <small class="text-secondary" style="font-size: 10.5px;">Admin Portal</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Footer Navigation -->
                     <div class="text-center pt-2 border-top">
-                        <div class="d-flex justify-content-center align-items-center gap-3">
-                            <a href="{{ route('admin.index') }}" class="small text-secondary text-decoration-none" style="font-size: 11.5px;">
-                                <i data-lucide="shield" style="width: 13px; height: 13px; vertical-align: -1.5px;"></i> Admin Portal
-                            </a>
-                            <span class="text-secondary opacity-25">•</span>
-                            <a href="{{ route('register') }}" class="small text-primary text-decoration-none fw-semibold" style="font-size: 11.5px;">
-                                Register New Account
-                            </a>
-                        </div>
+                        <a href="{{ route('register') }}" class="small text-primary text-decoration-none fw-semibold" style="font-size: 12px;">
+                            Don't have an account? Register New Account
+                        </a>
                     </div>
 
                 </div>

@@ -256,48 +256,6 @@
             transform: translateY(0);
         }
 
-        /* 1-Click Fast Demo Cards */
-        .demo-chip-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 0.65rem 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            width: 100%;
-            touch-action: manipulation;
-        }
-        .demo-chip-card:hover {
-            background: #ffffff;
-            border-color: #3b82f6;
-            transform: translateY(-1.5px);
-            box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.12);
-        }
-        [data-bs-theme="dark"] .demo-chip-card {
-            background: #101726;
-            border-color: #1e293b;
-        }
-        [data-bs-theme="dark"] .demo-chip-card:hover {
-            background: #162035;
-            border-color: #60a5fa;
-        }
-        .demo-chip-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 12px;
-            color: #ffffff;
-            flex-shrink: 0;
-        }
-
         /* ---------------- Tablet Responsive Adjustments (576px - 991.98px) ---------------- */
         .tablet-brand-banner {
             display: none;
@@ -357,9 +315,6 @@
             .btn-submit-campus {
                 height: 48px;
                 font-size: 15px;
-            }
-            .demo-chip-card {
-                padding: 0.6rem 0.65rem;
             }
         }
     </style>
@@ -536,7 +491,7 @@
                             <span class="clean-input-icon">
                                 <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
                             </span>
-                            <input type="email" name="email" id="input-email" placeholder="user@genzdigital.edu" value="{{ old('email', 'maya.chen@genzdigital.edu') }}" required autofocus>
+                            <input type="email" name="email" id="input-email" placeholder="name@genzdigital.edu" value="{{ old('email') }}" required autofocus>
                         </div>
                     </div>
 
@@ -544,26 +499,24 @@
                     <div class="clean-field-group">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="clean-field-label mb-0" for="input-password">PASSWORD</label>
-                            <span class="text-secondary" style="font-size: 11px;">Default: password</span>
                         </div>
                         <div class="clean-input-box">
                             <span class="clean-input-icon">
                                 <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
                             </span>
-                            <input type="password" name="password" id="input-password" placeholder="••••••••" value="password" required>
+                            <input type="password" name="password" id="input-password" placeholder="••••••••" value="" required>
                             <button type="button" class="btn btn-link p-0 text-secondary clean-input-icon" onclick="toggleLoginPassword()" title="Show/Hide Password">
                                 <i id="login-pass-icon" data-lucide="eye" style="width: 16px; height: 16px;"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Remember me & Status -->
+                    <!-- Remember me -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input" type="checkbox" name="remember" id="rememberMe" checked>
                             <label class="form-check-label small text-secondary" for="rememberMe" style="font-size: 12px;">Remember me</label>
                         </div>
-                        <span class="badge bg-primary-subtle text-primary fw-semibold" style="font-size: 10px;">Auto-Detect Role</span>
                     </div>
 
                     <!-- Submit Button -->
@@ -573,48 +526,11 @@
                     </button>
                 </form>
 
-                <!-- 1-Click Fast Demo Accounts -->
-                <div class="mb-3">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <hr class="flex-grow-1 my-0 opacity-25">
-                        <span class="text-uppercase fw-bold text-secondary" style="font-size: 10px; letter-spacing: 0.08em;">
-                            ⚡ 1-Click Fast Demo
-                        </span>
-                        <hr class="flex-grow-1 my-0 opacity-25">
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="demo-chip-card" onclick="fillCredentials('maya.chen@genzdigital.edu', 'password')" title="Click to sign in as Student">
-                                <div class="demo-chip-avatar bg-primary">M</div>
-                                <div class="lh-sm text-truncate">
-                                    <span class="fw-bold d-block text-truncate text-body" style="font-size: 11.5px;">Maya Chen</span>
-                                    <small class="text-secondary" style="font-size: 10px;">Student Pass</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="demo-chip-card" onclick="fillCredentials('admin@genzdigital.edu', 'password')" title="Click to sign in as Admin">
-                                <div class="demo-chip-avatar bg-danger">A</div>
-                                <div class="lh-sm text-truncate">
-                                    <span class="fw-bold d-block text-truncate text-body" style="font-size: 11.5px;">Faculty Lead</span>
-                                    <small class="text-secondary" style="font-size: 10px;">Admin Portal</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Footer Navigation -->
                 <div class="text-center pt-2 border-top">
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-                        <a href="{{ route('admin.index') }}" class="small text-secondary text-decoration-none" style="font-size: 11.5px;">
-                            <i data-lucide="shield" style="width: 13px; height: 13px; vertical-align: -1.5px;"></i> Admin Portal
-                        </a>
-                        <span class="text-secondary opacity-25">•</span>
-                        <a href="{{ route('register') }}" class="small text-primary text-decoration-none fw-semibold" style="font-size: 11.5px;">
-                            Register New Account
-                        </a>
-                    </div>
+                    <a href="{{ route('register') }}" class="small text-primary text-decoration-none fw-semibold" style="font-size: 12px;">
+                        Don't have an account? Register New Account
+                    </a>
                 </div>
 
             </div>
@@ -670,12 +586,6 @@
                 passIcon.setAttribute('data-lucide', 'eye');
             }
             if (window.lucide) window.lucide.createIcons();
-        }
-
-        function fillCredentials(email, password) {
-            document.getElementById('input-email').value = email;
-            document.getElementById('input-password').value = password;
-            document.querySelector('form').submit();
         }
     </script>
 </body>
