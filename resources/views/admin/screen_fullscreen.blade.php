@@ -23,12 +23,16 @@
         :root {
             --app-font: 'Google Sans', 'Kantumruy Pro', 'Noto Sans Khmer', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --spotlight-neon: #3b82f6;
-            --spotlight-glow: rgba(59, 130, 246, 0.4);
+            --spotlight-glow: rgba(59, 130, 246, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             font-family: var(--app-font);
-            background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%);
+            background: radial-gradient(circle at 50% 25%, #0f172a 0%, #030712 100%);
             color: #f8fafc;
             min-height: 100vh;
             overflow-x: hidden;
@@ -39,72 +43,11 @@
 
         /* Top Bar */
         .projector-header {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.88);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding: 1rem 2rem;
-        }
-
-        /* 2x2 Grid Layout */
-        .spotlight-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            padding: 1.5rem 2rem;
-            flex-grow: 1;
-        }
-
-        @media (max-width: 768px) {
-            .spotlight-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .user-card {
-            background: rgba(30, 41, 59, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.08);
-            border-radius: 28px;
-            padding: 1.75rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: fadeInCard 0.5s ease-out;
-        }
-
-        .user-card.active-spotlight {
-            border-color: #3b82f6;
-            box-shadow: 0 0 35px var(--spotlight-glow);
-        }
-
-        .user-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-        }
-
-        .avatar-frame {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid #3b82f6;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-            overflow: hidden;
-        }
-
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            z-index: 10;
         }
 
         .live-dot {
@@ -119,49 +62,247 @@
 
         @keyframes pulseDot {
             0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.2); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.8; }
         }
 
-        @keyframes fadeInCard {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Sound Waves Indicator */
-        .sound-wave {
+        /* Spotlight Container & Grid */
+        .spotlight-container-wrapper {
+            flex-grow: 1;
             display: flex;
             align-items: center;
-            gap: 3px;
-            height: 18px;
+            justify-content: center;
+            padding: clamp(1rem, 2.5vw, 2.5rem);
+            min-height: calc(100vh - 160px);
         }
 
-        .sound-bar {
-            width: 3px;
-            background: #10b981;
-            border-radius: 3px;
-            animation: soundAnim 1s ease-in-out infinite alternate;
+        .spotlight-grid {
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            gap: clamp(1.5rem, 2.5vw, 3rem);
+            align-items: stretch;
+            justify-content: center;
         }
 
-        .sound-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
-        .sound-bar:nth-child(2) { height: 16px; animation-delay: 0.3s; }
-        .sound-bar:nth-child(3) { height: 10px; animation-delay: 0.2s; }
-        .sound-bar:nth-child(4) { height: 18px; animation-delay: 0.4s; }
-        .sound-bar:nth-child(5) { height: 8px; animation-delay: 0.15s; }
+        .spotlight-grid.grid-1 {
+            grid-template-columns: 1fr;
+            max-width: 900px;
+        }
 
-        @keyframes soundAnim {
-            0% { transform: scaleY(0.4); }
-            100% { transform: scaleY(1.3); }
+        .spotlight-grid.grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 1480px;
+        }
+
+        .spotlight-grid.grid-3,
+        .spotlight-grid.grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 1560px;
+        }
+
+        @media (max-width: 900px) {
+            .spotlight-grid.grid-2,
+            .spotlight-grid.grid-3,
+            .spotlight-grid.grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hero Spotlight Card (Clean, Focused, Huge Avatar & Name) */
+        .user-spotlight-hero {
+            background: radial-gradient(circle at 50% 15%, rgba(59, 130, 246, 0.14) 0%, rgba(15, 23, 42, 0.85) 100%);
+            border: 2px solid rgba(59, 130, 246, 0.38);
+            border-radius: clamp(24px, 3vw, 38px);
+            padding: clamp(2.2rem, 4vw, 4.5rem) clamp(1.5rem, 3vw, 3.5rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 45px rgba(59, 130, 246, 0.25);
+            animation: fadeInHero 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user-spotlight-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+        }
+
+        .user-spotlight-hero:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.7);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.75), 0 0 55px rgba(59, 130, 246, 0.4);
+        }
+
+        @keyframes fadeInHero {
+            from { opacity: 0; transform: scale(0.96) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Avatar Large with Halo Glow */
+        .spotlight-avatar-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: clamp(1.25rem, 2vw, 2.25rem);
+        }
+
+        .spotlight-avatar-halo {
+            position: absolute;
+            inset: -16px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.55) 0%, rgba(139, 92, 246, 0.3) 50%, transparent 72%);
+            filter: blur(18px);
+            animation: pulseHalo 3.5s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes pulseHalo {
+            0% { transform: scale(0.95); opacity: 0.55; }
+            100% { transform: scale(1.1); opacity: 0.95; }
+        }
+
+        .spotlight-avatar-img {
+            position: relative;
+            z-index: 1;
+            border-radius: 50%;
+            border: 5px solid #3b82f6;
+            box-shadow: 0 0 45px rgba(59, 130, 246, 0.55), 0 14px 32px rgba(0, 0, 0, 0.7);
+            object-fit: cover;
+            background-color: #1e293b;
+            transition: transform 0.3s ease;
+        }
+
+        .grid-1 .spotlight-avatar-img {
+            width: clamp(210px, 24vw, 320px);
+            height: clamp(210px, 24vw, 320px);
+            border-width: 6px;
+        }
+
+        .grid-2 .spotlight-avatar-img {
+            width: clamp(165px, 17vw, 240px);
+            height: clamp(165px, 17vw, 240px);
+            border-width: 5px;
+        }
+
+        .grid-3 .spotlight-avatar-img,
+        .grid-4 .spotlight-avatar-img {
+            width: clamp(125px, 12vw, 175px);
+            height: clamp(125px, 12vw, 175px);
+            border-width: 4px;
+        }
+
+        /* Big Student Name */
+        .spotlight-name-row {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.5rem, 1vw, 1rem);
+            margin-bottom: clamp(0.75rem, 1.2vw, 1.4rem);
+            flex-wrap: wrap;
+        }
+
+        .spotlight-student-name {
+            margin: 0;
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.75);
+            line-height: 1.2;
+        }
+
+        .grid-1 .spotlight-student-name {
+            font-size: clamp(2.4rem, 4.4vw, 4.2rem);
+        }
+
+        .grid-2 .spotlight-student-name {
+            font-size: clamp(2rem, 3.2vw, 3.2rem);
+        }
+
+        .grid-3 .spotlight-student-name,
+        .grid-4 .spotlight-student-name {
+            font-size: clamp(1.5rem, 2.2vw, 2.3rem);
+        }
+
+        /* Verified Icon */
+        .verified-icon {
+            display: inline-block;
+            filter: drop-shadow(0 2px 8px rgba(24, 119, 242, 0.55));
+        }
+
+        .grid-1 .verified-icon {
+            width: clamp(34px, 4vw, 48px);
+            height: clamp(34px, 4vw, 48px);
+        }
+
+        .grid-2 .verified-icon {
+            width: clamp(28px, 3vw, 38px);
+            height: clamp(28px, 3vw, 38px);
+        }
+
+        .grid-3 .verified-icon,
+        .grid-4 .verified-icon {
+            width: clamp(22px, 2.2vw, 30px);
+            height: clamp(22px, 2.2vw, 30px);
+        }
+
+        /* Clean Metadata Pill (Student ID & Major) */
+        .spotlight-student-meta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.85rem;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 9999px;
+            padding: clamp(0.45rem, 0.8vw, 0.75rem) clamp(1.2rem, 1.8vw, 2.2rem);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .grid-1 .spotlight-student-meta {
+            font-size: clamp(1.1rem, 1.4vw, 1.4rem);
+        }
+
+        .grid-2 .spotlight-student-meta {
+            font-size: clamp(0.95rem, 1.1vw, 1.2rem);
+        }
+
+        .grid-3 .spotlight-student-meta,
+        .grid-4 .spotlight-student-meta {
+            font-size: clamp(0.85rem, 0.95vw, 1.05rem);
+        }
+
+        .meta-item {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .meta-dot {
+            color: rgba(255, 255, 255, 0.35);
         }
 
         /* Bottom Controls */
         .projector-footer {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.92);
             border-top: 1px solid rgba(255, 255, 255, 0.08);
             padding: 0.85rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 10;
         }
 
         .page-badge {
@@ -170,7 +311,7 @@
             border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 9999px;
             padding: 0.35rem 1rem;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
         }
     </style>
@@ -186,7 +327,7 @@
                     <span>LIVE CLASSROOM SPOTLIGHT</span>
                     <span class="badge bg-primary px-3 py-1 rounded-pill" style="font-size: 11px;">4-USER MULTI-SCREEN</span>
                 </h4>
-                <small class="text-white-50">Auto-cycling 4 students at a time • Interactive Projector Hub</small>
+                <small class="text-white-50">អេក្រង់ចាក់បញ្ចាំងសិស្សធំទូលាយ • Interactive Classroom Projector Hub</small>
             </div>
         </div>
 
@@ -203,16 +344,18 @@
         </div>
     </header>
 
-    <!-- Main 4-User 2x2 Grid -->
-    <main class="spotlight-grid" id="spotlight-container">
-        <!-- Rendered dynamically via JavaScript from /admin/screen/spotlights/data -->
-    </main>
+    <!-- Main Spotlight Container -->
+    <div class="spotlight-container-wrapper">
+        <main class="spotlight-grid" id="spotlight-container">
+            <!-- Rendered dynamically via JavaScript from /admin/screen/spotlights/data -->
+        </main>
+    </div>
 
     <!-- Projector Footer -->
     <footer class="projector-footer">
         <div class="d-flex align-items-center gap-2">
-            <span class="page-badge" id="pagination-badge">Showing Users 1-4 of 4</span>
-            <small class="text-white-50">When more students join or are clicked, system rotates 4 at a time automatically.</small>
+            <span class="page-badge" id="pagination-badge">Showing Users</span>
+            <small class="text-white-50">បង្ហាញរូបថត និងឈ្មោះសិស្សធំទូលាយសម្រាប់អេក្រង់ Projector ឬ Fullscreen TV</small>
         </div>
 
         <div class="d-flex align-items-center gap-2">
@@ -238,16 +381,24 @@
         function renderBatch() {
             const container = document.getElementById('spotlight-container');
             const pageBadge = document.getElementById('pagination-badge');
+            const countdownEl = document.getElementById('cycle-countdown');
 
             if (!allSpotlights || allSpotlights.length === 0) {
+                container.className = 'spotlight-grid grid-1';
                 container.innerHTML = `
-                    <div class="col-12 text-center py-5" style="grid-column: 1 / -1;">
-                        <i data-lucide="monitor" class="text-primary mb-3" style="width: 64px; height: 64px;"></i>
-                        <h3 class="fw-bold">No Students Currently on Spotlight</h3>
-                        <p class="text-white-50">Click any student in Admin "Manage Users" or "Show on Screen" to add them here.</p>
+                    <div class="user-spotlight-hero text-center py-5">
+                        <div class="spotlight-avatar-wrapper mb-4">
+                            <div class="spotlight-avatar-halo"></div>
+                            <div class="d-flex align-items-center justify-content-center rounded-circle bg-dark border border-primary border-opacity-50" style="width: 140px; height: 140px; box-shadow: 0 0 35px rgba(59, 130, 246, 0.4);">
+                                <i data-lucide="monitor" class="text-primary" style="width: 60px; height: 60px;"></i>
+                            </div>
+                        </div>
+                        <h2 class="spotlight-student-name mb-2">មិនទាន់មានសិស្សនៅលើ Spotlight ទេ</h2>
+                        <p class="text-white-50 fs-5 mb-0">សូមចុចប៊ូតុង "Spotlight" លើឈ្មោះសិស្សក្នុង Admin ដើម្បីបង្ហាញរូបភាព និងឈ្មោះនៅលើអេក្រង់នេះ</p>
                     </div>
                 `;
                 pageBadge.textContent = '0 Students Spotlighted';
+                if (countdownEl) countdownEl.style.display = 'none';
                 if (window.lucide) window.lucide.createIcons();
                 return;
             }
@@ -261,74 +412,47 @@
             const endIdx = Math.min(currentIndex + BATCH_SIZE, total);
             pageBadge.textContent = `Showing Users ${currentIndex + 1}-${endIdx} of ${total}`;
 
+            // Hide countdown if only 1 batch
+            if (countdownEl) {
+                countdownEl.style.display = total > BATCH_SIZE ? 'inline-block' : 'none';
+            }
+
+            // Set grid class based on batch size (1, 2, 3, or 4)
+            const count = Math.min(currentBatch.length, 4);
+            container.className = `spotlight-grid grid-${count}`;
+
+            const verifiedBadgeSvg = `
+                <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 align-middle" title="Verified Student" style="vertical-align: middle;">
+                    <svg viewBox="0 0 16 16" class="verified-icon" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="#1877F2" stroke="#ffffff" stroke-width="0.75" stroke-linejoin="round" d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01z"/>
+                        <path fill="#ffffff" d="M10.354 6.854a.5.5 0 0 0-.708-.708L7 8.793 5.354 7.146a.5.5 0 1 0-.708.708l2 2a.5.5 0 0 0 .708 0z"/>
+                    </svg>
+                </span>
+            `;
+
             let html = '';
-            currentBatch.forEach((st, idx) => {
+            currentBatch.forEach((st) => {
+                const avatarUrl = st.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400';
                 html += `
-                    <div class="user-card active-spotlight">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="avatar-frame">
-                                    <img src="${st.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}" alt="${st.student_name}" class="avatar-img">
-                                </div>
-                                <div>
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <h3 class="fw-bolder mb-0 text-white">${st.student_name}</h3>
-                                        <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 10px;">SLOT #${currentIndex + idx + 1}</span>
-                                    </div>
-                                    <span class="text-white-50 small font-monospace">${st.student_id}</span>
-                                    <span class="badge bg-secondary-subtle text-secondary small ms-1">${st.major || 'Digital Media'}</span>
-                                </div>
-                            </div>
-
-                            <div class="d-flex flex-column align-items-end gap-1">
-                                <span class="badge bg-success-subtle text-success fw-bold px-2.5 py-1 rounded-pill d-flex align-items-center gap-1">
-                                    <span class="live-dot" style="width: 8px; height: 8px;"></span> Live
-                                </span>
-                                <div class="sound-wave mt-1">
-                                    <div class="sound-bar"></div>
-                                    <div class="sound-bar"></div>
-                                    <div class="sound-bar"></div>
-                                    <div class="sound-bar"></div>
-                                    <div class="sound-bar"></div>
-                                </div>
-                            </div>
+                    <div class="user-spotlight-hero">
+                        <div class="spotlight-avatar-wrapper">
+                            <div class="spotlight-avatar-halo"></div>
+                            <img src="${avatarUrl}" alt="${st.student_name}" class="spotlight-avatar-img">
                         </div>
 
-                        <!-- Prototype / Screen Showcase Preview -->
-                        <div class="p-3 rounded-4 mb-3" style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.05);">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-primary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.08em;">Active Showcase Presentation</small>
-                                <small class="text-white-50" style="font-size: 11px;"><i class="bi bi-geo-alt"></i> ${st.room || 'Lab 402 • Media Wing'}</small>
-                            </div>
-                            <h5 class="fw-bold text-white mb-2" style="font-size: 1.05rem;">${st.preview_title || 'UI/UX Interactive System Prototype'}</h5>
-                            <div class="d-flex gap-2">
-                                <span class="badge bg-white bg-opacity-10 text-white-50" style="font-size: 11px;">1080p 60fps Stream</span>
-                                <span class="badge bg-white bg-opacity-10 text-white-50" style="font-size: 11px;">Audio Mic Connected</span>
-                            </div>
+                        <div class="spotlight-name-row">
+                            <h2 class="spotlight-student-name">${st.student_name}</h2>
+                            ${verifiedBadgeSvg}
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-10">
-                            <small class="text-white-50" style="font-size: 11px;">GenZ Digital Classroom OS • Projector Node #04</small>
-                            <span class="badge bg-primary text-white fw-bold px-3 py-1 rounded-pill" style="font-size: 11px;">Verified Student</span>
+                        <div class="spotlight-student-meta">
+                            <span class="meta-item font-monospace"><i class="bi bi-person-badge me-1.5 text-primary"></i>${st.student_id || 'GZ-STUDENT'}</span>
+                            <span class="meta-dot">•</span>
+                            <span class="meta-item"><i class="bi bi-mortarboard me-1.5 text-primary"></i>${st.major || 'GenZ Digital Campus'}</span>
                         </div>
                     </div>
                 `;
             });
-
-            // If fewer than 4 students in this batch and total < 4, fill empty slots with placeholder
-            if (currentBatch.length < 4 && total < 4) {
-                for (let i = currentBatch.length; i < 4; i++) {
-                    html += `
-                        <div class="user-card" style="opacity: 0.45; border-style: dashed;">
-                            <div class="d-flex flex-column align-items-center justify-content-center text-center h-100 py-4">
-                                <i data-lucide="user-plus" class="text-secondary mb-2" style="width: 36px; height: 36px;"></i>
-                                <span class="fw-bold text-white-50">Empty Spotlight Slot #${i + 1}</span>
-                                <small class="text-secondary">Click student on Admin Screen to project here</small>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
 
             container.innerHTML = html;
             if (window.lucide) window.lucide.createIcons();
@@ -356,14 +480,17 @@
 
         // Auto Cycle Countdown every second
         setInterval(() => {
+            const countdownEl = document.getElementById('cycle-countdown');
             if (allSpotlights && allSpotlights.length > BATCH_SIZE) {
+                if (countdownEl) countdownEl.style.display = 'inline-block';
                 countdownSec--;
-                document.getElementById('timer-sec').textContent = countdownSec;
+                const timerSecEl = document.getElementById('timer-sec');
+                if (timerSecEl) timerSecEl.textContent = countdownSec;
                 if (countdownSec <= 0) {
                     nextBatch();
                 }
             } else {
-                document.getElementById('cycle-countdown').style.display = 'none';
+                if (countdownEl) countdownEl.style.display = 'none';
             }
         }, 1000);
 
@@ -373,7 +500,7 @@
                 const res = await fetch('{{ route("admin.screen.spotlights.data") }}');
                 const data = await res.json();
                 if (data && data.users) {
-                    const prevCount = allSpotlights.length;
+                    const prevCount = allSpotlights ? allSpotlights.length : 0;
                     allSpotlights = data.users;
                     if (prevCount !== allSpotlights.length) {
                         renderBatch();
@@ -387,7 +514,9 @@
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log("Fullscreen request error:", err);
+                });
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
