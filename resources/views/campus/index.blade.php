@@ -311,7 +311,7 @@
                             </div>
 
                             <!-- iOS Ultra-Clean Action Links (No Background) -->
-                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="d-flex align-items-center gap-2.5 flex-wrap">
                                 <button type="button" class="btn btn-link p-0 text-white text-decoration-none fw-semibold d-inline-flex align-items-center gap-1.5 shadow-none opacity-90 hover-opacity-100" style="font-size: 12px;" onclick="event.stopPropagation(); switchTab('qrpass');">
                                     <i data-lucide="qr-code" style="width: 13px; height: 13px;"></i>
                                     <span>View Pass</span>
@@ -321,6 +321,20 @@
                                     <i data-lucide="camera" style="width: 13px; height: 13px;"></i>
                                     <span>Change Photo</span>
                                 </button>
+                                @auth
+                                    <span class="text-white-50 opacity-40">•</span>
+                                    <a href="{{ route('logout') }}" class="btn btn-link p-0 text-white text-decoration-none fw-semibold d-inline-flex align-items-center gap-1.5 shadow-none opacity-85 hover-opacity-100" style="font-size: 12px;" onclick="event.stopPropagation();" title="Log Out">
+                                        <i data-lucide="log-out" style="width: 13px; height: 13px;"></i>
+                                        <span>Logout</span>
+                                    </a>
+                                    @if(Auth::user()->role === 'admin')
+                                        <span class="text-white-50 opacity-40">•</span>
+                                        <a href="{{ route('admin.index') }}" class="btn btn-link p-0 text-warning text-decoration-none fw-bold d-inline-flex align-items-center gap-1 shadow-none hover-opacity-100" style="font-size: 12px;" onclick="event.stopPropagation();" title="Admin Portal">
+                                            <i data-lucide="shield-check" style="width: 13px; height: 13px;"></i>
+                                            <span>Admin</span>
+                                        </a>
+                                    @endif
+                                @endauth
                             </div>
                         </div>
                     </div>
@@ -700,6 +714,32 @@
                     </div>
                     <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 9.5px;">{{ $resources->count() }} Files</span>
                 </button>
+
+                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="toggleAppTheme()">
+                    <div class="d-flex align-items-center gap-3">
+                        <i data-lucide="moon" class="text-warning" style="width: 20px; height: 20px;"></i>
+                        <span class="fw-bold" style="font-size: 13.5px;">Switch Light / Dark Theme</span>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-secondary fw-bold" style="font-size: 9.5px;">Theme</span>
+                </button>
+
+                @if(Auth::check() && Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.index') }}" class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border border-primary-subtle text-start text-decoration-none">
+                        <div class="d-flex align-items-center gap-3 text-primary">
+                            <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
+                            <span class="fw-bold" style="font-size: 13.5px;">Switch to Admin Console</span>
+                        </div>
+                        <span class="badge bg-primary text-white fw-bold" style="font-size: 9.5px;">ADMIN</span>
+                    </a>
+                @endif
+
+                <a href="{{ route('logout') }}" class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border border-danger-subtle text-start text-decoration-none">
+                    <div class="d-flex align-items-center gap-3 text-danger">
+                        <i data-lucide="log-out" style="width: 20px; height: 20px;"></i>
+                        <span class="fw-bold" style="font-size: 13.5px;">Log Out of Student Pass</span>
+                    </div>
+                    <i data-lucide="arrow-right" class="text-danger opacity-75" style="width: 18px; height: 18px;"></i>
+                </a>
             </div>
         </div>
 
