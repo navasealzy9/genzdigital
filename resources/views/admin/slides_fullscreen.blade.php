@@ -446,6 +446,7 @@
         let totalSlides = 1;
         let pdfDoc = null;
         let pdfScale = 1.35;
+        let pdfRenderTask = null;
         let isPdfRendering = false;
         let pendingPageNum = null;
 
@@ -532,31 +533,59 @@
         }
 
         async function renderPdfPage(num) {
+            if (!pdfDoc) return;
+
+            // 1. If another page is actively rendering on this canvas, cleanly cancel it first
+            if (pdfRenderTask !== null) {
+                try {
+                    pdfRenderTask.cancel();
+                } catch (e) {}
+                pdfRenderTask = null;
+            }
+
             isPdfRendering = true;
-            const page = await pdfDoc.getPage(num);
-            const canvas = document.getElementById('pdf-slide-canvas');
-            const ctx = canvas.getContext('2d');
 
-            // Compute optimal viewport scale to fit stage height
-            const containerHeight = document.getElementById('pdf-slide-viewport').clientHeight || 550;
-            const unscaledViewport = page.getViewport({ scale: 1.0 });
-            const fitScale = (containerHeight / unscaledViewport.height) * pdfScale;
-            const viewport = page.getViewport({ scale: fitScale });
+            try {
+                const page = await pdfDoc.getPage(num);
+                const canvas = document.getElementById('pdf-slide-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+                // Compute optimal viewport scale to fit stage height & width
+                const container = document.getElementById('pdf-slide-viewport');
+                const containerH = (container ? container.clientHeight : 0) || 550;
+                const containerW = (container ? container.clientWidth : 0) || 960;
 
-            const renderContext = {
-                canvasContext: ctx,
-                viewport: viewport
-            };
+                const unscaledViewport = page.getViewport({ scale: 1.0 });
+                const scaleH = (containerH - 24) / unscaledViewport.height;
+                const scaleW = (containerW - 24) / unscaledViewport.width;
+                const baseScale = Math.min(scaleH, scaleW);
+                const fitScale = (baseScale > 0.05 ? baseScale : 1.0) * pdfScale;
+                const viewport = page.getViewport({ scale: fitScale });
 
-            await page.render(renderContext).promise;
-            isPdfRendering = false;
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-            if (pendingPageNum !== null) {
-                renderPdfPage(pendingPageNum);
-                pendingPageNum = null;
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                pdfRenderTask = page.render(renderContext);
+                await pdfRenderTask.promise;
+                pdfRenderTask = null;
+            } catch (err) {
+                // RenderingCancelledException is normal when user quickly navigates slides
+                if (err && err.name !== 'RenderingCancelledException') {
+                    console.error('PDF render error:', err);
+                }
+            } finally {
+                isPdfRendering = false;
+                if (pendingPageNum !== null) {
+                    const nextNum = pendingPageNum;
+                    pendingPageNum = null;
+                    renderPdfPage(nextNum);
+                }
             }
 
             updateSlideIndicators(num, totalSlides);
@@ -565,6 +594,11 @@
         function queueRenderPdfPage(num) {
             if (isPdfRendering) {
                 pendingPageNum = num;
+                if (pdfRenderTask !== null) {
+                    try {
+                        pdfRenderTask.cancel();
+                    } catch (e) {}
+                }
             } else {
                 renderPdfPage(num);
             }
@@ -840,13 +874,18 @@
                     targetStatus.className = 'badge bg-success';
                 }
 
-                // Landmark positions:
-                // Tip 8 (Index), Tip 12 (Middle), Tip 16 (Ring), Tip 20 (Pinky)
-                // PIP 6 (Index), PIP 10 (Middle), PIP 14 (Ring), PIP 18 (Pinky)
-                const indexUp = landmarks[8].y < landmarks[6].y;
-                const middleUp = landmarks[12].y < landmarks[10].y;
-                const ringUp = landmarks[16].y < landmarks[14].y;
-                const pinkyUp = landmarks[20].y < landmarks[18].y;
+                // Landmark positions: Wrist (0), Tip 8 (Index), Tip 12 (Middle), Tip 16 (Ring), Tip 20 (Pinky)
+                const w = landmarks[0];
+                const isExtended = (tip, pip) => {
+                    const distTip = Math.hypot(landmarks[tip].x - w.x, landmarks[tip].y - w.y);
+                    const distPip = Math.hypot(landmarks[pip].x - w.x, landmarks[pip].y - w.y);
+                    return (landmarks[tip].y < landmarks[pip].y) || (distTip > distPip * 1.22);
+                };
+
+                const indexUp = isExtended(8, 6);
+                const middleUp = isExtended(12, 10);
+                const ringUp = isExtended(16, 14);
+                const pinkyUp = isExtended(20, 18);
 
                 let currentGesture = null;
 

@@ -2710,7 +2710,9 @@
     let adminSlideTotal = {{ $teachingSlides && $teachingSlides->total_slides ? $teachingSlides->total_slides : 1 }};
     let adminSlideCurrent = 1;
     let adminPdfDoc = null;
+    let adminPdfRenderTask = null;
     let isAdminPdfRendering = false;
+    let adminPendingPageNum = null;
 
     function initAdminSlidePreview() {
         if (!adminSlidePath) return;
@@ -2783,25 +2785,68 @@
 
     async function renderAdminPdfPage(num) {
         if (!adminPdfDoc) return;
+
+        if (adminPdfRenderTask !== null) {
+            try {
+                adminPdfRenderTask.cancel();
+            } catch (e) {}
+            adminPdfRenderTask = null;
+        }
+
         isAdminPdfRendering = true;
-        const page = await adminPdfDoc.getPage(num);
-        const canvas = document.getElementById('admin-pdf-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const viewport = page.getViewport({ scale: 1.0 });
-        const containerHeight = document.getElementById('admin-pdf-viewport')?.clientHeight || 480;
-        const scale = (containerHeight - 40) / viewport.height;
-        const scaledViewport = page.getViewport({ scale: scale > 0 ? scale : 1.0 });
 
-        canvas.height = scaledViewport.height;
-        canvas.width = scaledViewport.width;
+        try {
+            const page = await adminPdfDoc.getPage(num);
+            const canvas = document.getElementById('admin-pdf-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const viewportContainer = document.getElementById('admin-pdf-viewport');
+            const containerH = (viewportContainer ? viewportContainer.clientHeight : 0) || 480;
+            const containerW = (viewportContainer ? viewportContainer.clientWidth : 0) || 800;
 
-        await page.render({
-            canvasContext: ctx,
-            viewport: scaledViewport
-        }).promise;
-        isAdminPdfRendering = false;
+            const unscaledViewport = page.getViewport({ scale: 1.0 });
+            const scaleH = (containerH - 24) / unscaledViewport.height;
+            const scaleW = (containerW - 24) / unscaledViewport.width;
+            const baseScale = Math.min(scaleH, scaleW);
+            const fitScale = baseScale > 0.05 ? baseScale : 1.0;
+            const viewport = page.getViewport({ scale: fitScale });
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            adminPdfRenderTask = page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            });
+            await adminPdfRenderTask.promise;
+            adminPdfRenderTask = null;
+        } catch (err) {
+            if (err && err.name !== 'RenderingCancelledException') {
+                console.error('Admin PDF render error:', err);
+            }
+        } finally {
+            isAdminPdfRendering = false;
+            if (adminPendingPageNum !== null) {
+                const nextNum = adminPendingPageNum;
+                adminPendingPageNum = null;
+                renderAdminPdfPage(nextNum);
+            }
+        }
+
         updateAdminCounter();
+    }
+
+    function queueRenderAdminPdfPage(num) {
+        if (isAdminPdfRendering) {
+            adminPendingPageNum = num;
+            if (adminPdfRenderTask !== null) {
+                try {
+                    adminPdfRenderTask.cancel();
+                } catch (e) {}
+            }
+        } else {
+            renderAdminPdfPage(num);
+        }
     }
 
     function adminPreviewNav(dir) {
@@ -2810,13 +2855,12 @@
             adminSlideCurrent = nextNum;
             updateAdminCounter();
             if (adminPdfDoc) {
-                renderAdminPdfPage(adminSlideCurrent);
+                queueRenderAdminPdfPage(adminSlideCurrent);
             } else {
                 const iframe = document.getElementById('admin-office-iframe');
                 if (iframe) {
                     try {
                         iframe.contentWindow.focus();
-                        iframe.contentWindow.postMessage({ action: dir > 0 ? 'next' : 'prev', slide: adminSlideCurrent }, '*');
                     } catch(e) {}
                 }
             }
