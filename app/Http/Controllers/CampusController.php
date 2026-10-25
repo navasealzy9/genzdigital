@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class CampusController extends Controller
 {
@@ -158,38 +160,112 @@ class CampusController extends Controller
             $courseCarts = collect();
         }
 
-        // 7. Chats
-        $chats = [
-            [
-                'id' => 1,
-                'category' => 'chats',
-                'name' => 'Design Team Gamma',
-                'role' => 'Group Project • UI/UX',
-                'avatar' => 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=150',
-                'last_message' => 'Maya: I just uploaded the Figma prototype link!',
-                'time' => '10:42 AM',
-                'unread' => 2,
-            ],
-            [
-                'id' => 2,
+        // 7. Dynamic Chats & Class Groups
+        $chats = [];
+        $classRooms = collect();
+
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            $classRooms = DB::table('campus_classes')->get();
+        } else {
+            $enrolledCodes = $enrolledClasses->pluck('course_code')->filter()->unique()->toArray();
+            if (!empty($enrolledCodes)) {
+                $classRooms = DB::table('campus_classes')
+                    ->whereIn('code', $enrolledCodes)
+                    ->get();
+                foreach ($enrolledClasses as $cartCourse) {
+                    if (!$classRooms->contains('code', $cartCourse->course_code)) {
+                        $classRooms->push((object)[
+                            'id' => $cartCourse->id,
+                            'code' => $cartCourse->course_code,
+                            'title' => $cartCourse->course_title,
+                            'prof' => $cartCourse->instructor ?? 'Instructor',
+                            'room' => 'Classroom',
+                            'schedule_time' => $cartCourse->schedule ?? 'Scheduled',
+                        ]);
+                    }
+                }
+            } else {
+                // Default fallback: show available classes from database
+                $classRooms = DB::table('campus_classes')->limit(2)->get();
+            }
+        }
+
+        $allRoomCodes = $classRooms->pluck('code')->merge(['announcements', 'campus_lounge'])->toArray();
+        $latestMessages = DB::table('campus_inbox_messages')
+            ->whereIn('room_id', $allRoomCodes)
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('room_id')
+            ->map(function ($grp) {
+                return $grp->first();
+            });
+
+        $classAvatars = [
+            'DES302' => 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=150',
+            'MKT204' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
+            'DES305' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
+            'DGT01'  => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=150',
+        ];
+
+        foreach ($classRooms as $c) {
+            $roomId = $c->code;
+            $memberCount = DB::table('campus_course_carts')
+                ->where('course_code', $c->code)
+                ->where('status', 'Enrolled')
+                ->count();
+            if ($memberCount === 0) {
+                $memberCount = 1;
+            }
+
+            $lastMsg = $latestMessages->get($roomId);
+            $lastMsgText = $lastMsg ? $lastMsg->message : "Welcome to class group {$c->title}! Chat with classmates & instructor.";
+            $lastTime = $lastMsg ? \Carbon\Carbon::parse($lastMsg->created_at)->timezone('Asia/Phnom_Penh')->format('h:i A') : 'Today';
+
+            $chats[] = [
+                'id' => $roomId,
+                'room_id' => $roomId,
                 'category' => 'academic',
-                'name' => 'Dr. Alex Vance',
-                'role' => 'Professor • DES302',
-                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-                'last_message' => 'Great job on your mid-term wireframe draft.',
-                'time' => 'Yesterday',
+                'name' => 'Class: ' . $c->title . ' (' . $c->code . ')',
+                'title' => $c->title,
+                'code' => $c->code,
+                'role' => 'Class Group • ' . $memberCount . ' Members • ' . ($c->prof ?? 'Instructor'),
+                'avatar' => $classAvatars[$c->code] ?? 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=150',
+                'last_message' => $lastMsgText,
+                'time' => $lastTime,
                 'unread' => 0,
-            ],
-            [
-                'id' => 3,
-                'category' => 'announcements',
-                'name' => 'Campus Academic Office',
-                'role' => 'Official Announcement',
-                'avatar' => 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=150',
-                'last_message' => 'Reminder: Registration for Hackathon closes Friday.',
-                'time' => 'Oct 24',
-                'unread' => 1,
-            ]
+            ];
+        }
+
+        // Official Announcement chat
+        $announcementMsg = $latestMessages->get('announcements');
+        $chats[] = [
+            'id' => 'announcements',
+            'room_id' => 'announcements',
+            'category' => 'announcements',
+            'name' => 'Campus Academic Office',
+            'title' => 'Official Campus Announcements',
+            'code' => 'OFFICE',
+            'role' => 'Official Announcement • Academic Board',
+            'avatar' => 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=150',
+            'last_message' => $announcementMsg ? $announcementMsg->message : 'Reminder: Registration for Hackathon closes Friday.',
+            'time' => $announcementMsg ? \Carbon\Carbon::parse($announcementMsg->created_at)->timezone('Asia/Phnom_Penh')->format('M d') : 'Oct 24',
+            'unread' => 1,
+        ];
+
+        // Campus General Lounge
+        $loungeMsg = $latestMessages->get('campus_lounge');
+        $chats[] = [
+            'id' => 'campus_lounge',
+            'room_id' => 'campus_lounge',
+            'category' => 'chats',
+            'name' => 'Campus General Lounge',
+            'title' => 'Campus General Lounge',
+            'code' => 'COMMUNITY',
+            'role' => 'Community • All Students & Faculty',
+            'avatar' => 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=150',
+            'last_message' => $loungeMsg ? $loungeMsg->message : 'Welcome to GenZ Digital Campus community!',
+            'time' => $loungeMsg ? \Carbon\Carbon::parse($loungeMsg->created_at)->timezone('Asia/Phnom_Penh')->format('h:i A') : 'Today',
+            'unread' => 0,
         ];
 
         // 8. 12 Tools categorized for filter & search
@@ -1371,6 +1447,263 @@ class CampusController extends Controller
             'is_correct' => $isCorrect,
             'message' => $isCorrect ? 'ចម្លើយត្រឹមត្រូវ! ក្រុមទទួលបាន +50 Innovation Points!' : 'ចម្លើយមិនទាន់ត្រឹមត្រូវទេ សូមពិភាក្សាជាមួយសមាជិកក្រុមឡើងវិញ។',
             'team_points' => 50,
+        ]);
+    }
+
+    /**
+     * Client: Get real-time messages for an inbox chat room
+     */
+    public function getInboxMessages(Request $request)
+    {
+        $roomId = trim($request->query('room', 'DES302'));
+        if (empty($roomId)) {
+            $roomId = 'DES302';
+        }
+
+        // Seed initial room messages if room is currently empty
+        $this->seedInitialRoomMessages($roomId);
+
+        // Determine current user identifier
+        $user = Auth::user();
+        $currentId = null;
+        $currentName = null;
+
+        if ($user) {
+            $studentRecord = DB::table('campus_students')->where('email', $user->email)->first();
+            $currentId = $user->student_id ?: ($studentRecord ? $studentRecord->student_id : 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT));
+            $currentName = $user->name;
+        } else {
+            $currentId = 'GZ20260482';
+            $currentName = 'Maya Chen';
+        }
+
+        $rawMessages = DB::table('campus_inbox_messages')
+            ->where('room_id', $roomId)
+            ->orderBy('id', 'asc')
+            ->limit(150)
+            ->get();
+
+        $messages = $rawMessages->map(function ($msg) use ($currentId, $currentName) {
+            $createdAt = \Carbon\Carbon::parse($msg->created_at)->timezone('Asia/Phnom_Penh');
+            $timeStr = $createdAt->isToday()
+                ? $createdAt->format('h:i A')
+                : ($createdAt->isYesterday() ? 'Yesterday ' . $createdAt->format('h:i A') : $createdAt->format('M d, h:i A'));
+
+            $isMe = false;
+            if ($currentId && $msg->sender_id === $currentId) {
+                $isMe = true;
+            } elseif ($currentName && strcasecmp(trim($msg->sender_name), trim($currentName)) === 0) {
+                $isMe = true;
+            }
+
+            return [
+                'id' => $msg->id,
+                'room_id' => $msg->room_id,
+                'sender_id' => $msg->sender_id,
+                'sender_name' => $msg->sender_name,
+                'sender_avatar' => $msg->sender_avatar ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+                'sender_role' => $msg->sender_role,
+                'message' => $msg->message,
+                'time' => $timeStr,
+                'is_me' => $isMe,
+            ];
+        });
+
+        // Room details
+        $class = DB::table('campus_classes')->where('code', $roomId)->first();
+        if ($class) {
+            $roomName = 'Class: ' . $class->title . ' (' . $class->code . ')';
+            $memberCount = DB::table('campus_course_carts')->where('course_code', $roomId)->where('status', 'Enrolled')->count();
+            $roomSubtitle = 'Class Group • ' . ($memberCount ?: 1) . ' Members • ' . ($class->prof ?? 'Instructor');
+        } elseif ($roomId === 'announcements') {
+            $roomName = 'Campus Academic Office';
+            $roomSubtitle = 'Official Campus Announcements • Academic Board';
+        } else {
+            $roomName = 'Campus General Lounge';
+            $roomSubtitle = 'Community Lounge • All Students & Faculty';
+        }
+
+        return response()->json([
+            'success' => true,
+            'room_id' => $roomId,
+            'room_name' => $roomName,
+            'room_subtitle' => $roomSubtitle,
+            'messages' => $messages,
+        ]);
+    }
+
+    /**
+     * Client: Send a real-time message to a chat room
+     */
+    public function sendInboxMessage(Request $request)
+    {
+        $request->validate([
+            'room_id' => 'required|string|max:50',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        $roomId = trim($request->input('room_id'));
+        $text = trim($request->input('message'));
+
+        if ($text === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Message cannot be empty.'
+            ], 422);
+        }
+
+        $user = Auth::user();
+        $senderId = 'GZ20260482';
+        $senderName = 'Maya Chen';
+        $senderAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250';
+        $senderRole = 'student';
+
+        if ($user) {
+            $studentRecord = DB::table('campus_students')->where('email', $user->email)->first();
+            $senderId = $user->student_id ?: ($studentRecord ? $studentRecord->student_id : 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT));
+            $senderName = $user->name;
+            $senderAvatar = $user->avatar ?: ($studentRecord ? $studentRecord->avatar : $senderAvatar);
+            $senderRole = $user->role ?: 'student';
+        }
+
+        $class = DB::table('campus_classes')->where('code', $roomId)->first();
+        $roomName = $class ? 'Class: ' . $class->title . ' (' . $class->code . ')' : ($roomId === 'announcements' ? 'Campus Academic Office' : 'Campus General Lounge');
+        $roomCategory = $class ? 'academic' : ($roomId === 'announcements' ? 'announcements' : 'chats');
+
+        $now = \Carbon\Carbon::now('Asia/Phnom_Penh');
+
+        $insertId = DB::table('campus_inbox_messages')->insertGetId([
+            'room_id' => $roomId,
+            'room_name' => $roomName,
+            'room_category' => $roomCategory,
+            'sender_id' => $senderId,
+            'sender_name' => $senderName,
+            'sender_avatar' => $senderAvatar,
+            'sender_role' => $senderRole,
+            'message' => $text,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message sent successfully',
+            'data' => [
+                'id' => $insertId,
+                'room_id' => $roomId,
+                'sender_id' => $senderId,
+                'sender_name' => $senderName,
+                'sender_avatar' => $senderAvatar,
+                'sender_role' => $senderRole,
+                'message' => $text,
+                'time' => $now->format('h:i A'),
+                'is_me' => true,
+            ],
+        ]);
+    }
+
+    /**
+     * Seed initial messages for empty room
+     */
+    protected function seedInitialRoomMessages($roomId)
+    {
+        $exists = DB::table('campus_inbox_messages')->where('room_id', $roomId)->exists();
+        if ($exists) {
+            return;
+        }
+
+        $now = \Carbon\Carbon::now('Asia/Phnom_Penh');
+
+        if ($roomId === 'announcements') {
+            DB::table('campus_inbox_messages')->insert([
+                [
+                    'room_id' => 'announcements',
+                    'room_name' => 'Campus Academic Office',
+                    'room_category' => 'announcements',
+                    'sender_id' => 'ADMIN_OFFICE',
+                    'sender_name' => 'Campus Academic Office',
+                    'sender_avatar' => 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=150',
+                    'sender_role' => 'admin',
+                    'message' => 'Welcome to Semester Fall 2026! Make sure to verify your enrolled courses and check in for daily attendance.',
+                    'created_at' => $now->copy()->subDays(2),
+                    'updated_at' => $now->copy()->subDays(2),
+                ],
+                [
+                    'room_id' => 'announcements',
+                    'room_name' => 'Campus Academic Office',
+                    'room_category' => 'announcements',
+                    'sender_id' => 'ADMIN_OFFICE',
+                    'sender_name' => 'Campus Academic Office',
+                    'sender_avatar' => 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=150',
+                    'sender_role' => 'admin',
+                    'message' => 'Reminder: Registration for GenZ Annual Hackathon closes this Friday at 5:00 PM.',
+                    'created_at' => $now->copy()->subHours(6),
+                    'updated_at' => $now->copy()->subHours(6),
+                ]
+            ]);
+            return;
+        }
+
+        if ($roomId === 'campus_lounge') {
+            DB::table('campus_inbox_messages')->insert([
+                [
+                    'room_id' => 'campus_lounge',
+                    'room_name' => 'Campus General Lounge',
+                    'room_category' => 'chats',
+                    'sender_id' => 'GZ20260482',
+                    'sender_name' => 'Maya Chen',
+                    'sender_avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+                    'sender_role' => 'student',
+                    'message' => 'Hello everyone! Welcome to GenZ Digital Campus community lounge 🎉',
+                    'created_at' => $now->copy()->subHours(5),
+                    'updated_at' => $now->copy()->subHours(5),
+                ],
+                [
+                    'room_id' => 'campus_lounge',
+                    'room_name' => 'Campus General Lounge',
+                    'room_category' => 'chats',
+                    'sender_id' => 'GZ20260119',
+                    'sender_name' => 'Sophia Davis',
+                    'sender_avatar' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
+                    'sender_role' => 'student',
+                    'message' => 'Glad to be here! Looking forward to interacting with all of you.',
+                    'created_at' => $now->copy()->subHours(3),
+                    'updated_at' => $now->copy()->subHours(3),
+                ]
+            ]);
+            return;
+        }
+
+        // Class group chat
+        $class = DB::table('campus_classes')->where('code', $roomId)->first();
+        $classTitle = $class ? $class->title : $roomId;
+        $profName = ($class && $class->prof) ? $class->prof : 'Instructor';
+
+        DB::table('campus_inbox_messages')->insert([
+            [
+                'room_id' => $roomId,
+                'room_name' => 'Class: ' . $classTitle . ' (' . $roomId . ')',
+                'room_category' => 'academic',
+                'sender_id' => 'PROF_' . $roomId,
+                'sender_name' => $profName,
+                'sender_avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
+                'sender_role' => 'professor',
+                'message' => "Welcome to {$classTitle} ({$roomId}) class group chat! Feel free to discuss assignments, ask questions, and collaborate with your classmates here.",
+                'created_at' => $now->copy()->subHours(4),
+                'updated_at' => $now->copy()->subHours(4),
+            ],
+            [
+                'room_id' => $roomId,
+                'room_name' => 'Class: ' . $classTitle . ' (' . $roomId . ')',
+                'room_category' => 'academic',
+                'sender_id' => 'GZ20260119',
+                'sender_name' => 'Sophia Davis',
+                'sender_avatar' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
+                'sender_role' => 'student',
+                'message' => "Hello {$profName} and classmates! Excited for this class 🚀",
+                'created_at' => $now->copy()->subHours(2),
+                'updated_at' => $now->copy()->subHours(2),
+            ],
         ]);
     }
 }

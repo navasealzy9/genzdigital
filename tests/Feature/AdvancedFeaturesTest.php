@@ -584,4 +584,86 @@ class AdvancedFeaturesTest extends TestCase
         $pendingReturned = $adminUsersPageUnassigned->viewData('pendingStudents');
         $this->assertTrue($pendingReturned->contains('student_id', $uniqueId));
     }
+
+    /**
+     * Test 21. Real-time Class Group Chat and Inbox Messaging
+     */
+    public function test_class_group_chat_and_inbox_messaging(): void
+    {
+        // 1. Visit campus index and verify inbox contains class group chats
+        $user = \App\Models\User::first();
+        if (!$user) {
+            $user = \App\Models\User::create([
+                'name' => 'Maya Chen',
+                'email' => 'maya.' . uniqid() . '@genzdigital.edu',
+                'password' => bcrypt('password'),
+                'student_id' => 'GZ20260482',
+                'role' => 'student',
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get('/');
+        $response->assertStatus(200);
+        $response->assertSee('Inbox & Messages', false);
+        $response->assertSee('Class Group', false);
+        $response->assertSee('chatModal', false);
+
+        $chats = $response->viewData('chats');
+        $this->assertNotEmpty($chats);
+
+        // Find a class room
+        $classRoom = collect($chats)->first(function ($c) {
+            return $c['category'] === 'academic';
+        });
+        $this->assertNotNull($classRoom);
+        $roomId = $classRoom['room_id'];
+
+        // 2. Fetch messages for that room
+        $fetchRes = $this->actingAs($user)->getJson("/api/inbox/messages?room={$roomId}");
+        $fetchRes->assertStatus(200);
+        $fetchRes->assertJson([
+            'success' => true,
+            'room_id' => $roomId,
+        ]);
+        $this->assertNotEmpty($fetchRes->json('messages'));
+
+        // 3. Send a message to the class group chat
+        $testMsg = 'Hello classmates! This is a test group message ' . uniqid();
+        $sendRes = $this->actingAs($user)->postJson('/api/inbox/send', [
+            'room_id' => $roomId,
+            'message' => $testMsg,
+        ]);
+        $sendRes->assertStatus(200);
+        $sendRes->assertJson([
+            'success' => true,
+            'message' => 'Message sent successfully',
+            'data' => [
+                'room_id' => $roomId,
+                'message' => $testMsg,
+            ],
+        ]);
+
+        // 4. Verify message persisted in database and appears in room messages
+        $exists = DB::table('campus_inbox_messages')
+            ->where('room_id', $roomId)
+            ->where('message', $testMsg)
+            ->exists();
+        $this->assertTrue($exists);
+
+        $reFetch = $this->actingAs($user)->getJson("/api/inbox/messages?room={$roomId}");
+        $reFetch->assertStatus(200);
+        $found = collect($reFetch->json('messages'))->contains('message', $testMsg);
+        $this->assertTrue($found);
+
+        // 5. Empty message validation
+        $emptyRes = $this->actingAs($user)->postJson('/api/inbox/send', [
+            'room_id' => $roomId,
+            'message' => '   ',
+        ]);
+        $emptyRes->assertStatus(422);
+
+        while (ob_get_level() > 1) {
+            ob_end_flush();
+        }
+    }
 }

@@ -32,6 +32,8 @@ Route::get('/api/showscreen/live', [CampusController::class, 'getLiveShowScreen'
 Route::get('/api/books/{id}/download', [CampusController::class, 'downloadBook'])->name('campus.book.download');
 Route::get('/transcript/download', [CampusController::class, 'downloadTranscript'])->name('campus.transcript.download');
 Route::post('/api/screenshare/request', [CampusController::class, 'requestScreenShare'])->name('campus.screen.request');
+Route::get('/api/inbox/messages', [CampusController::class, 'getInboxMessages'])->name('campus.inbox.messages');
+Route::post('/api/inbox/send', [CampusController::class, 'sendInboxMessage'])->name('campus.inbox.send');
 
 // Admin Side (Campus Management Portal)
 Route::prefix('admin')->name('admin.')->group(function () {

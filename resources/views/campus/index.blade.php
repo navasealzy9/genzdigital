@@ -558,14 +558,14 @@
     </div>
 
     <!-- Responsive Chat List (Desktop: 2 columns grid, Mobile: stacked) -->
-    <div class="row row-cols-1 row-cols-lg-2 g-3">
-        @foreach($chats as $chat)
-            <div class="col chat-row" data-category="{{ $chat['category'] }}">
-                <div class="tool-card p-3 p-md-4 d-flex flex-row align-items-center gap-3" onclick="openChat({{ json_encode($chat) }})">
+    <div class="row row-cols-1 row-cols-lg-2 g-3" id="chat-list-container">
+        @forelse($chats as $chat)
+            <div class="col chat-row" data-category="{{ $chat['category'] }}" id="chat-item-{{ $chat['room_id'] ?? $chat['id'] }}">
+                <div class="tool-card p-3 p-md-4 d-flex flex-row align-items-center gap-3 cursor-pointer" onclick="openChat({{ json_encode($chat) }})">
                     <div class="position-relative flex-shrink-0">
-                        <img src="{{ $chat['avatar'] }}" alt="{{ $chat['name'] }}" class="rounded-3 object-fit-cover" style="width: 54px; height: 54px;">
-                        @if($chat['unread'] > 0)
-                            <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-primary border border-2 border-white" style="font-size: 10px;">
+                        <img src="{{ $chat['avatar'] }}" alt="{{ $chat['name'] }}" class="rounded-3 object-fit-cover shadow-xs" style="width: 54px; height: 54px; border: 1.5px solid var(--bs-border-color);">
+                        @if(($chat['unread'] ?? 0) > 0)
+                            <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger border border-2 border-white" style="font-size: 10px;">
                                 {{ $chat['unread'] }}
                             </span>
                         @endif
@@ -574,20 +574,40 @@
                     <div class="flex-grow-1 min-w-0">
                         <div class="d-flex justify-content-between align-items-baseline mb-1">
                             <h6 class="fw-bold mb-0 text-truncate" style="font-size: 14.5px;">{{ $chat['name'] }}</h6>
-                            <small class="text-secondary flex-shrink-0 ms-2" style="font-size: 11px;">{{ $chat['time'] }}</small>
+                            <small class="text-secondary flex-shrink-0 ms-2 chat-item-time" style="font-size: 11px;">{{ $chat['time'] }}</small>
                         </div>
-                        <small class="text-primary fw-semibold d-block text-truncate" style="font-size: 11.5px;">{{ $chat['role'] }}</small>
-                        <p class="text-secondary text-truncate mb-0 mt-1" style="font-size: 12px;">{{ $chat['last_message'] }}</p>
+                        <div class="d-flex align-items-center gap-1.5 mb-1">
+                            @if($chat['category'] === 'academic')
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 9.5px; padding: 2px 6px;">Class Group</span>
+                            @elseif($chat['category'] === 'announcements')
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 9.5px; padding: 2px 6px;">Official</span>
+                            @else
+                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 9.5px; padding: 2px 6px;">Community</span>
+                            @endif
+                            <small class="text-secondary fw-medium text-truncate" style="font-size: 11px;">{{ $chat['role'] }}</small>
+                        </div>
+                        <p class="text-secondary text-truncate mb-0 chat-item-last-message" style="font-size: 12px;">{{ $chat['last_message'] }}</p>
                     </div>
 
                     <div class="ms-auto ps-2">
-                        <button class="btn btn-sm btn-primary rounded-circle d-flex align-items-center justify-content-center p-2" style="width: 34px; height: 34px;">
+                        <button type="button" class="btn btn-sm btn-primary rounded-circle d-flex align-items-center justify-content-center p-2 shadow-xs" style="width: 34px; height: 34px;">
                             <i data-lucide="message-square" style="width: 16px; height: 16px;"></i>
                         </button>
                     </div>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <div class="col-12 text-center py-5">
+                <div class="p-3.5 rounded-4 bg-body-secondary d-inline-block mb-3">
+                    <i data-lucide="messages-square" class="text-primary" style="width: 42px; height: 42px;"></i>
+                </div>
+                <h6 class="fw-bold mb-1">No Group Chats Available</h6>
+                <p class="text-secondary small mb-3">Enroll in courses or get assigned by Admin to join your class group chat.</p>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3.5 fw-bold" onclick="switchTab('classCart')">
+                    Go to Class Cart
+                </button>
+            </div>
+        @endforelse
     </div>
 </div>
 
@@ -2662,29 +2682,37 @@
 <!-- 13. Interactive Chat Modal -->
 <div class="modal fade" id="chatModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content p-0" style="height: 540px;">
+        <div class="modal-content p-0 border shadow" style="height: 560px; max-height: 90vh;">
             <!-- Header -->
-            <div class="modal-header px-3 py-2.5 border-bottom">
-                <div class="d-flex align-items-center gap-2">
-                    <img id="chat-recipient-avatar" src="" alt="Avatar" class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
-                    <div>
-                        <h6 id="chat-recipient-name" class="fw-bold mb-0 small">User</h6>
-                        <small id="chat-recipient-role" class="text-primary" style="font-size: 10.5px;">Role</small>
+            <div class="modal-header px-3 py-2.5 border-bottom bg-body-tertiary">
+                <div class="d-flex align-items-center gap-2.5 min-w-0">
+                    <img id="chat-recipient-avatar" src="" alt="Avatar" class="rounded-circle object-fit-cover flex-shrink-0 shadow-xs" style="width: 40px; height: 40px; border: 1.5px solid var(--bs-border-color);">
+                    <div class="min-w-0">
+                        <div class="d-flex align-items-center gap-1.5">
+                            <h6 id="chat-recipient-name" class="fw-bold mb-0 small text-truncate">Room Name</h6>
+                            <span id="chat-recipient-badge" class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5" style="font-size: 9.5px;">Group</span>
+                        </div>
+                        <small id="chat-recipient-role" class="text-secondary text-truncate d-block" style="font-size: 11px;">Class Group • Members</small>
                     </div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-1.5 ms-auto ps-2">
+                    <button type="button" class="btn btn-sm btn-light border rounded-circle p-1.5 shadow-xs" onclick="fetchChatMessages(currentChat ? (currentChat.room_id || currentChat.id) : null)" title="Refresh Messages">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
 
             <!-- Messages Area -->
-            <div class="modal-body p-3 d-flex flex-column gap-2" id="chat-messages-container" style="overflow-y: auto;">
+            <div class="modal-body p-3 d-flex flex-column gap-2" id="chat-messages-container" style="overflow-y: auto; background-color: var(--bs-tertiary-bg);">
                 <!-- Dynamically filled messages -->
             </div>
 
             <!-- Input Bar -->
-            <div class="modal-footer p-2.5 border-top">
+            <div class="modal-footer p-2.5 border-top bg-body">
                 <form id="chat-form" class="d-flex align-items-center gap-2 w-100" onsubmit="event.preventDefault(); sendChatMessage();">
-                    <input type="text" id="chat-input" class="form-control rounded-pill px-3 py-2 small" placeholder="Type a message..." autocomplete="off">
-                    <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-2" style="width: 38px; height: 38px;">
+                    <input type="text" id="chat-input" class="form-control rounded-pill px-3 py-2 small" placeholder="Type a message to your classmates..." autocomplete="off">
+                    <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-2 shadow-xs" style="width: 38px; height: 38px; flex-shrink: 0;">
                         <i data-lucide="send" style="width: 16px; height: 16px;"></i>
                     </button>
                 </form>
@@ -3324,63 +3352,217 @@
 
     // Interactive Chat functionality
     let currentChat = null;
-    let currentMessages = [];
+    let chatPollInterval = null;
+    let lastRenderedMessagesJson = '';
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
 
     function openChat(chat) {
         currentChat = chat;
-        document.getElementById('chat-recipient-avatar').src = chat.avatar;
-        document.getElementById('chat-recipient-name').textContent = chat.name;
-        document.getElementById('chat-recipient-role').textContent = chat.role;
+        const roomId = chat.room_id || chat.id;
 
-        currentMessages = [
-            { sender: 'them', text: chat.last_message, time: chat.time }
-        ];
+        const avatarEl = document.getElementById('chat-recipient-avatar');
+        if (avatarEl) avatarEl.src = chat.avatar || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=150';
 
-        renderChatMessages();
+        const nameEl = document.getElementById('chat-recipient-name');
+        if (nameEl) nameEl.textContent = chat.name || chat.title || 'Class Chat';
+
+        const roleEl = document.getElementById('chat-recipient-role');
+        if (roleEl) roleEl.textContent = chat.role || 'Class Group';
+
+        const badgeEl = document.getElementById('chat-recipient-badge');
+        if (badgeEl) {
+            if (chat.category === 'academic') {
+                badgeEl.textContent = 'Class Group';
+                badgeEl.className = 'badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5';
+            } else if (chat.category === 'announcements') {
+                badgeEl.textContent = 'Official';
+                badgeEl.className = 'badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5';
+            } else {
+                badgeEl.textContent = 'Community';
+                badgeEl.className = 'badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-0.5';
+            }
+        }
+
+        const input = document.getElementById('chat-input');
+        if (input) input.value = '';
+
+        lastRenderedMessagesJson = '';
         openModal('chatModal');
+        fetchChatMessages(roomId, false);
+
+        // Polling interval: every 2.5 seconds while modal is open
+        if (chatPollInterval) clearInterval(chatPollInterval);
+        chatPollInterval = setInterval(() => {
+            const modalEl = document.getElementById('chatModal');
+            if (modalEl && modalEl.classList.contains('show') && currentChat) {
+                fetchChatMessages(currentChat.room_id || currentChat.id, true);
+            }
+        }, 2500);
     }
 
-    function renderChatMessages() {
+    function fetchChatMessages(roomId, isSilent = false) {
+        if (!roomId) return;
         const container = document.getElementById('chat-messages-container');
         if (!container) return;
 
-        container.innerHTML = '';
-        currentMessages.forEach(msg => {
-            const bubbleWrapper = document.createElement('div');
-            bubbleWrapper.className = `d-flex flex-column ${msg.sender === 'me' ? 'align-items-end' : 'align-items-start'}`;
+        if (!isSilent && (!container.children.length || container.innerHTML.trim() === '')) {
+            container.innerHTML = `
+                <div class="d-flex flex-column align-items-center justify-content-center py-5 text-secondary">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <small style="font-size: 11.5px;">Loading class chat...</small>
+                </div>
+            `;
+        }
 
-            const bubble = document.createElement('div');
-            bubble.className = msg.sender === 'me' ? 'chat-bubble-me' : 'chat-bubble-them';
-            bubble.textContent = msg.text;
+        fetch(`{{ route('campus.inbox.messages') }}?room=${encodeURIComponent(roomId)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && Array.isArray(data.messages)) {
+                    const newJson = JSON.stringify(data.messages);
+                    if (newJson !== lastRenderedMessagesJson) {
+                        lastRenderedMessagesJson = newJson;
+                        renderChatMessages(data.messages);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load chat messages:', err);
+            });
+    }
 
-            const timeSpan = document.createElement('small');
-            timeSpan.className = 'text-secondary mt-1';
-            timeSpan.style.fontSize = '10px';
-            timeSpan.textContent = msg.time;
+    function renderChatMessages(messages) {
+        const container = document.getElementById('chat-messages-container');
+        if (!container) return;
 
-            bubbleWrapper.appendChild(bubble);
-            bubbleWrapper.appendChild(timeSpan);
-            container.appendChild(bubbleWrapper);
+        if (!messages || messages.length === 0) {
+            container.innerHTML = `
+                <div class="d-flex flex-column align-items-center justify-content-center py-5 text-secondary">
+                    <i data-lucide="message-circle" class="mb-2 text-secondary opacity-50" style="width: 36px; height: 36px;"></i>
+                    <small class="fw-semibold">No messages in this class group yet.</small>
+                    <small class="text-muted" style="font-size: 11px;">Be the first to say hello to your classmates!</small>
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+            return;
+        }
+
+        let html = '';
+        messages.forEach(msg => {
+            if (msg.is_me) {
+                html += `
+                    <div class="d-flex flex-column align-items-end mb-2">
+                        <div class="chat-bubble-me shadow-xs">
+                            ${escapeHtml(msg.message)}
+                        </div>
+                        <small class="text-secondary mt-1 pe-1" style="font-size: 10px;">${escapeHtml(msg.time)}</small>
+                    </div>
+                `;
+            } else {
+                let roleBadge = '';
+                const roleLower = (msg.sender_role || '').toLowerCase();
+                if (roleLower.includes('prof') || roleLower.includes('teach') || roleLower.includes('instructor')) {
+                    roleBadge = `<span class="badge bg-purple-subtle text-purple border border-purple-subtle" style="font-size: 9px; padding: 1.5px 5px;">Professor</span>`;
+                } else if (roleLower.includes('admin')) {
+                    roleBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 9px; padding: 1.5px 5px;">Admin</span>`;
+                } else {
+                    roleBadge = `<span class="badge bg-secondary-subtle text-secondary" style="font-size: 9px; padding: 1.5px 5px;">Student</span>`;
+                }
+
+                html += `
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <img src="${escapeHtml(msg.sender_avatar)}" class="rounded-circle object-fit-cover flex-shrink-0 mt-1 shadow-xs" style="width: 32px; height: 32px; border: 1.5px solid #fff;" alt="${escapeHtml(msg.sender_name)}">
+                        <div class="d-flex flex-column align-items-start min-w-0" style="max-width: 82%;">
+                            <div class="d-flex align-items-center gap-1.5 mb-1">
+                                <span class="fw-bold small text-body" style="font-size: 11.5px;">${escapeHtml(msg.sender_name)}</span>
+                                ${roleBadge}
+                            </div>
+                            <div class="chat-bubble-them shadow-xs">
+                                ${escapeHtml(msg.message)}
+                            </div>
+                            <small class="text-secondary mt-1 ps-1" style="font-size: 10px;">${escapeHtml(msg.time)}</small>
+                        </div>
+                    </div>
+                `;
+            }
         });
 
+        container.innerHTML = html;
         container.scrollTop = container.scrollHeight;
+        if (window.lucide) window.lucide.createIcons();
     }
 
     function sendChatMessage() {
         const input = document.getElementById('chat-input');
-        if (!input) return;
+        if (!input || !currentChat) return;
         const text = input.value.trim();
         if (!text) return;
 
-        currentMessages.push({
-            sender: 'me',
-            text: text,
-            time: 'Just now'
-        });
+        const roomId = currentChat.room_id || currentChat.id;
+        const submitBtn = document.querySelector('#chat-form button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
 
         input.value = '';
-        renderChatMessages();
+
+        fetch("{{ route('campus.inbox.send') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                room_id: roomId,
+                message: text
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (submitBtn) submitBtn.disabled = false;
+            input.focus();
+            if (data.success) {
+                fetchChatMessages(roomId, true);
+
+                // Update last_message and time on chat card in #screen-inbox
+                const cardEl = document.getElementById(`chat-item-${roomId}`);
+                if (cardEl) {
+                    const lastMsgEl = cardEl.querySelector('.chat-item-last-message');
+                    const timeEl = cardEl.querySelector('.chat-item-time');
+                    if (lastMsgEl) lastMsgEl.textContent = 'You: ' + text;
+                    if (timeEl) timeEl.textContent = 'Just now';
+                }
+            } else if (data.message) {
+                showToast(data.message);
+            }
+        })
+        .catch(err => {
+            if (submitBtn) submitBtn.disabled = false;
+            console.error('Error sending message:', err);
+            showToast('Failed to send message. Please try again.');
+        });
     }
+
+    // Modal close event to stop polling cleanly
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatModal = document.getElementById('chatModal');
+        if (chatModal) {
+            chatModal.addEventListener('hidden.bs.modal', () => {
+                if (chatPollInterval) {
+                    clearInterval(chatPollInterval);
+                    chatPollInterval = null;
+                }
+            });
+        }
+    });
 
     // Dynamic Home Tools Category Filter & Real-time Search
     function filterTools(category, btn) {
