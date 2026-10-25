@@ -2,11 +2,11 @@
 <html lang="km" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Slide Presentation with Camera Gesture - GenZ Digital Campus OS</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/genz-logo.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/genz-logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/genz-logo.png') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{ $teachingSlides ? $teachingSlides->title : 'Slide Presentation' }} - AI Gesture Tracker</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/genz-logo.png') }}?v=26.1">
 
     <!-- Google Fonts: Google Sans & Khmer Sans (Kantumruy Pro, Noto Sans Khmer) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,9 +14,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&family=Noto+Sans+Khmer:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/google-sans" rel="stylesheet">
 
+    <!-- Bootstrap 5.3.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF.js for rendering uploaded PDF presentations directly on Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
 
     <style>
         :root {
@@ -28,17 +35,21 @@
             background: #020617;
             color: #f8fafc;
             min-height: 100vh;
+            min-height: 100dvh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            margin: 0;
+            padding: 0;
         }
 
         .slide-header {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0.85rem 2rem;
+            padding: 0.75rem 1.75rem;
+            z-index: 100;
         }
 
         .presentation-stage {
@@ -46,89 +57,164 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1.25rem 2rem;
             position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, #020617 80%);
         }
 
-        .slide-screen {
+        /* Slide Stage Container */
+        .slide-stage-card {
             width: 100%;
-            max-width: 1200px;
-            min-height: 580px;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            max-width: 1280px;
+            height: calc(100vh - 150px);
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
             border: 2px solid rgba(59, 130, 246, 0.3);
-            border-radius: 32px;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
-            padding: 3.5rem;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(255, 255, 255, 0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             position: relative;
             overflow: hidden;
+            padding: 1.5rem 2rem;
             transition: all 0.3s ease;
         }
 
-        .slide-screen::after {
+        .slide-stage-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4, #10b981);
         }
 
-        /* Camera PIP Box */
-        .camera-pip {
-            position: fixed;
-            bottom: 5.5rem;
-            right: 2rem;
-            width: 260px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid #3b82f6;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            z-index: 1050;
-            transition: all 0.3s ease;
-        }
-
-        .camera-video {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            transform: scaleX(-1); /* mirror */
-            background: #000;
-        }
-
-        .gesture-indicator-badge {
-            position: absolute;
-            top: 1.5rem;
-            right: 2rem;
-            background: rgba(16, 185, 129, 0.2);
-            border: 2px solid #10b981;
-            color: #34d399;
-            padding: 0.6rem 1.4rem;
-            border-radius: 9999px;
-            font-weight: 800;
-            font-size: 1rem;
+        /* PDF Viewer Styling */
+        .pdf-viewer-viewport {
+            flex-grow: 1;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+            justify-content: center;
+            overflow: auto;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 0.5rem;
+        }
+
+        .pdf-render-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            background: #ffffff;
+            transition: transform 0.2s ease;
+        }
+
+        /* Floating Gesture Notification Badge */
+        .gesture-indicator-badge {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(16, 185, 129, 0.25);
+            border: 2px solid #10b981;
+            backdrop-filter: blur(12px);
+            color: #34d399;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.45);
             opacity: 0;
-            transform: translateY(-10px);
+            pointer-events: none;
+            z-index: 1080;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .gesture-indicator-badge.show {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Picture-in-Picture Camera Box */
+        .camera-pip {
+            position: fixed;
+            bottom: 5.5rem;
+            right: 2rem;
+            width: 290px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+            z-index: 1050;
+            transition: all 0.3s ease;
+        }
+
+        .camera-video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror camera */
+        }
+
+        /* Detection Target Box Overlay */
+        .camera-gesture-target {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 110px;
+            height: 130px;
+            border: 2px dashed #10b981;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.15);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+            animation: targetPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes targetPulse {
+            0%, 100% { border-color: #10b981; opacity: 0.85; }
+            50% { border-color: #34d399; opacity: 1; }
+        }
+
+        .target-box-label {
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 1.2;
         }
 
         .slide-footer {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
             border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 1rem 2rem;
+            padding: 0.85rem 2rem;
+            z-index: 100;
         }
     </style>
 </head>
@@ -141,8 +227,12 @@
                 <i class="bi bi-camera-video me-1"></i> AI GESTURE TRACKER
             </span>
             <div>
-                <h5 class="fw-bolder mb-0 text-white">{{ $teachingSlides ? $teachingSlides->title : 'Design Tokens & Component Hierarchy' }}</h5>
-                <small class="text-white-50">{{ $teachingSlides ? $teachingSlides->course : 'DES302 • UI/UX Design Systems' }}</small>
+                <h5 class="fw-bolder mb-0 text-white" id="header-slide-title">
+                    {{ $teachingSlides ? $teachingSlides->title : 'Digital AI Slide Presentation' }}
+                </h5>
+                <small class="text-white-50" id="header-slide-course">
+                    {{ $teachingSlides ? $teachingSlides->course : 'Course Presentation' }}
+                </small>
             </div>
         </div>
 
@@ -153,10 +243,19 @@
                 <span id="cam-status-text">Allow Camera / បើកកាមេរ៉ា Gesture</span>
             </button>
 
+            <!-- Zoom Controls (for PDF) -->
+            <div class="btn-group btn-group-sm" id="pdf-zoom-controls" style="display: none;">
+                <button class="btn btn-outline-secondary" onclick="zoomSlide(-0.15)" title="Zoom Out"><i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i></button>
+                <button class="btn btn-outline-secondary" onclick="resetZoom()" title="Reset Zoom"><i data-lucide="maximize-2" style="width: 14px; height: 14px;"></i></button>
+                <button class="btn btn-outline-secondary" onclick="zoomSlide(0.15)" title="Zoom In"><i data-lucide="zoom-in" style="width: 14px; height: 14px;"></i></button>
+            </div>
+
+            <!-- Fullscreen -->
             <button class="btn btn-outline-light btn-sm rounded-pill px-3 fw-bold" onclick="toggleFullscreen()">
                 <i data-lucide="maximize" style="width: 15px; height: 15px;" class="me-1"></i> Fullscreen
             </button>
 
+            <!-- Exit -->
             <a href="{{ route('admin.index', ['tab' => 'slides']) }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
                 <i data-lucide="arrow-left" style="width: 15px; height: 15px;" class="me-1"></i> Exit
             </a>
@@ -165,92 +264,105 @@
 
     <!-- Presentation Stage -->
     <main class="presentation-stage">
-        <!-- Floating Gesture Badge -->
+        <!-- Floating Gesture Notification Badge -->
         <div id="gesture-badge" class="gesture-indicator-badge">
             <span id="gesture-icon">✌️</span>
             <span id="gesture-text">Gesture Detected!</span>
         </div>
 
-        <!-- Slide Content Screen -->
-        <div class="slide-screen" id="slide-screen-container">
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <span class="badge bg-primary px-3 py-1.5 text-uppercase fw-bold" id="slide-category-badge">MODULE 01 • TOKENS</span>
-                    <span class="badge bg-body-secondary text-secondary font-monospace" id="slide-counter-badge">SLIDE 1 OF 6</span>
+        <!-- Master Presentation Card Container -->
+        <div class="slide-stage-card" id="slide-stage-container">
+            
+            <!-- Top Slide Metadata Row -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary px-3 py-1.5 text-uppercase fw-bold rounded-pill" id="slide-category-badge">
+                        PRESENTATION SLIDE
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" id="slide-mode-badge" style="font-size: 11px;">
+                        ● Uploaded Slide File Live
+                    </span>
                 </div>
+                <span class="badge bg-body-secondary text-light font-monospace px-3 py-1.5 rounded-pill fs-7" id="slide-counter-badge">
+                    SLIDE 1 OF 1
+                </span>
+            </div>
 
-                <h1 class="display-5 fw-bolder text-white mb-3" id="slide-title">Design Tokens & Component Hierarchy</h1>
-                <p class="lead text-light opacity-80 mb-4" id="slide-desc" style="max-width: 850px;">
-                    How atomic design tokens (colors, sizing, typography, elevation) seamlessly synchronize between Figma and React/Vue/Blade frontend codebases.
-                </p>
-
-                <!-- Dynamic Slide Visual Elements -->
-                <div id="slide-body-content" class="row g-3 my-3">
-                    <div class="col-md-3">
-                        <div class="p-4 rounded-4 text-center h-100" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3);">
-                            <i data-lucide="palette" class="text-primary mb-2" style="width: 32px; height: 32px;"></i>
-                            <h6 class="fw-bold text-white mb-1">1. Tokens</h6>
-                            <small class="text-white-50">Base values: Color, font-size, spacing units</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="p-4 rounded-4 text-center h-100" style="background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.3);">
-                            <i data-lucide="layers" class="text-info mb-2" style="width: 32px; height: 32px;"></i>
-                            <h6 class="fw-bold text-white mb-1">2. Atoms</h6>
-                            <small class="text-white-50">Buttons, inputs, icons, labels</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="p-4 rounded-4 text-center h-100" style="background: rgba(236, 72, 153, 0.12); border: 1px solid rgba(236, 72, 153, 0.3);">
-                            <i data-lucide="box" class="text-warning mb-2" style="width: 32px; height: 32px;"></i>
-                            <h6 class="fw-bold text-white mb-1">3. Molecules</h6>
-                            <small class="text-white-50">Search bar, card headers, form fields</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="p-4 rounded-4 text-center h-100" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
-                            <i data-lucide="layout" class="text-success mb-2" style="width: 32px; height: 32px;"></i>
-                            <h6 class="fw-bold text-white mb-1">4. Organisms</h6>
-                            <small class="text-white-50">Full navigation bar, hero sections</small>
-                        </div>
-                    </div>
+            <!-- 1. PDF Mode Viewport (Active when uploaded file is PDF) -->
+            <div id="pdf-slide-viewport" class="pdf-viewer-viewport">
+                <canvas id="pdf-slide-canvas" class="pdf-render-canvas"></canvas>
+                <div id="pdf-loading-spinner" class="text-center py-5">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <h5 class="fw-bold text-white mb-1">កំពុងដំណើរការ Slide Presentation...</h5>
+                    <small class="text-white-50">Loading high-definition presentation pages via PDF.js</small>
                 </div>
             </div>
 
-            <!-- Slide Notes / Tips -->
-            <div class="p-3 rounded-3 mt-4 d-flex justify-content-between align-items-center" style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05);">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-warning text-dark fw-bold">PRO TIP</span>
-                    <span class="small text-white-50" id="slide-notes">Always map tokens directly to CSS custom properties for instant dark mode switching.</span>
+            <!-- 2. Image Mode Viewport (Active when uploaded file is Image) -->
+            <div id="image-slide-viewport" class="pdf-viewer-viewport d-none">
+                <img id="image-slide-img" src="" alt="Slide Image" class="pdf-render-canvas" style="object-fit: contain;">
+            </div>
+
+            <!-- 3. Fallback / Interactive HTML Slide Viewport -->
+            <div id="html-slide-viewport" class="d-none flex-grow-1 d-flex flex-column justify-content-between py-2">
+                <div>
+                    <h1 class="display-5 fw-bolder text-white mb-2" id="html-slide-title">Design Tokens & Component Hierarchy</h1>
+                    <p class="lead text-light opacity-80 mb-3" id="html-slide-desc" style="max-width: 900px;">
+                        How atomic design tokens (colors, sizing, typography, elevation) seamlessly synchronize between Figma and frontend codebases.
+                    </p>
+
+                    <!-- Dynamic HTML Slide Cards -->
+                    <div id="html-slide-cards" class="row g-3 my-2"></div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+            </div>
+
+            <!-- Bottom Slide Note / Shortcut Bar -->
+            <div class="p-2.5 rounded-3 mt-auto d-flex justify-content-between align-items-center bg-black bg-opacity-40 border border-white border-opacity-10">
+                <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                    <span class="badge bg-warning text-dark fw-bold">AI GESTURE</span>
+                    <span class="small text-white-50 text-truncate" id="slide-tip-text">
+                        លើកម្រាមដៃ ១ (☝️) ដើម្បីថយក្រោយ • លើកម្រាមដៃ ២ (✌️) ដើម្បីទៅស្លាយបន្ទាប់
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
                     <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 11px;">☝️ ម្រាម 1: ថយក្រោយ</span>
                     <span class="badge bg-info-subtle text-info fw-bold" style="font-size: 11px;">✌️ ម្រាម 2: ទៅមុខ</span>
                 </div>
             </div>
+
         </div>
     </main>
 
     <!-- Picture-in-Picture WebCam for Hand Gesture Detection -->
     <div class="camera-pip" id="camera-box" style="display: none;">
-        <div class="p-2 border-bottom d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.4);">
+        <div class="p-2 border-bottom d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.5);">
             <div class="d-flex align-items-center gap-1.5">
-                <span class="live-dot" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></span>
                 <small class="fw-bold text-white" style="font-size: 11px;">AI Gesture Camera</small>
             </div>
             <button class="btn btn-sm text-white-50 p-0" onclick="toggleWebCam()">&times;</button>
         </div>
-        <video id="webcam-feed" class="camera-video" autoplay playsinline muted></video>
-        <canvas id="gesture-canvas" width="160" height="120" style="display: none;"></canvas>
-        <div class="p-2 text-center" style="font-size: 10px; background: rgba(0,0,0,0.5);">
-            <span class="text-info fw-bold" id="gesture-live-status">Tracking hands...</span>
+
+        <div class="camera-video-wrapper">
+            <video id="webcam-feed" class="camera-video" autoplay playsinline muted></video>
+            <canvas id="gesture-canvas" width="160" height="120" style="display: none;"></canvas>
+
+            <!-- Target Box Overlay (Target detection zone to avoid face false-positive) -->
+            <div class="camera-gesture-target">
+                <span class="target-box-label">✋ លើកដៃត្រង់នេះ<br>Gesture Zone</span>
+                <span class="badge bg-success bg-opacity-75" style="font-size: 8px;" id="target-zone-status">READY</span>
+            </div>
+        </div>
+
+        <div class="p-2 text-center" style="font-size: 11px; background: rgba(0,0,0,0.6);">
+            <span class="text-info fw-bold" id="gesture-live-status">Ready for Gestures (☝️ Prev | ✌️ Next)</span>
         </div>
     </div>
 
     <!-- Presentation Controls Footer -->
     <footer class="slide-footer d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-body-secondary text-secondary" id="footer-slide-num">Slide 1 / 6</span>
+            <span class="badge bg-body-secondary text-secondary" id="footer-slide-num">Slide 1 / 1</span>
             <small class="text-white-50">Press Keyboard Left / Right or show 1 / 2 fingers to Camera</small>
         </div>
 
@@ -264,14 +376,28 @@
         </div>
     </footer>
 
+    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const slides = [
+        // File and Presentation State
+        const rawFilePath = "{{ $teachingSlides && $teachingSlides->file_path ? asset($teachingSlides->file_path) : '' }}";
+        const rawFileType = "{{ $teachingSlides ? $teachingSlides->file_type : 'demo' }}";
+
+        let currentMode = 'pdf'; // 'pdf', 'image', or 'html'
+        let currentSlideIdx = 1;
+        let totalSlides = 1;
+        let pdfDoc = null;
+        let pdfScale = 1.35;
+        let isPdfRendering = false;
+        let pendingPageNum = null;
+
+        // Fallback Demo HTML Slides Deck
+        const demoHtmlSlides = [
             {
                 category: "MODULE 01 • TOKENS",
                 title: "Design Tokens & Component Hierarchy",
-                desc: "How atomic design tokens (colors, sizing, typography, elevation) seamlessly synchronize between Figma and React/Vue/Blade frontend codebases.",
+                desc: "How atomic design tokens (colors, sizing, typography, elevation) seamlessly synchronize between Figma and frontend codebases.",
                 notes: "Always map tokens directly to CSS custom properties for instant dark mode switching.",
                 cards: [
                     { icon: "palette", title: "1. Tokens", desc: "Base values: Color, font-size, spacing units", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
@@ -283,7 +409,7 @@
             {
                 category: "MODULE 02 • AUTO-LAYOUT",
                 title: "Responsive Grids & Fluid Auto-Layout",
-                desc: "Applying flexbox rules within Figma frames: Hug contents, Fill container, and Fixed dimensions for robust responsive interfaces.",
+                desc: "Applying flexbox rules within frames: Hug contents, Fill container, and Fixed dimensions for robust responsive interfaces.",
                 notes: "Use 8pt grid unit for consistent spacing rhythm across mobile and desktop breakpoints.",
                 cards: [
                     { icon: "columns", title: "12-Col Grid", desc: "Flexible desktop layouts with gutter margins", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
@@ -293,106 +419,194 @@
                 ]
             },
             {
-                category: "MODULE 03 • MICRO-INTERACTIONS",
-                title: "State Machines & Interactive Micro-Interactions",
-                desc: "Creating physics-based spring animations for button clicks, dropdown expansions, and hover states that delight users without lag.",
-                notes: "Keep durations between 150ms and 300ms. Slower animations feel sluggish to power users.",
+                category: "MODULE 03 • AI INTEGRATION",
+                title: "AI-Assisted Workflow & Automated Testing",
+                desc: "Harnessing real-time computer vision, gesture tracking, and generative tooling to elevate modern classroom experiences.",
+                notes: "Machine learning at the edge empowers hands-free interaction without physical clickers.",
                 cards: [
-                    { icon: "mouse-pointer", title: "Hover States", desc: "Subtle scale up (1.02) and elevation shadow", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
-                    { icon: "toggle-right", title: "Active Toggle", desc: "Smooth color transition with spring physics", bg: "rgba(139, 92, 246, 0.12)", color: "text-info" },
-                    { icon: "check-circle", title: "Feedback Ring", desc: "Visual pulse on action completion", bg: "rgba(236, 72, 153, 0.12)", color: "text-warning" },
-                    { icon: "sparkles", title: "Haptics & SFX", desc: "Auditory cues for critical confirmations", bg: "rgba(16, 185, 129, 0.12)", color: "text-success" }
-                ]
-            },
-            {
-                category: "MODULE 04 • ACCESSIBILITY",
-                title: "WCAG 2.2 Standards & Contrast Requirements",
-                desc: "Ensuring digital products are inclusive for all users through 4.5:1 text contrast, accessible focus rings, and screen-reader semantics.",
-                notes: "Never rely on color alone to communicate system state; always pair with icons or text.",
-                cards: [
-                    { icon: "eye", title: "Contrast Ratio", desc: "4.5:1 for normal text, 3.0:1 for large headers", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
-                    { icon: "volume-2", title: "Aria Labels", desc: "Descriptive labels for icon-only action buttons", bg: "rgba(139, 92, 246, 0.12)", color: "text-info" },
-                    { icon: "keyboard", title: "Focus Outline", desc: "Visible 2px outline for keyboard tab navigation", bg: "rgba(236, 72, 153, 0.12)", color: "text-warning" },
-                    { icon: "shield-check", title: "Form Validation", desc: "Clear error messages linked to form inputs", bg: "rgba(16, 185, 129, 0.12)", color: "text-success" }
-                ]
-            },
-            {
-                category: "MODULE 05 • DESIGN HANDOFF",
-                title: "Engineering Handoff & Variable Export",
-                desc: "Exporting design tokens directly to JSON/CSS variables and configuring component properties for seamless frontend development.",
-                notes: "Automate token synchronization with GitHub Actions so code stays in sync with Figma.",
-                cards: [
-                    { icon: "code", title: "Token JSON", desc: "W3C standard Design Tokens Community Group format", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
-                    { icon: "git-branch", title: "Git Sync", desc: "Push tokens automatically via Webhooks", bg: "rgba(139, 92, 246, 0.12)", color: "text-info" },
-                    { icon: "box", title: "Storybook", desc: "Live component playground for developers", bg: "rgba(236, 72, 153, 0.12)", color: "text-warning" },
-                    { icon: "check-double", title: "Visual QA", desc: "Pixel comparison testing in CI/CD pipeline", bg: "rgba(16, 185, 129, 0.12)", color: "text-success" }
-                ]
-            },
-            {
-                category: "MODULE 06 • SUMMARY",
-                title: "Key Takeaways & Production Checklist",
-                desc: "Reviewing the complete end-to-end design system pipeline from token definition through prototype and engineering handoff.",
-                notes: "Teams using design systems ship user interfaces 47% faster with fewer regression bugs.",
-                cards: [
-                    { icon: "check", title: "Consistent", desc: "Single source of truth for all brand colors", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
-                    { icon: "zap", title: "Scalable", desc: "Theme variables support dark mode instantly", bg: "rgba(139, 92, 246, 0.12)", color: "text-info" },
-                    { icon: "users", title: "Collaborative", desc: "Designers and engineers speak identical token names", bg: "rgba(236, 72, 153, 0.12)", color: "text-warning" },
-                    { icon: "award", title: "Delightful", desc: "Smooth micro-interactions keep students engaged", bg: "rgba(16, 185, 129, 0.12)", color: "text-success" }
+                    { icon: "cpu", title: "Edge CV", desc: "Real-time webcam hand gesture recognition", bg: "rgba(59, 130, 246, 0.12)", color: "text-primary" },
+                    { icon: "sparkles", title: "Auto Scoring", desc: "Instant evaluation of QCM quizzes and challenges", bg: "rgba(139, 92, 246, 0.12)", color: "text-info" },
+                    { icon: "award", title: "Verified Badges", desc: "Cryptographic proof of lecture attendance", bg: "rgba(236, 72, 153, 0.12)", color: "text-warning" },
+                    { icon: "zap", title: "Instant Sync", desc: "Zero-latency synchronization across students", bg: "rgba(16, 185, 129, 0.12)", color: "text-success" }
                 ]
             }
         ];
 
-        let currentSlideIdx = 0;
+        // Initialize presentation engine on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) window.lucide.createIcons();
 
-        function renderSlide(idx) {
-            if (idx < 0) idx = 0;
-            if (idx >= slides.length) idx = slides.length - 1;
-            currentSlideIdx = idx;
+            // Check if uploaded file is a PDF
+            if (rawFilePath && (rawFilePath.toLowerCase().endsWith('.pdf') || rawFileType === 'pdf')) {
+                loadPdfPresentation(rawFilePath);
+            } else if (rawFilePath && (rawFileType === 'image' || /\.(png|jpe?g|webp)$/i.test(rawFilePath))) {
+                loadImagePresentation(rawFilePath);
+            } else {
+                loadHtmlPresentation();
+            }
+        });
 
-            const s = slides[idx];
+        // ---------------- 1. PDF Presentation Engine (PDF.js) ----------------
+        async function loadPdfPresentation(url) {
+            currentMode = 'pdf';
+            document.getElementById('pdf-slide-viewport').classList.remove('d-none');
+            document.getElementById('image-slide-viewport').classList.add('d-none');
+            document.getElementById('html-slide-viewport').classList.add('d-none');
+            document.getElementById('pdf-zoom-controls').style.display = 'inline-flex';
+            document.getElementById('slide-mode-badge').textContent = '● PDF Presentation Live';
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                totalSlides = pdfDoc.numPages;
+                currentSlideIdx = 1;
+
+                document.getElementById('pdf-loading-spinner').style.display = 'none';
+                renderPdfPage(1);
+            } catch (err) {
+                console.warn('PDF load error, falling back to HTML deck:', err);
+                loadHtmlPresentation();
+            }
+        }
+
+        async function renderPdfPage(num) {
+            isPdfRendering = true;
+            const page = await pdfDoc.getPage(num);
+            const canvas = document.getElementById('pdf-slide-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Compute optimal viewport scale to fit stage height
+            const containerHeight = document.getElementById('pdf-slide-viewport').clientHeight || 550;
+            const unscaledViewport = page.getViewport({ scale: 1.0 });
+            const fitScale = (containerHeight / unscaledViewport.height) * pdfScale;
+            const viewport = page.getViewport({ scale: fitScale });
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+
+            await page.render(renderContext).promise;
+            isPdfRendering = false;
+
+            if (pendingPageNum !== null) {
+                renderPdfPage(pendingPageNum);
+                pendingPageNum = null;
+            }
+
+            updateSlideIndicators(num, totalSlides);
+        }
+
+        function queueRenderPdfPage(num) {
+            if (isPdfRendering) {
+                pendingPageNum = num;
+            } else {
+                renderPdfPage(num);
+            }
+        }
+
+        function zoomSlide(delta) {
+            pdfScale = Math.max(0.6, Math.min(2.5, pdfScale + delta));
+            if (pdfDoc) queueRenderPdfPage(currentSlideIdx);
+        }
+
+        function resetZoom() {
+            pdfScale = 1.35;
+            if (pdfDoc) queueRenderPdfPage(currentSlideIdx);
+        }
+
+        // ---------------- 2. Image Presentation Engine ----------------
+        function loadImagePresentation(url) {
+            currentMode = 'image';
+            document.getElementById('pdf-slide-viewport').classList.add('d-none');
+            document.getElementById('html-slide-viewport').classList.add('d-none');
+            document.getElementById('image-slide-viewport').classList.remove('d-none');
+            document.getElementById('image-slide-img').src = url;
+            totalSlides = 1;
+            updateSlideIndicators(1, 1);
+        }
+
+        // ---------------- 3. HTML Slide Deck Engine (Fallback) ----------------
+        function loadHtmlPresentation() {
+            currentMode = 'html';
+            document.getElementById('pdf-slide-viewport').classList.add('d-none');
+            document.getElementById('image-slide-viewport').classList.add('d-none');
+            document.getElementById('html-slide-viewport').classList.remove('d-none');
+            totalSlides = demoHtmlSlides.length;
+            currentSlideIdx = 1;
+            renderHtmlSlide(0);
+        }
+
+        function renderHtmlSlide(idx) {
+            const s = demoHtmlSlides[idx];
             document.getElementById('slide-category-badge').textContent = s.category;
-            document.getElementById('slide-counter-badge').textContent = `SLIDE ${idx + 1} OF ${slides.length}`;
-            document.getElementById('slide-title').textContent = s.title;
-            document.getElementById('slide-desc').textContent = s.desc;
-            document.getElementById('slide-notes').textContent = s.notes;
-            document.getElementById('footer-slide-num').textContent = `Slide ${idx + 1} / ${slides.length}`;
+            document.getElementById('html-slide-title').textContent = s.title;
+            document.getElementById('html-slide-desc').textContent = s.desc;
+            document.getElementById('slide-tip-text').textContent = s.notes;
 
             let cardsHtml = '';
             s.cards.forEach(c => {
                 cardsHtml += `
                     <div class="col-md-3">
-                        <div class="p-4 rounded-4 text-center h-100" style="background: ${c.bg}; border: 1px solid rgba(255, 255, 255, 0.08);">
-                            <i data-lucide="${c.icon}" class="${c.color} mb-2" style="width: 32px; height: 32px;"></i>
+                        <div class="p-3.5 rounded-4 text-center h-100" style="background: ${c.bg}; border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <i data-lucide="${c.icon}" class="${c.color} mb-2" style="width: 28px; height: 28px;"></i>
                             <h6 class="fw-bold text-white mb-1">${c.title}</h6>
                             <small class="text-white-50">${c.desc}</small>
                         </div>
                     </div>
                 `;
             });
-            document.getElementById('slide-body-content').innerHTML = cardsHtml;
+            document.getElementById('html-slide-cards').innerHTML = cardsHtml;
             if (window.lucide) window.lucide.createIcons();
+
+            updateSlideIndicators(idx + 1, totalSlides);
         }
 
+        // ---------------- Universal Slide Navigation (Prev / Next) ----------------
         function changeSlide(dir) {
-            renderSlide(currentSlideIdx + dir);
+            if (currentMode === 'pdf') {
+                if (!pdfDoc) return;
+                const nextNum = currentSlideIdx + dir;
+                if (nextNum >= 1 && nextNum <= totalSlides) {
+                    currentSlideIdx = nextNum;
+                    queueRenderPdfPage(currentSlideIdx);
+                }
+            } else if (currentMode === 'html') {
+                let nextIdx = (currentSlideIdx - 1) + dir;
+                if (nextIdx < 0) nextIdx = 0;
+                if (nextIdx >= demoHtmlSlides.length) nextIdx = demoHtmlSlides.length - 1;
+                currentSlideIdx = nextIdx + 1;
+                renderHtmlSlide(nextIdx);
+            }
         }
 
-        // Keyboard Controls (Left Arrow = Prev, Right Arrow = Next)
+        function updateSlideIndicators(current, total) {
+            document.getElementById('slide-counter-badge').textContent = `SLIDE ${current} OF ${total}`;
+            document.getElementById('footer-slide-num').textContent = `Slide ${current} / ${total}`;
+        }
+
+        // Keyboard Controls
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'Space') {
+            if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'PageDown') {
                 changeSlide(1);
-            } else if (e.key === 'ArrowLeft') {
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
                 changeSlide(-1);
             }
         });
 
         // =====================================================================
-        // CAMERA GESTURE TRACKING (1 Finger = Prev, 2 Fingers = Next)
+        // CAMERA AI GESTURE TRACKING (1 Finger = Prev, 2 Fingers = Next)
+        // WITH ZONE TARGETING TO COMPLETELY AVOID FACE FALSE-POSITIVES
         // =====================================================================
         let isCamActive = false;
         let camStream = null;
         let gestureInterval = null;
-        let lastGestureTime = 0;
+        let lastGestureTriggerTime = 0;
+        let holdGestureType = 0;
+        let holdGestureFrames = 0;
 
         async function toggleWebCam() {
             const camBox = document.getElementById('camera-box');
@@ -407,8 +621,8 @@
                     video.srcObject = camStream;
                     camBox.style.display = 'block';
                     isCamActive = true;
-                    btnText.textContent = 'Disable Camera Gesture / បិទកាមេរ៉ា';
-                    document.getElementById('gesture-live-status').textContent = 'Tracking gestures (☝️ / ✌️)...';
+                    btnText.textContent = 'Disable Camera / បិទកាមេរ៉ា Gesture';
+                    document.getElementById('gesture-live-status').textContent = 'Tracking hands in Gesture Zone...';
                     startGestureAnalysis();
                 } catch (err) {
                     alert('កាមេរ៉ាមិនអាចបើកបានទេ (Camera permission denied or camera not found): ' + err.message);
@@ -434,18 +648,16 @@
             }, 1800);
         }
 
-        function triggerGesture(fingerCount) {
+        function triggerGestureAction(fingerCount) {
             const now = Date.now();
-            if (now - lastGestureTime < 1600) return; // Debounce 1.6s
-            lastGestureTime = now;
+            if (now - lastGestureTriggerTime < 1400) return; // Debounce 1.4s
+            lastGestureTriggerTime = now;
 
             if (fingerCount === 1) {
-                // 1 finger up = Slide Previous (ថយក្រោយ)
-                showGestureBadge('☝️', 'ម្រាមដៃ 1 ៖ ថយក្រោយ (Previous Slide)');
+                showGestureBadge('☝️', 'ម្រាមដៃ ១ ៖ ស្លាយថយក្រោយ (Previous Slide)');
                 changeSlide(-1);
             } else if (fingerCount === 2) {
-                // 2 fingers up = Slide Next (ទៅមុខ)
-                showGestureBadge('✌️', 'ម្រាមដៃ 2 ៖ ទៅមុខ (Next Slide)');
+                showGestureBadge('✌️', 'ម្រាមដៃ ២ ៖ ស្លាយបន្ទាប់ (Next Slide)');
                 changeSlide(1);
             }
         }
@@ -454,6 +666,8 @@
             const video = document.getElementById('webcam-feed');
             const canvas = document.getElementById('gesture-canvas');
             const ctx = canvas.getContext('2d');
+            const targetStatus = document.getElementById('target-zone-status');
+            const liveStatus = document.getElementById('gesture-live-status');
 
             gestureInterval = setInterval(() => {
                 if (!isCamActive || video.readyState !== 4) return;
@@ -461,43 +675,83 @@
                 const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = frame.data;
 
-                // Simple skin color & brightness thresholding to count hand silhouette peaks in upper half
-                let columnHits = new Array(canvas.width).fill(0);
-                for (let y = 10; y < canvas.height * 0.6; y++) {
-                    for (let x = 10; x < canvas.width - 10; x++) {
+                // Dedicated Gesture Zone: upper right portion of mirrored frame
+                // In canvas coords: x from 10 to 80 (mirrored left is user's raised hand!), y from 10 to 90
+                const zoneX1 = 15;
+                const zoneX2 = 85;
+                const zoneY1 = 10;
+                const zoneY2 = 85;
+
+                let colHits = new Array(zoneX2 - zoneX1).fill(0);
+                let totalHits = 0;
+
+                for (let y = zoneY1; y < zoneY2; y++) {
+                    for (let x = zoneX1; x < zoneX2; x++) {
                         const idx = (y * canvas.width + x) * 4;
                         const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-                        // Skin tone heuristic: r > 95, g > 40, b > 20, r > g, r - b > 15
-                        if (r > 95 && g > 40 && b > 20 && r > g && (r - b) > 15) {
-                            columnHits[x]++;
+                        // Robust Skin detection in RGB
+                        if (r > 90 && g > 45 && b > 25 && r > g && (r - b) > 15 && (r - g) < 85) {
+                            colHits[x - zoneX1]++;
+                            totalHits++;
                         }
                     }
                 }
 
-                // Count peaks across horizontal columns
-                let peaks = 0;
-                let inPeak = false;
-                for (let x = 15; x < canvas.width - 15; x++) {
-                    if (columnHits[x] > 18) {
-                        if (!inPeak) {
-                            peaks++;
-                            inPeak = true;
-                        }
-                    } else if (columnHits[x] < 8) {
-                        inPeak = false;
-                    }
-                }
+                // If sufficient hand pixels are present inside the gesture zone
+                if (totalHits > 120) {
+                    targetStatus.textContent = 'DETECTING';
+                    targetStatus.className = 'badge bg-warning text-dark';
 
-                if (peaks === 1) {
-                    document.getElementById('gesture-live-status').textContent = '☝️ Detected 1 Finger (Previous)';
-                    triggerGesture(1);
-                } else if (peaks === 2) {
-                    document.getElementById('gesture-live-status').textContent = '✌️ Detected 2 Fingers (Next)';
-                    triggerGesture(2);
+                    // Count finger tip vertical peaks across columns
+                    let peaks = 0;
+                    let inPeak = false;
+                    for (let i = 2; i < colHits.length - 2; i++) {
+                        if (colHits[i] > 18) {
+                            if (!inPeak) {
+                                peaks++;
+                                inPeak = true;
+                            }
+                        } else if (colHits[i] < 8) {
+                            inPeak = false;
+                        }
+                    }
+
+                    if (peaks === 1) {
+                        liveStatus.innerHTML = '<span class="text-warning fw-bold">☝️ ម្រាមដៃ ១ (Prev)</span>';
+                        if (holdGestureType === 1) {
+                            holdGestureFrames++;
+                            if (holdGestureFrames >= 2) {
+                                triggerGestureAction(1);
+                                holdGestureFrames = 0;
+                            }
+                        } else {
+                            holdGestureType = 1;
+                            holdGestureFrames = 1;
+                        }
+                    } else if (peaks >= 2) {
+                        liveStatus.innerHTML = '<span class="text-success fw-bold">✌️ ម្រាមដៃ ២ (Next)</span>';
+                        if (holdGestureType === 2) {
+                            holdGestureFrames++;
+                            if (holdGestureFrames >= 2) {
+                                triggerGestureAction(2);
+                                holdGestureFrames = 0;
+                            }
+                        } else {
+                            holdGestureType = 2;
+                            holdGestureFrames = 1;
+                        }
+                    } else {
+                        liveStatus.textContent = 'លើកម្រាមដៃ ១ ឬ ២ (Hold 1 or 2 fingers)';
+                        holdGestureFrames = 0;
+                    }
                 } else {
-                    document.getElementById('gesture-live-status').textContent = 'Ready for Gestures (☝️ Prev | ✌️ Next)';
+                    targetStatus.textContent = 'READY';
+                    targetStatus.className = 'badge bg-success bg-opacity-75';
+                    liveStatus.textContent = 'លើកដៃក្នុងប្រអប់ (Raise hand in box)';
+                    holdGestureFrames = 0;
+                    holdGestureType = 0;
                 }
-            }, 300);
+            }, 250);
         }
 
         function toggleFullscreen() {
@@ -507,10 +761,6 @@
                 if (document.exitFullscreen) document.exitFullscreen();
             }
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderSlide(0);
-        });
     </script>
 </body>
 </html>

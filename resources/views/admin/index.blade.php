@@ -793,19 +793,47 @@
 
         <div class="col-md-6">
             <div class="admin-card p-3 p-md-4 h-100">
-                <h6 class="fw-bold mb-2"><i data-lucide="upload" style="width: 16px; height: 16px;" class="me-1"></i> Upload Slide Deck (PDF / PPT / Word)</h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold mb-0"><i data-lucide="upload" style="width: 16px; height: 16px;" class="me-1"></i> Upload Slide Deck (PDF / PPT / Image)</h6>
+                    @if($teachingSlides && $teachingSlides->file_path)
+                        <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 10.5px;">
+                            <i data-lucide="check-circle" style="width: 11px; height: 11px; vertical-align: -1px;"></i> Active File Ready
+                        </span>
+                    @endif
+                </div>
+
+                @if($teachingSlides && $teachingSlides->file_path)
+                    <div class="p-2.5 rounded-3 bg-body-tertiary border mb-3 small d-flex justify-content-between align-items-center">
+                        <div class="text-truncate me-2">
+                            <span class="text-secondary d-block" style="font-size: 10px;">CURRENT PRESENTATION FILE:</span>
+                            <strong class="text-truncate d-block">{{ $teachingSlides->title }} ({{ $teachingSlides->course }})</strong>
+                            <small class="text-secondary font-monospace" style="font-size: 10px;">{{ basename($teachingSlides->file_path) }}</small>
+                        </div>
+                        <a href="{{ route('admin.slides.fullscreen') }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold flex-shrink-0" style="font-size: 11px;">
+                            <i data-lucide="presentation" style="width: 13px; height: 13px;"></i> បើកស្លាយ
+                        </a>
+                    </div>
+                @endif
+
                 <form action="{{ route('admin.slides.upload') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-2">
-                        <input type="text" name="title" class="form-control form-control-sm" required placeholder="Slide Deck Title (e.g. Design Tokens Lecture)">
+                        <label class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">Slide Deck Title</label>
+                        <input type="text" name="title" class="form-control form-control-sm" required placeholder="Slide Deck Title (e.g. Digital AI Lecture)" value="{{ $teachingSlides ? $teachingSlides->title : '' }}">
                     </div>
                     <div class="mb-2">
-                        <input type="text" name="course" class="form-control form-control-sm" required placeholder="Course Code (e.g. DES302)">
+                        <label class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">Course Code</label>
+                        <input type="text" name="course" class="form-control form-control-sm" required placeholder="Course Code (e.g. DGT01)" value="{{ $teachingSlides ? $teachingSlides->course : '' }}">
                     </div>
-                    <div class="mb-2">
-                        <input type="file" name="slide_file" class="form-control form-control-sm" accept=".pdf,.ppt,.pptx,.doc,.docx">
+                    <div class="mb-2.5">
+                        <label class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">Choose Slide File (PDF recommended, or PPT / Image)</label>
+                        <input type="file" name="slide_file" class="form-control form-control-sm" accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.webp">
+                        <small class="text-secondary d-block mt-1" style="font-size: 10.5px;">💡 គន្លឹះ៖ ដើម្បីឱ្យការបញ្ជាស្លាយតាមម្រាមដៃ (AI Gesture) ដើររលូន និងច្បាស់បំផុត សូម Upload ជា File <strong>PDF</strong></small>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Upload Slide Deck</button>
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-1.5 py-2">
+                        <i data-lucide="cloud-upload" style="width: 15px; height: 15px;"></i>
+                        <span>Upload & Save Slide Deck</span>
+                    </button>
                 </form>
             </div>
         </div>

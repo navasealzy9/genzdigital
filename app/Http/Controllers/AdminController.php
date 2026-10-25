@@ -684,7 +684,7 @@ class AdminController extends Controller
         $request->validate([
             'title' => 'required|string|max:191',
             'course' => 'required|string|max:191',
-            'slide_file' => 'nullable|file|mimes:pdf,ppt,pptx,doc,docx|max:51200',
+            'slide_file' => 'nullable|file|mimes:pdf,ppt,pptx,doc,docx,png,jpg,jpeg,webp|max:51200',
         ]);
 
         $filePath = null;
@@ -694,18 +694,34 @@ class AdminController extends Controller
             $file = $request->file('slide_file');
             $ext = strtolower($file->getClientOriginalExtension());
             $filename = 'slides_' . time() . '.' . $ext;
+            if (!file_exists(public_path('uploads/slides'))) {
+                mkdir(public_path('uploads/slides'), 0777, true);
+            }
             $file->move(public_path('uploads/slides'), $filename);
             $filePath = '/uploads/slides/' . $filename;
-            $fileType = in_array($ext, ['ppt', 'pptx']) ? 'presentation' : (in_array($ext, ['doc', 'docx']) ? 'word' : 'pdf');
+            
+            if (in_array($ext, ['png', 'jpg', 'jpeg', 'webp'])) {
+                $fileType = 'image';
+            } elseif (in_array($ext, ['ppt', 'pptx'])) {
+                $fileType = 'presentation';
+            } elseif (in_array($ext, ['doc', 'docx'])) {
+                $fileType = 'word';
+            } else {
+                $fileType = 'pdf';
+            }
         }
+
+        $existing = DB::table('campus_teaching_slides')->where('id', 1)->first();
+        $finalPath = $filePath ?: ($existing ? $existing->file_path : '/uploads/slides/slides_1792829007.pdf');
+        $finalType = $request->hasFile('slide_file') ? $fileType : ($existing ? $existing->file_type : 'pdf');
 
         DB::table('campus_teaching_slides')->updateOrInsert(
             ['id' => 1],
             [
                 'title' => $request->title,
                 'course' => $request->course,
-                'file_path' => $filePath ?: '/assets/docs/teaching_sample.pdf',
-                'file_type' => $fileType,
+                'file_path' => $finalPath,
+                'file_type' => $finalType,
                 'gesture_enabled' => true,
                 'current_slide' => 1,
                 'total_slides' => 6,
