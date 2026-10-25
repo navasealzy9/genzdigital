@@ -1325,19 +1325,29 @@
             </div>
         </div>
         <span class="badge bg-primary-subtle text-primary py-2 px-3 rounded-pill fw-bold">
-            <i data-lucide="file-text" style="width: 14px; height: 14px;" class="me-1"></i> {{ $exams->count() }} Exams Active
+            <i data-lucide="file-text" style="width: 14px; height: 14px;" class="me-1"></i> {{ $exams->filter(function($e) { $ts = strtotime(str_replace(['•', '|'], ' ', $e->exam_date)); return $e->status === 'Active' || ($ts && $ts <= time()); })->count() }} Exams Active
         </span>
     </div>
 
-    <!-- Exam Cards with Take Exam (QCM) Button (Active when Admin Opens) -->
+    <!-- Exam Cards with Take Exam (QCM) Button (Active when Admin Opens or Scheduled Time Arrives) -->
     <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
         @forelse($exams as $exam)
+            @php
+                $isOpen = ($exam->status === 'Active');
+                if (!$isOpen && !empty($exam->exam_date)) {
+                    $cleanDate = str_replace(['•', '|'], ' ', $exam->exam_date);
+                    $examTs = strtotime($cleanDate);
+                    if ($examTs && $examTs <= time()) {
+                        $isOpen = true; // Auto-unlock if scheduled exam time has arrived
+                    }
+                }
+            @endphp
             <div class="col">
-                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 {{ $exam->status === 'Active' ? 'border-success' : 'border-secondary' }}">
+                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 {{ $isOpen ? 'border-success' : 'border-secondary' }}">
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge {{ $exam->status === 'Active' ? 'bg-primary' : 'bg-secondary' }} text-white fw-bold">{{ $exam->category ?: 'Midterm exam' }}</span>
-                            @if($exam->status === 'Active')
+                            <span class="badge {{ $isOpen ? 'bg-primary' : 'bg-secondary' }} text-white fw-bold">{{ $exam->category ?: 'Midterm exam' }}</span>
+                            @if($isOpen)
                                 <span class="badge bg-success text-white fw-bold"><i data-lucide="unlock" style="width: 12px; height: 12px;" class="me-1"></i> ADMIN បានបើក (OPEN)</span>
                             @else
                                 <span class="badge bg-secondary-subtle text-secondary fw-bold"><i data-lucide="lock" style="width: 12px; height: 12px;" class="me-1"></i> រង់ចាំ ADMIN បើក (LOCKED)</span>
@@ -1355,7 +1365,7 @@
                     </div>
                     
                     <div class="pt-3 border-top">
-                        @if($exam->status === 'Active')
+                        @if($isOpen)
                             <button class="btn btn-success w-100 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-2" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})">
                                 <i data-lucide="pencil-line" style="width: 16px; height: 16px;"></i>
                                 <span>ចូលប្រឡង QCM (Take Exam - Auto Score)</span>

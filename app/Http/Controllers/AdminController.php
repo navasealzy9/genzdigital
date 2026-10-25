@@ -476,7 +476,7 @@ class AdminController extends Controller
             'category' => $request->category,
             'duration_minutes' => $request->input('duration_minutes', 45),
             'total_points' => $request->input('total_points', 100),
-            'status' => 'Scheduled',
+            'status' => $request->input('status', 'Active'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -491,7 +491,7 @@ class AdminController extends Controller
         return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', 'Exam removed.');
     }
 
-    public function toggleExamStatus($id)
+    public function toggleExamStatus(Request $request, $id)
     {
         $exam = DB::table('campus_exams')->where('id', $id)->first();
         if ($exam) {
@@ -500,7 +500,15 @@ class AdminController extends Controller
                 'status' => $newStatus,
                 'updated_at' => now(),
             ]);
-            return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', "Exam {$exam->title} status updated to {$newStatus}!");
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'status' => $newStatus]);
+            }
+
+            $msg = ($newStatus === 'Active') 
+                ? "ការប្រឡង {$exam->title} ត្រូវបានបើកឱ្យសិស្សចូលប្រឡងបានភ្លាមៗ (Active)!" 
+                : "ការប្រឡង {$exam->title} ត្រូវបានបិទចាក់សោ (Scheduled)!";
+            return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', $msg);
         }
         return redirect()->route('admin.index', ['tab' => 'exams'])->with('error', 'Exam not found.');
     }

@@ -607,8 +607,15 @@
                 <div class="admin-card p-4 h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-primary text-white fw-bold">{{ $ex->category ?: 'Midterm exam' }}</span>
-                            <span class="badge bg-secondary-subtle text-secondary font-monospace">{{ $ex->course }}</span>
+                            <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                <span class="badge bg-primary text-white fw-bold">{{ $ex->category ?: 'Midterm exam' }}</span>
+                                <span class="badge bg-secondary-subtle text-secondary font-monospace">{{ $ex->course }}</span>
+                            </div>
+                            @if($ex->status === 'Active')
+                                <span class="badge bg-success text-white fw-bold"><i data-lucide="unlock" style="width: 12px; height: 12px;" class="me-1"></i> Active (បើកដំណើរការ)</span>
+                            @else
+                                <span class="badge bg-secondary text-white fw-bold"><i data-lucide="lock" style="width: 12px; height: 12px;" class="me-1"></i> Scheduled (ចាក់សោ)</span>
+                            @endif
                         </div>
                         <h5 class="fw-bold mb-1">{{ $ex->title }}</h5>
                         <p class="text-secondary small mb-2">
@@ -623,10 +630,28 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#qcmModal_{{ $ex->id }}">
-                            <i data-lucide="list-plus" style="width: 14px; height: 14px;" class="me-1"></i> Manage QCM Questions
-                        </button>
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- Instant Toggle Open / Lock Exam Button -->
+                            <form action="{{ route('admin.exams.toggle', $ex->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @if($ex->status === 'Active')
+                                    <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1" title="ចុចដើម្បីបិទការប្រឡង">
+                                        <i data-lucide="lock" style="width: 13px; height: 13px;"></i>
+                                        <span>បិទការប្រឡង (Lock)</span>
+                                    </button>
+                                @else
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm" title="ចុចដើម្បីបើកឱ្យសិស្សចូលប្រឡងបានភ្លាមៗ">
+                                        <i data-lucide="unlock" style="width: 13px; height: 13px;"></i>
+                                        <span>🟢 បើកឱ្យសិស្សប្រឡងភ្លាមៗ (Open Now)</span>
+                                    </button>
+                                @endif
+                            </form>
+
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#qcmModal_{{ $ex->id }}">
+                                <i data-lucide="list-plus" style="width: 14px; height: 14px;" class="me-1"></i> QCM ({{ $examQuestions->where('exam_id', $ex->id)->count() }})
+                            </button>
+                        </div>
                         <form action="{{ route('admin.exams.delete', $ex->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this exam?')">
                             @csrf
                             @method('DELETE')
@@ -1772,6 +1797,14 @@
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Room</label>
                         <input type="text" name="room" class="form-control" required placeholder="e.g. Lab 402 • Media Wing">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">ស្ថានភាពពេលបង្កើត (Exam Status)</label>
+                        <select name="status" class="form-select">
+                            <option value="Active" selected>🟢 បើកឱ្យសិស្សប្រឡងភ្លាមៗ (Active - Open Immediately)</option>
+                            <option value="Scheduled">🔒 រង់ចាំបើកតាមម៉ោង (Scheduled - Locked until opened)</option>
+                        </select>
+                        <small class="text-secondary" style="font-size: 11px;">បើជ្រើសរើស Active សិស្សនឹងអាចចុចចូលប្រឡងបានភ្លាមៗ។</small>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">

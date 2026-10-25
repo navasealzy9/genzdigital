@@ -943,6 +943,52 @@ class CampusController extends Controller
             ->where('exam_id', $id)
             ->get(['id', 'exam_id', 'question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'points']);
 
+        if ($questions->isEmpty()) {
+            $courseLabel = $exam->course ?: 'Campus';
+            DB::table('campus_exam_questions')->insert([
+                [
+                    'exam_id' => $id,
+                    'question_text' => "តើគោលការណ៍គ្រឹះនៃមុខវិជ្ជា {$courseLabel} ({$exam->title}) ផ្ដោតសំខាន់លើអ្វី?",
+                    'option_a' => 'ការយល់ដឹងពីប្រព័ន្ធ Architecture និង Standards ស្របតាមបច្ចេកវិទ្យា',
+                    'option_b' => 'ការដំឡើង Hardware ដោយដៃផ្ទាល់',
+                    'option_c' => 'ការគូររូបលើក្រដាសដោយមិនប្រើ Software',
+                    'option_d' => 'ការបិទដំណើរការប្រព័ន្ធកុំព្យូទ័រ',
+                    'correct_option' => 'A',
+                    'points' => 30,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'exam_id' => $id,
+                    'question_text' => "នៅក្នុងការអនុវត្តជាក់ស្ដែង តើវិធីសាស្ត្រណាដែលផ្ដល់ប្រសិទ្ធភាពខ្ពស់បំផុតសម្រាប់ {$exam->title}?",
+                    'option_a' => 'ការសាកល្បងដោយគ្មានការរៀបចំផែនការ',
+                    'option_b' => 'ការអនុវត្តតាម Best Practices & Agile Iterations',
+                    'option_c' => 'ការចម្លងកូដដោយមិនយល់ពី Structure',
+                    'option_d' => 'ការមិនធ្វើ Testing មុនពេល Deploy',
+                    'correct_option' => 'B',
+                    'points' => 35,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'exam_id' => $id,
+                    'question_text' => "តើឧបករណ៍ ឬ Framework ណាដែលស័ក្តិសមបំផុតសម្រាប់ Modern Workflows?",
+                    'option_a' => 'Legacy Command Line Tools ជំនាន់ចាស់',
+                    'option_b' => 'Automated CI/CD & Modern Reactive Systems',
+                    'option_c' => 'Manual File Copying តាម USB',
+                    'option_d' => 'Single Threaded Uncached Scripts',
+                    'correct_option' => 'B',
+                    'points' => 35,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+
+            $questions = DB::table('campus_exam_questions')
+                ->where('exam_id', $id)
+                ->get(['id', 'exam_id', 'question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'points']);
+        }
+
         return response()->json([
             'success' => true,
             'exam' => $exam,
