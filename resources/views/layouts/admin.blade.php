@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>window.BASE_URL = "{{ url('/') }}";</script>
 
@@ -291,6 +291,25 @@
             border-color: #10b981;
             background: rgba(16, 185, 129, 0.12);
             transform: scale(1.02);
+        }
+
+        /* Responsive scaling: Desktop, Tablet, Mobile */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 575.98px) {
+            .admin-main-content {
+                padding: 1rem !important;
+            }
+            .form-control, .form-select {
+                font-size: 16px !important;
+            }
+            .btn {
+                touch-action: manipulation;
+            }
         }
     </style>
 </head>

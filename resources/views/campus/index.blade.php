@@ -103,7 +103,7 @@
             <div class="auth-form-panel">
                 
                 <!-- Top Controls Bar -->
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 10.5px; letter-spacing: 0.05em;">
                         CAMPUS OS v26.0
                     </span>
@@ -120,18 +120,34 @@
                     </div>
                 </div>
 
+                <!-- Tablet Brand Banner (Visible only on 576px - 991px) -->
+                <div class="tablet-brand-banner">
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-1.5">
+                        <img src="{{ asset('images/genz-logo.png') }}?v=26.1" alt="GenZ Digital Logo" style="width: 28px; height: 28px; object-fit: contain;">
+                        <span class="fw-bold fs-6">GenZ Digital Campus OS</span>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size: 10px;">v26.0</span>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 text-secondary" style="font-size: 11px;">
+                        <span>⚡ QR Pass Attendance</span>
+                        <span>•</span>
+                        <span>📚 Classroom & Exams</span>
+                        <span>•</span>
+                        <span>🏆 Digital Certificates</span>
+                    </div>
+                </div>
+
                 <!-- Center Form Container -->
                 <div class="auth-form-container">
                     
                     <!-- Brand Presence -->
-                    <div class="text-center mb-4">
+                    <div class="text-center mb-3 mb-md-4">
                         <div class="showcase-brand-logo-box mx-auto mb-2" style="width: 52px; height: 52px; border: 1.5px solid rgba(226, 232, 240, 0.9);">
                             <img src="{{ asset('images/genz-logo.png') }}?v=26.1" alt="GenZ Digital Logo" class="showcase-brand-logo-img">
                         </div>
-                        <h3 class="fw-bolder mb-1 text-body tracking-tight">
+                        <h3 class="fw-bolder mb-1 text-body tracking-tight fs-4 fs-md-3">
                             Welcome to <span class="gz-title-gradient">GenZ Digital</span>
                         </h3>
-                        <p class="text-secondary small mb-0" style="font-size: 13px;">
+                        <p class="text-secondary small mb-0" style="font-size: 12.5px;">
                             Campus OS • សូមចូលគណនីរបស់អ្នក
                         </p>
                     </div>

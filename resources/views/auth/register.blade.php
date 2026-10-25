@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Register - GenZ Digital Campus OS v26.0</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
@@ -30,6 +30,11 @@
         * {
             box-sizing: border-box;
         }
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
         body {
             font-family: var(--app-font);
             margin: 0;
@@ -38,7 +43,6 @@
             color: #0f172a;
             min-height: 100vh;
             min-height: 100dvh;
-            overflow-x: hidden;
         }
         [data-bs-theme="dark"] body {
             background: #090d16;
@@ -59,7 +63,7 @@
             position: relative;
             overflow: hidden;
             color: #ffffff;
-            padding: 3.5rem 3.5rem;
+            padding: clamp(2rem, 4vh, 3.5rem) clamp(2rem, 3.5vw, 3.5rem);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -117,7 +121,7 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 16px;
-            padding: 1.15rem 1.25rem;
+            padding: 1.1rem 1.25rem;
             transition: all 0.25s ease;
         }
         .showcase-feature-card:hover {
@@ -142,7 +146,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2.5rem 3rem;
+            padding: clamp(1.5rem, 3.5vh, 2.75rem) clamp(1.25rem, 3.5vw, 3rem);
             position: relative;
             overflow-y: auto;
         }
@@ -154,7 +158,7 @@
             width: 100%;
             max-width: 480px;
             margin: auto;
-            padding: 1rem 0;
+            padding: 0.75rem 0;
         }
 
         .gz-title-gradient {
@@ -192,6 +196,7 @@
             gap: 0.4rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            touch-action: manipulation;
         }
         .role-pill-btn.active {
             background: #ffffff;
@@ -205,11 +210,11 @@
         }
 
         .clean-field-group {
-            margin-bottom: 1rem;
+            margin-bottom: 0.95rem;
         }
         .clean-field-label {
             display: block;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             color: #475569;
             margin-bottom: 0.35rem;
@@ -281,6 +286,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            touch-action: manipulation;
         }
         .btn-submit-campus:hover {
             transform: translateY(-1px);
@@ -291,15 +297,65 @@
             transform: translateY(0);
         }
 
-        /* Mobile Adjustments (< 992px) */
-        @media (max-width: 991.98px) {
+        /* ---------------- Tablet Responsive Adjustments (576px - 991.98px) ---------------- */
+        .tablet-brand-banner {
+            display: none;
+        }
+        @media (min-width: 576px) and (max-width: 991.98px) {
             .auth-showcase-panel {
                 display: none;
             }
             .auth-form-panel {
                 flex: 1 1 100%;
-                padding: 2rem 1.25rem;
+                padding: 2.5rem 2rem;
                 justify-content: center;
+                align-items: center;
+            }
+            .tablet-brand-banner {
+                display: block;
+                max-width: 480px;
+                width: 100%;
+                margin: 0 auto 1.25rem auto;
+                background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(79, 70, 229, 0.05) 100%);
+                border: 1px solid rgba(37, 99, 235, 0.15);
+                border-radius: 16px;
+                padding: 0.9rem 1.25rem;
+                text-align: center;
+            }
+            [data-bs-theme="dark"] .tablet-brand-banner {
+                background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(30, 41, 59, 0.5) 100%);
+                border-color: rgba(96, 165, 250, 0.2);
+            }
+            .auth-form-container {
+                max-width: 480px;
+            }
+        }
+
+        /* ---------------- Mobile Responsive Adjustments (< 576px) ---------------- */
+        @media (max-width: 575.98px) {
+            .auth-showcase-panel {
+                display: none;
+            }
+            .auth-form-panel {
+                flex: 1 1 100%;
+                padding: 1.5rem 1.15rem;
+                padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+                justify-content: space-between;
+            }
+            .auth-form-container {
+                max-width: 100%;
+                padding: 0.5rem 0;
+            }
+            /* Prevent iOS Safari input auto-zoom */
+            .clean-input-box input, .clean-input-box select {
+                font-size: 16px !important;
+            }
+            .clean-input-box {
+                height: 48px;
+            }
+            .btn-submit-campus {
+                height: 48px;
+                font-size: 15px;
             }
         }
     </style>
@@ -329,7 +385,7 @@
             </div>
 
             <!-- Center Showcase Hero -->
-            <div class="position-relative z-1 my-auto py-4" style="max-width: 520px;">
+            <div class="position-relative z-1 my-auto py-3" style="max-width: 520px;">
                 <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
                     <span class="badge rounded-circle p-1 bg-success"></span>
                     <span class="small fw-semibold text-white-50" style="font-size: 11.5px;">Student & Faculty Onboarding • 2026</span>
@@ -338,7 +394,7 @@
                 <h1 class="display-6 fw-bold text-white mb-2" style="letter-spacing: -0.02em; line-height: 1.25;">
                     Empowering the Next Generation of Thinkers & Builders.
                 </h1>
-                <p class="text-white-50 mb-4" style="font-size: 14.5px; line-height: 1.6;">
+                <p class="text-white-50 mb-3.5" style="font-size: 14px; line-height: 1.6;">
                     ចូលរួមជាមួយសហគមន៍ GenZ Digital Campus OS ដើម្បីទទួលបានសិទ្ធិចូលរៀន, វត្តមានឌីជីថល, បណ្ណាល័យសៀវភៅ, និងវិញ្ញាបនបត្រទទួលស្គាល់ជាផ្លូវការ។
                 </p>
 
@@ -390,7 +446,7 @@
         <div class="auth-form-panel">
             
             <!-- Top Controls Bar -->
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center mb-2">
                 <a href="{{ route('campus.index') }}" class="d-inline-flex align-items-center gap-1 text-decoration-none text-secondary small fw-semibold" style="font-size: 12px;">
                     <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
                     <span>Campus Home</span>
@@ -408,20 +464,34 @@
                 </div>
             </div>
 
+            <!-- Tablet Brand Banner (Visible only on 576px - 991px) -->
+            <div class="tablet-brand-banner">
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                    <img src="{{ asset('images/genz-logo.png') }}?v=26.1" alt="GenZ Digital Logo" style="width: 28px; height: 28px; object-fit: contain;">
+                    <span class="fw-bold fs-6">GenZ Digital Campus OS</span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size: 10px;">v26.0</span>
+                </div>
+                <div class="d-flex justify-content-center gap-3 text-secondary" style="font-size: 11px;">
+                    <span>🎓 Student Enrollment</span>
+                    <span>•</span>
+                    <span>🛡️ Faculty Portal</span>
+                </div>
+            </div>
+
             <!-- Center Form Container -->
             <div class="auth-form-container">
                 
                 <!-- Brand Presence -->
                 <div class="text-center mb-3">
-                    <a href="{{ url('/') }}" class="d-inline-block mb-2 text-decoration-none">
-                        <div class="showcase-brand-logo-box mx-auto" style="width: 50px; height: 50px; border: 1.5px solid rgba(226, 232, 240, 0.9);">
+                    <a href="{{ url('/') }}" class="d-inline-block mb-1.5 text-decoration-none">
+                        <div class="showcase-brand-logo-box mx-auto" style="width: 48px; height: 48px; border: 1.5px solid rgba(226, 232, 240, 0.9);">
                             <img src="{{ asset('images/genz-logo.png') }}?v=26.1" alt="GenZ Digital Logo" class="showcase-brand-logo-img">
                         </div>
                     </a>
-                    <h3 class="fw-bolder mb-1 text-body tracking-tight">
+                    <h3 class="fw-bolder mb-1 text-body tracking-tight fs-4 fs-md-3">
                         <span class="gz-title-gradient">Create Your Campus Account</span>
                     </h3>
-                    <p class="text-secondary small mb-0" style="font-size: 13px;">
+                    <p class="text-secondary small mb-0" style="font-size: 12.5px;">
                         GenZ Digital Campus OS • ចុះឈ្មោះគណនីថ្មី
                     </p>
                 </div>
@@ -442,7 +512,7 @@
                     @csrf
 
                     <!-- Segmented Role Selector -->
-                    <div class="mb-3">
+                    <div class="mb-2.5">
                         <label class="clean-field-label">SELECT ACCOUNT ROLE</label>
                         <div class="role-selector-pill">
                             <input type="radio" name="role" id="role-student" value="student" class="d-none" checked>

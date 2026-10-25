@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>window.BASE_URL = "{{ url('/') }}";</script>
 
@@ -937,14 +937,68 @@
             flex-shrink: 0;
         }
 
-        @media (max-width: 991.98px) {
+        /* ---------------- Tablet Responsive Adjustments (576px - 991.98px) ---------------- */
+        .tablet-brand-banner {
+            display: none;
+        }
+        @media (min-width: 576px) and (max-width: 991.98px) {
             .auth-showcase-panel {
                 display: none;
             }
             .auth-form-panel {
                 flex: 1 1 100%;
-                padding: 2rem 1.25rem;
+                padding: 2.5rem 2rem;
                 justify-content: center;
+                align-items: center;
+            }
+            .tablet-brand-banner {
+                display: block;
+                max-width: 480px;
+                width: 100%;
+                margin: 0 auto 1.5rem auto;
+                background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(79, 70, 229, 0.05) 100%);
+                border: 1px solid rgba(37, 99, 235, 0.15);
+                border-radius: 16px;
+                padding: 1rem 1.25rem;
+                text-align: center;
+            }
+            [data-bs-theme="dark"] .tablet-brand-banner {
+                background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(30, 41, 59, 0.5) 100%);
+                border-color: rgba(96, 165, 250, 0.2);
+            }
+            .auth-form-container {
+                max-width: 460px;
+            }
+        }
+
+        /* ---------------- Mobile Responsive Adjustments (< 576px) ---------------- */
+        @media (max-width: 575.98px) {
+            .auth-showcase-panel {
+                display: none;
+            }
+            .auth-form-panel {
+                flex: 1 1 100%;
+                padding: 1.5rem 1.15rem;
+                padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+                justify-content: space-between;
+            }
+            .auth-form-container {
+                max-width: 100%;
+                padding: 0.5rem 0;
+            }
+            /* Prevent iOS Safari input auto-zoom */
+            .clean-input-box input, .clean-input-box select {
+                font-size: 16px !important;
+            }
+            .clean-input-box {
+                height: 48px;
+            }
+            .btn-submit-campus {
+                height: 48px;
+                font-size: 15px;
+            }
+            .demo-chip-card {
+                padding: 0.6rem 0.65rem;
             }
         }
 
