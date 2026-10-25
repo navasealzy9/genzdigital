@@ -8,84 +8,136 @@
 <div id="screen-home" class="screen-section">
     @guest
         <!-- ============================================================== -->
-        <!-- STATE 1: GUEST MOBILE APP EXPERIENCE                           -->
-        <!-- Flash Screen (Splash Screen with Logo) -> Mobile App Login     -->
+        <!-- STATE 1: GUEST ENTERPRISE AUTH EXPERIENCE                      -->
+        <!-- Split-Screen on Desktop, Clean Responsive Container on Mobile  -->
         <!-- ============================================================== -->
-        <div class="mobile-app-outer">
-            <!-- Ambient Glowing Backdrop -->
-            <div class="ambient-glow-orb-1"></div>
-            <div class="ambient-glow-orb-2"></div>
+        <div class="auth-split-wrapper">
 
-            <div class="mobile-app-card">
+            <!-- 1. LEFT SHOWCASE PANEL (Visible on Desktop >= 992px) -->
+            <div class="auth-showcase-panel">
+                <div class="showcase-glow-orb-1"></div>
+                <div class="showcase-glow-orb-2"></div>
 
-                <!-- 1. FLASH SCREEN (SPLASH SCREEN WITH APP LOGO ONLY) -->
-                <div id="app-splash-screen" class="mobile-splash-screen" onclick="skipSplash()" title="Click to skip">
-                    <div class="splash-inner text-center">
-                        <!-- GenZ Digital App Logo with Glowing Pulse -->
-                        <div class="splash-logo-wrapper mb-3">
-                            <div class="splash-glow-ring"></div>
-                            <img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Digital App Logo" class="splash-app-logo">
+                <!-- Top Brand Badge -->
+                <div class="position-relative z-1 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2.5">
+                        <div class="showcase-brand-logo-box">
+                            <img src="{{ asset('images/genz-logo.png') }}?v=26.1" alt="GenZ Digital Logo" class="showcase-brand-logo-img">
                         </div>
-
-                        <!-- Brand Title -->
-                        <div class="splash-app-title mb-1">
-                            <span class="gz-title-gradient fs-2 fw-bolder">GenZ</span>
-                            <span class="fs-2 fw-bolder text-white ms-1">Digital</span>
+                        <div>
+                            <div class="fw-bold fs-5 text-white lh-1">GenZ Digital</div>
+                            <small class="text-white-50" style="font-size: 11px;">Intelligent Campus OS</small>
                         </div>
-
-                        <div class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25 rounded-pill px-3 py-1 mb-4 fw-bold" style="font-size: 11px; letter-spacing: 0.1em;">
-                            Campus OS v26.0
-                        </div>
-
-                        <!-- Animated Loading Progress Bar -->
-                        <div class="splash-progress-track">
-                            <div class="splash-progress-fill"></div>
-                        </div>
-                        <small class="text-white-50 fw-semibold d-block mt-2" style="font-size: 11px;">
-                            កំពុងបើកដំណើរការកម្មវិធី... (Loading App)
-                        </small>
                     </div>
-
-                    <!-- Skip Splash Button -->
-                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 position-absolute bottom-0 mb-4 opacity-75 splash-skip-btn" onclick="skipSplash(); event.stopPropagation();">
-                        <span>Skip / រំលង</span>
-                        <i data-lucide="chevron-right" style="width: 13px; height: 13px; vertical-align: middle;"></i>
-                    </button>
+                    <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25 rounded-pill px-3 py-1.5 fw-bold" style="font-size: 11px; letter-spacing: 0.05em;">
+                        Campus OS v26.0
+                    </span>
                 </div>
 
-                <!-- 2. LOGIN PAGE (ULTRA CLEAN DESIGN) -->
-                <div id="app-login-screen" class="mobile-login-screen p-3 p-md-4">
-                    
-                    <!-- Top Minimal Header Controls -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 10px; letter-spacing: 0.05em;">
-                            CAMPUS OS v26.0
-                        </span>
-                        <div class="d-flex align-items-center gap-1">
-                            <button type="button" class="btn btn-sm rounded-circle p-1.5 mobile-icon-btn" onclick="toggleAppTheme()" title="Toggle Theme">
-                                <i id="mobile-app-theme-icon" data-lucide="moon" style="width: 15px; height: 15px;"></i>
-                            </button>
-                            <a href="{{ route('admin.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill py-0.5 px-2 fw-semibold" style="font-size: 10.5px;">
-                                <i data-lucide="shield" style="width: 12px; height: 12px; vertical-align: -1px;"></i> Admin
-                            </a>
-                        </div>
+                <!-- Center Showcase Hero -->
+                <div class="position-relative z-1 my-auto py-4" style="max-width: 520px;">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                        <span class="badge rounded-circle p-1 bg-success"></span>
+                        <span class="small fw-semibold text-white-50" style="font-size: 11.5px;">Live Academic Cloud • 2026 Edition</span>
                     </div>
 
-                    <!-- Clean Single Brand Presence -->
-                    <div class="text-center mb-3">
-                        <div class="auth-brand-badge mx-auto mb-2">
-                            <img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Digital Logo" class="auth-brand-logo">
+                    <h1 class="display-6 fw-bold text-white mb-2" style="letter-spacing: -0.02em; line-height: 1.25;">
+                        The Intelligent Operating System for Tomorrow's Campus.
+                    </h1>
+                    <p class="text-white-50 mb-4" style="font-size: 14.5px; line-height: 1.6;">
+                        វេទិកាគ្រប់គ្រងសាកលវិទ្យាល័យឌីជីថលឆ្លាតវៃ — វត្តមានតាម QR Passcode, ប្រឡង QCM ស្វ័យប្រវត្តិ, និងវិញ្ញាបនបត្រឌីជីថលភ្លាមៗ។
+                    </p>
+
+                    <!-- 3 Glassmorphic Feature Cards -->
+                    <div class="d-flex flex-column gap-2.5">
+                        <div class="showcase-feature-card d-flex align-items-center gap-3">
+                            <div class="feature-icon-badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">
+                                <i data-lucide="qr-code" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white fs-6">Smart QR Attendance Pass</div>
+                                <div class="text-white-50 small" style="font-size: 12px;">Dynamic passcodes & 2-session (ព្រឹក / រសៀល) tracking with GPS integrity.</div>
+                            </div>
                         </div>
-                        <h4 class="fw-bolder mb-1 text-body tracking-tight">
+
+                        <div class="showcase-feature-card d-flex align-items-center gap-3">
+                            <div class="feature-icon-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">
+                                <i data-lucide="book-open" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white fs-6">Interactive Academic Classroom</div>
+                                <div class="text-white-50 small" style="font-size: 12px;">Live presentation slides, instant QCM test auto-scoring, and digital library.</div>
+                            </div>
+                        </div>
+
+                        <div class="showcase-feature-card d-flex align-items-center gap-3">
+                            <div class="feature-icon-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
+                                <i data-lucide="award" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white fs-6">Verifiable Digital Certificates</div>
+                                <div class="text-white-50 small" style="font-size: 12px;">Automated batch credentials, gamified XP points, and real-time leaderboard.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Showcase Proof -->
+                <div class="position-relative z-1 d-flex align-items-center justify-content-between pt-3 border-top border-white border-opacity-10">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=60" class="rounded-circle border border-dark" style="width: 26px; height: 26px; object-fit: cover;">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=60" class="rounded-circle border border-dark" style="width: 26px; height: 26px; object-fit: cover; margin-left: -8px;">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=60" class="rounded-circle border border-dark" style="width: 26px; height: 26px; object-fit: cover; margin-left: -8px;">
+                        </div>
+                        <span class="small text-white-50 fw-semibold" style="font-size: 12px;">500+ Active Students & Instructors</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1.5 text-success small fw-semibold" style="font-size: 11.5px;">
+                        <span class="badge rounded-circle p-1 bg-success"></span>
+                        <span>System 100% Operational</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. RIGHT FORM PANEL -->
+            <div class="auth-form-panel">
+                
+                <!-- Top Controls Bar -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 10.5px; letter-spacing: 0.05em;">
+                        CAMPUS OS v26.0
+                    </span>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Light / Dark Theme Toggle -->
+                        <button type="button" class="btn btn-sm rounded-circle p-1.5 border-0" onclick="toggleAppTheme()" title="Toggle Light/Dark Theme" style="background: rgba(148, 163, 184, 0.15); color: inherit;">
+                            <i id="theme-icon" data-lucide="moon" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <!-- Register Link Pill -->
+                        <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" style="font-size: 11.5px;">
+                            Register New Account
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Center Form Container -->
+                <div class="auth-form-container">
+                    
+                    <!-- Brand Presence -->
+                    <div class="text-center mb-4">
+                        <div class="showcase-brand-logo-box mx-auto mb-2" style="width: 52px; height: 52px; border: 1.5px solid rgba(226, 232, 240, 0.9);">
+                            <img src="{{ asset('images/genz-logo.png') }}?v=26.1" alt="GenZ Digital Logo" class="showcase-brand-logo-img">
+                        </div>
+                        <h3 class="fw-bolder mb-1 text-body tracking-tight">
                             Welcome to <span class="gz-title-gradient">GenZ Digital</span>
-                        </h4>
-                        <p class="text-secondary small mb-0" style="font-size: 12.5px;">
+                        </h3>
+                        <p class="text-secondary small mb-0" style="font-size: 13px;">
                             Campus OS • សូមចូលគណនីរបស់អ្នក
                         </p>
                     </div>
 
                     @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show rounded-3 small py-2 px-3 mb-2.5" role="alert">
+                        <div class="alert alert-success alert-dismissible fade show rounded-3 small py-2 px-3 mb-3" role="alert">
                             <i data-lucide="check-circle" style="width: 14px; height: 14px; vertical-align: -2px;" class="me-1"></i>
                             {{ session('success') }}
                             <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
@@ -93,63 +145,63 @@
                     @endif
 
                     @if($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show rounded-3 small py-2 px-3 mb-2.5" role="alert">
+                        <div class="alert alert-danger alert-dismissible fade show rounded-3 small py-2 px-3 mb-3" role="alert">
                             <i data-lucide="alert-circle" style="width: 14px; height: 14px; vertical-align: -2px;" class="me-1"></i>
                             {{ $errors->first() }}
                             <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
 
-                    <!-- Mobile Login Form -->
-                    <form id="guest-login-form" action="{{ route('login.post') }}" method="POST" class="mb-2">
+                    <!-- Login Form -->
+                    <form id="guest-login-form" action="{{ route('login.post') }}" method="POST">
                         @csrf
                         
-                        <!-- Email Field -->
-                        <div class="mb-2.5">
-                            <label class="form-label small fw-bold text-secondary mb-1" style="font-size: 12px;">Campus Email</label>
-                            <div class="input-group clean-input-group">
-                                <span class="input-group-text pe-1 text-secondary">
-                                    <i data-lucide="mail" style="width: 15px; height: 15px;"></i>
+                        <!-- Campus Email -->
+                        <div class="clean-field-group">
+                            <label class="clean-field-label" for="guest-login-email">CAMPUS EMAIL</label>
+                            <div class="clean-input-box">
+                                <span class="clean-input-icon">
+                                    <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
                                 </span>
-                                <input type="email" name="email" id="guest-login-email" class="form-control py-2 ps-2" placeholder="user@genzdigital.edu" value="{{ old('email', 'maya.chen@genzdigital.edu') }}" required>
+                                <input type="email" name="email" id="guest-login-email" placeholder="user@genzdigital.edu" value="{{ old('email', 'maya.chen@genzdigital.edu') }}" required autofocus>
                             </div>
                         </div>
 
-                        <!-- Password Field -->
-                        <div class="mb-2.5">
+                        <!-- Password -->
+                        <div class="clean-field-group">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label small fw-bold text-secondary mb-0" style="font-size: 12px;">Password</label>
+                                <label class="clean-field-label mb-0" for="guest-login-password">PASSWORD</label>
                                 <span class="text-secondary" style="font-size: 11px;">Default: password</span>
                             </div>
-                            <div class="input-group clean-input-group">
-                                <span class="input-group-text pe-1 text-secondary">
-                                    <i data-lucide="lock" style="width: 15px; height: 15px;"></i>
+                            <div class="clean-input-box">
+                                <span class="clean-input-icon">
+                                    <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
                                 </span>
-                                <input type="password" name="password" id="guest-login-password" class="form-control py-2 ps-2" placeholder="••••••••" value="password" required>
-                                <button type="button" class="input-group-text text-secondary" onclick="togglePasswordVisibility()" title="Show/Hide Password">
-                                    <i id="pass-toggle-icon" data-lucide="eye" style="width: 15px; height: 15px;"></i>
+                                <input type="password" name="password" id="guest-login-password" placeholder="••••••••" value="password" required>
+                                <button type="button" class="btn btn-link p-0 text-secondary clean-input-icon" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+                                    <i id="pass-toggle-icon" data-lucide="eye" style="width: 16px; height: 16px;"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Remember me & Role Detection -->
+                        <!-- Remember me & Status -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" name="remember" id="rememberMeGuest" checked>
-                                <label class="form-check-label small text-secondary" for="rememberMeGuest" style="font-size: 11.5px;">Remember me</label>
+                                <label class="form-check-label small text-secondary" for="rememberMeGuest" style="font-size: 12px;">Remember me</label>
                             </div>
-                            <span class="badge bg-primary-subtle text-primary fw-semibold" style="font-size: 9.5px;">Auto-Detect</span>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold" style="font-size: 10px;">Auto-Detect Role</span>
                         </div>
 
-                        <!-- Sign In Submit Button -->
-                        <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2">
-                            <i data-lucide="log-in" style="width: 17px; height: 17px;"></i>
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-submit-campus mb-3">
+                            <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
                             <span>Sign In to Student Pass</span>
                         </button>
                     </form>
 
-                    <!-- 1-Click Fast Demo Login Chips -->
-                    <div class="pt-2 mb-2.5">
+                    <!-- 1-Click Fast Demo Accounts -->
+                    <div class="mb-3">
                         <div class="d-flex align-items-center gap-2 mb-2">
                             <hr class="flex-grow-1 my-0 opacity-25">
                             <span class="text-uppercase fw-bold text-secondary" style="font-size: 10px; letter-spacing: 0.08em;">
@@ -159,47 +211,48 @@
                         </div>
                         <div class="row g-2">
                             <div class="col-6">
-                                <button type="button" class="btn btn-sm w-100 rounded-3 p-2 text-start d-flex align-items-center gap-2 quick-chip" onclick="quickLogin('maya.chen@genzdigital.edu', 'password')">
-                                    <div class="quick-chip-avatar bg-primary text-white">M</div>
+                                <div class="demo-chip-card" onclick="quickLogin('maya.chen@genzdigital.edu', 'password')" title="Click to sign in as Student">
+                                    <div class="demo-chip-avatar bg-primary">M</div>
                                     <div class="lh-sm text-truncate">
-                                        <span class="fw-bold d-block text-truncate text-body" style="font-size: 11.5px;">Maya Chen</span>
-                                        <small class="text-secondary" style="font-size: 10px;">Student</small>
+                                        <span class="fw-bold d-block text-truncate text-body" style="font-size: 12px;">Maya Chen</span>
+                                        <small class="text-secondary" style="font-size: 10.5px;">Student Pass</small>
                                     </div>
-                                </button>
+                                </div>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-sm w-100 rounded-3 p-2 text-start d-flex align-items-center gap-2 quick-chip" onclick="quickLogin('admin@genzdigital.edu', 'password')">
-                                    <div class="quick-chip-avatar bg-danger text-white">A</div>
+                                <div class="demo-chip-card" onclick="quickLogin('admin@genzdigital.edu', 'password')" title="Click to sign in as Admin">
+                                    <div class="demo-chip-avatar bg-danger">A</div>
                                     <div class="lh-sm text-truncate">
-                                        <span class="fw-bold d-block text-truncate text-body" style="font-size: 11.5px;">Admin</span>
-                                        <small class="text-secondary" style="font-size: 10px;">Instructor</small>
+                                        <span class="fw-bold d-block text-truncate text-body" style="font-size: 12px;">Faculty Lead</span>
+                                        <small class="text-secondary" style="font-size: 10.5px;">Admin Portal</small>
                                     </div>
-                                </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Clean Footer Navigation Links -->
-                    <div class="text-center mt-auto pt-2 border-top">
-                        <p class="small text-secondary mb-1.5" style="font-size: 12px;">
-                            មិនទាន់មានគណនី? 
-                            <a href="{{ route('register') }}" class="fw-bold text-decoration-none text-primary ms-1">
-                                Register New Account
-                            </a>
-                        </p>
-                        <div class="d-flex justify-content-center align-items-center gap-2.5">
-                            <a href="{{ route('admin.index') }}" class="small text-secondary text-decoration-none" style="font-size: 11px;">
-                                <i data-lucide="shield" style="width: 12px; height: 12px; vertical-align: -1px;"></i> Admin Portal
+                    <!-- Footer Navigation -->
+                    <div class="text-center pt-2 border-top">
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <a href="{{ route('admin.index') }}" class="small text-secondary text-decoration-none" style="font-size: 11.5px;">
+                                <i data-lucide="shield" style="width: 13px; height: 13px; vertical-align: -1.5px;"></i> Admin Portal
                             </a>
                             <span class="text-secondary opacity-25">•</span>
-                            <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none small" style="font-size: 11px;" onclick="replaySplash()">
-                                <i data-lucide="rotate-ccw" style="width: 12px; height: 12px; vertical-align: -1px;"></i> Replay Flash Screen
-                            </button>
+                            <a href="{{ route('register') }}" class="small text-primary text-decoration-none fw-semibold" style="font-size: 11.5px;">
+                                Register New Account
+                            </a>
                         </div>
                     </div>
 
                 </div>
+
+                <!-- Bottom Copyright -->
+                <div class="text-center text-secondary small py-2" style="font-size: 11px;">
+                    © 2026 GenZ Digital Campus OS • All rights reserved
+                </div>
+
             </div>
+
         </div>
     @else
         <!-- ============================================================== -->

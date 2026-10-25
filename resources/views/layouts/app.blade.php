@@ -681,107 +681,270 @@
         }
 
         /* ==========================================================================
-           ULTRA CLEAN MOBILE APP & AUTH EXPERIENCE
+           ULTRA CLEAN ENTERPRISE SPLIT AUTH EXPERIENCE
            ========================================================================== */
         .guest-app-wrapper {
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
+            flex-direction: column;
+            background: #ffffff;
             position: relative;
-            overflow: hidden;
-            padding: 2rem 1rem;
+            overflow-x: hidden;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
         }
 
         [data-bs-theme="dark"] .guest-app-wrapper {
             background: #090d16;
         }
 
-        /* Ambient glowing orbs */
-        .ambient-glow-orb-1 {
-            position: absolute;
-            width: 480px;
-            height: 480px;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(217, 70, 239, 0.08) 50%, transparent 70%);
-            filter: blur(65px);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .ambient-glow-orb-2 {
-            position: absolute;
-            width: 420px;
-            height: 420px;
-            bottom: -80px;
-            right: 15%;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, transparent 70%);
-            filter: blur(60px);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        [data-bs-theme="dark"] .ambient-glow-orb-1 {
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(217, 70, 239, 0.12) 50%, transparent 70%);
-        }
-        [data-bs-theme="dark"] .ambient-glow-orb-2 {
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, transparent 70%);
-        }
-
-        .mobile-app-outer {
-            width: 100%;
+        .auth-split-wrapper {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 1;
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
         }
 
-        .mobile-app-card {
-            width: 100%;
-            max-width: 440px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 28px;
-            border: 1px solid rgba(226, 232, 240, 0.85);
-            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.03);
+        /* ---------------- Left Showcase Panel (Desktop >= 992px) ---------------- */
+        .auth-showcase-panel {
+            flex: 1 1 50%;
+            background: linear-gradient(145deg, #090d16 0%, #0f172a 45%, #1e1b4b 100%);
             position: relative;
             overflow: hidden;
+            color: #ffffff;
+            padding: 3.5rem 3.5rem;
             display: flex;
             flex-direction: column;
-            transition: all 0.3s ease;
+            justify-content: space-between;
+        }
+        .auth-showcase-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .showcase-glow-orb-1 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            top: -120px;
+            left: -80px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, rgba(139, 92, 246, 0.12) 50%, transparent 70%);
+            filter: blur(70px);
+            pointer-events: none;
+        }
+        .showcase-glow-orb-2 {
+            position: absolute;
+            width: 440px;
+            height: 440px;
+            bottom: -60px;
+            right: -60px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(6, 182, 212, 0.1) 60%, transparent 70%);
+            filter: blur(65px);
+            pointer-events: none;
         }
 
-        [data-bs-theme="dark"] .mobile-app-card {
-            background: rgba(15, 23, 42, 0.92);
-            border-color: rgba(30, 41, 59, 0.9);
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+        .showcase-brand-logo-box {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .showcase-brand-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
-        @media (max-width: 576px) {
-            .guest-app-wrapper {
-                padding: 0 !important;
-                background: #ffffff !important;
-            }
-            [data-bs-theme="dark"] .guest-app-wrapper {
-                background: #090d16 !important;
-            }
-            .mobile-app-card {
-                max-width: 100% !important;
-                min-height: 100vh !important;
-                min-height: 100dvh !important;
-                border-radius: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                background: transparent !important;
-            }
-            .ambient-glow-orb-1, .ambient-glow-orb-2 {
+        .showcase-feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 1.15rem 1.25rem;
+            transition: all 0.25s ease;
+        }
+        .showcase-feature-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .feature-icon-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* ---------------- Right Form Panel ---------------- */
+        .auth-form-panel {
+            flex: 1 1 50%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem 3rem;
+            position: relative;
+            overflow-y: auto;
+        }
+        [data-bs-theme="dark"] .auth-form-panel {
+            background: #090d16;
+        }
+
+        .auth-form-container {
+            width: 100%;
+            max-width: 420px;
+            margin: auto;
+            padding: 1rem 0;
+        }
+
+        .clean-field-group {
+            margin-bottom: 1.15rem;
+        }
+        .clean-field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.35rem;
+            letter-spacing: 0.02em;
+        }
+        [data-bs-theme="dark"] .clean-field-label {
+            color: #94a3b8;
+        }
+
+        .clean-input-box {
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0 0.85rem;
+            height: 46px;
+            transition: all 0.2s ease;
+        }
+        [data-bs-theme="dark"] .clean-input-box {
+            background: #101726;
+            border-color: #1e293b;
+        }
+        .clean-input-box:focus-within {
+            background: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.12);
+        }
+        [data-bs-theme="dark"] .clean-input-box:focus-within {
+            background: #131b2e;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3.5px rgba(96, 165, 250, 0.16);
+        }
+        .clean-input-box input, .clean-input-box select {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 13.5px;
+            color: inherit;
+            padding-left: 0.5rem;
+        }
+        .clean-input-box input::placeholder {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .clean-input-icon {
+            color: #64748b;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        [data-bs-theme="dark"] .clean-input-icon {
+            color: #94a3b8;
+        }
+
+        .btn-submit-campus {
+            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            height: 46px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.35);
+            transition: all 0.25s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-submit-campus:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px -5px rgba(37, 99, 235, 0.45);
+            color: #ffffff;
+        }
+
+        /* 1-Click Fast Demo Cards */
+        .demo-chip-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.65rem 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            width: 100%;
+        }
+        .demo-chip-card:hover {
+            background: #ffffff;
+            border-color: #3b82f6;
+            transform: translateY(-1.5px);
+            box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.12);
+        }
+        [data-bs-theme="dark"] .demo-chip-card {
+            background: #101726;
+            border-color: #1e293b;
+        }
+        [data-bs-theme="dark"] .demo-chip-card:hover {
+            background: #162035;
+            border-color: #60a5fa;
+        }
+        .demo-chip-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 12px;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 991.98px) {
+            .auth-showcase-panel {
                 display: none;
+            }
+            .auth-form-panel {
+                flex: 1 1 100%;
+                padding: 2rem 1.25rem;
+                justify-content: center;
             }
         }
 
