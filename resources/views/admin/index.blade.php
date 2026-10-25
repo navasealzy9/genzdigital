@@ -621,12 +621,24 @@
                         <p class="text-secondary small mb-2">
                             <i class="bi bi-clock me-1"></i> {{ $ex->exam_date }} • Room: {{ $ex->room }}
                         </p>
-                        <div class="d-flex gap-2 mb-3">
+                        @php
+                            $subs = $examSubmissions->where('exam_id', $ex->id);
+                            $subCount = $subs->count();
+                            $passCount = $subs->where('is_passed', 1)->count();
+                            $avgScore = $subCount > 0 ? round($subs->avg('percentage')) : 0;
+                        @endphp
+                        <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
                             <span class="badge bg-info-subtle text-info fw-semibold">⏱️ {{ $ex->duration_minutes }} Mins</span>
                             <span class="badge bg-success-subtle text-success fw-semibold">🎯 {{ $ex->total_points }} Total Points</span>
                             <span class="badge bg-warning-subtle text-warning-emphasis fw-semibold">
                                 📝 {{ $examQuestions->where('exam_id', $ex->id)->count() }} QCM Questions
                             </span>
+                            <span class="badge {{ $subCount > 0 ? 'bg-primary text-white' : 'bg-secondary-subtle text-secondary' }} fw-semibold">
+                                👥 {{ $subCount }} Submissions
+                            </span>
+                            @if($subCount > 0)
+                                <span class="badge bg-success-subtle text-success fw-semibold">✅ ជាប់: {{ $passCount }}/{{ $subCount }} ({{ $avgScore }}%)</span>
+                            @endif
                         </div>
                     </div>
 
@@ -650,6 +662,12 @@
 
                             <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#qcmModal_{{ $ex->id }}">
                                 <i data-lucide="list-plus" style="width: 14px; height: 14px;" class="me-1"></i> QCM ({{ $examQuestions->where('exam_id', $ex->id)->count() }})
+                            </button>
+
+                            <!-- View Student Results Modal Button -->
+                            <button class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#resultsModal_{{ $ex->id }}" title="មើលលទ្ធផលសិស្សដែលបានប្រឡង">
+                                <i data-lucide="bar-chart-2" style="width: 14px; height: 14px;"></i>
+                                <span>លទ្ធផលសិស្ស ({{ $subCount }})</span>
                             </button>
                         </div>
                         <form action="{{ route('admin.exams.delete', $ex->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this exam?')">
@@ -1903,6 +1921,156 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Exam Submissions & Results Modal (Feature 4) -->
+    @php
+        $modalSubs = $examSubmissions->where('exam_id', $ex->id);
+        $modalSubCount = $modalSubs->count();
+        $modalPassCount = $modalSubs->where('is_passed', 1)->count();
+        $modalFailCount = $modalSubCount - $modalPassCount;
+        $modalAvgScore = $modalSubCount > 0 ? round($modalSubs->avg('percentage')) : 0;
+    @endphp
+    <div class="modal fade" id="resultsModal_{{ $ex->id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content p-3 p-md-4 rounded-4 shadow-lg border-0">
+                <div class="modal-header border-0 pb-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary fw-bold">{{ $ex->category ?: 'Exam' }}</span>
+                            <span class="badge bg-secondary-subtle text-secondary font-monospace">{{ $ex->course }}</span>
+                            <span class="badge bg-success-subtle text-success fw-bold">🎯 {{ $ex->total_points }} PTS</span>
+                        </div>
+                        <h5 class="modal-title fw-bold fs-5">លទ្ធផលសិស្សប្រឡង: {{ $ex->title }}</h5>
+                        <small class="text-secondary">បញ្ជីឈ្មោះសិស្ស ពិន្ទុជាក់ស្តែង ភាគរយ និទ្ទេស និងកាលបរិច្ឆេទប្រឡងស្វ័យប្រវត្តិ (Auto-Graded)</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if($modalSubCount > 0)
+                            <a href="{{ route('admin.exams.exportResults', $ex->id) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-flex align-items-center gap-1.5 shadow-xs">
+                                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                                <span>Export Excel/CSV</span>
+                            </a>
+                        @endif
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body py-3">
+                    <!-- KPI Metrics Summary Row -->
+                    <div class="row row-cols-2 row-cols-md-4 g-2.5 mb-3">
+                        <div class="col">
+                            <div class="p-3 rounded-3 bg-body-tertiary border">
+                                <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">សិស្សបានប្រឡងសរុប</small>
+                                <h4 class="fw-bolder mb-0 text-primary">{{ $modalSubCount }} នាក់</h4>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle">
+                                <small class="text-success-emphasis d-block fw-semibold" style="font-size: 11px;">ជាប់ការប្រឡង (>=50%)</small>
+                                <h4 class="fw-bolder mb-0 text-success">{{ $modalPassCount }} នាក់</h4>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 rounded-3 bg-danger-subtle border border-danger-subtle">
+                                <small class="text-danger-emphasis d-block fw-semibold" style="font-size: 11px;">ធ្លាក់ការប្រឡង (<50%)</small>
+                                <h4 class="fw-bolder mb-0 text-danger">{{ $modalFailCount }} នាក់</h4>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 rounded-3 bg-info-subtle border border-info-subtle">
+                                <small class="text-info-emphasis d-block fw-semibold" style="font-size: 11px;">មធ្យមភាគពិន្ទុ (AVERAGE)</small>
+                                <h4 class="fw-bolder mb-0 text-info">{{ $modalAvgScore }}%</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submissions Table -->
+                    @if($modalSubCount > 0)
+                        <div class="table-responsive rounded-3 border">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light small text-secondary">
+                                    <tr>
+                                        <th style="width: 45px;" class="text-center">#</th>
+                                        <th>សិស្ស (Student)</th>
+                                        <th>អត្តលេខ (ID)</th>
+                                        <th class="text-center">ពិន្ទុ (Score)</th>
+                                        <th class="text-center">ភាគរយ (%)</th>
+                                        <th class="text-center">និទ្ទេស</th>
+                                        <th class="text-center">ស្ថានភាព</th>
+                                        <th>កាលបរិច្ឆេទប្រឡង</th>
+                                        <th class="text-end" style="width: 70px;">សកម្មភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($modalSubs as $i => $sub)
+                                        <tr>
+                                            <td class="text-center text-secondary small">{{ $i + 1 }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="{{ $sub->student_avatar ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250' }}" 
+                                                         class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;" alt="Avatar">
+                                                    <div>
+                                                        <div class="fw-bold fs-7">{{ $sub->student_name }}</div>
+                                                        <small class="text-secondary font-monospace" style="font-size: 11px;">{{ $sub->course_code }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="font-monospace small fw-semibold">{{ $sub->student_id }}</td>
+                                            <td class="text-center fw-bold text-primary">
+                                                {{ $sub->earned_score }} <span class="text-secondary fw-normal">/ {{ $sub->total_possible }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge {{ $sub->is_passed ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} fw-bold">
+                                                    {{ $sub->percentage }}%
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-body-secondary text-body fw-bold px-2.5 py-1">
+                                                    {{ $sub->grade }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($sub->is_passed)
+                                                    <span class="badge bg-success text-white fw-bold">
+                                                        <i data-lucide="check" style="width: 11px; height: 11px;" class="me-0.5"></i> PASSED
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-danger text-white fw-bold">
+                                                        <i data-lucide="x" style="width: 11px; height: 11px;" class="me-0.5"></i> FAILED
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="small text-secondary">
+                                                {{ $sub->submitted_at ? date('M d, Y • h:i A', strtotime($sub->submitted_at)) : date('M d, Y • h:i A', strtotime($sub->created_at)) }}
+                                            </td>
+                                            <td class="text-end">
+                                                <form action="{{ route('admin.exams.deleteSubmission', $sub->id) }}" method="POST" class="d-inline" onsubmit="return confirm('តើអ្នកពិតជាចង់លុបលទ្ធផលនេះដើម្បីឱ្យសិស្សប្រឡងឡើងវិញមែនទេ? (Delete to allow retake)')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" title="លុបដើម្បីឱ្យសិស្សប្រឡងឡើងវិញ (Allow Retake)">
+                                                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-5 rounded-3 bg-body-tertiary border">
+                            <i data-lucide="users" class="text-secondary opacity-50 mb-2" style="width: 44px; height: 44px;"></i>
+                            <h6 class="fw-bold text-secondary mb-1">មិនទាន់មានសិស្សណាបានប្រឡងនៅឡើយទេ</h6>
+                            <p class="small text-secondary mb-0">នៅពេលសិស្សចូលប្រឡងនៅលើ Client Side លទ្ធផលនឹងបង្ហាញនៅទីនេះភ្លាមៗ (Real-time Auto-Scored)</p>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="modal-footer border-0 pt-1">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

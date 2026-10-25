@@ -36,6 +36,7 @@ class AdminController extends Controller
         $attendances = DB::table('campus_attendances')->orderBy('id', 'desc')->get();
         $exams = DB::table('campus_exams')->orderBy('id', 'asc')->get();
         $examQuestions = DB::table('campus_exam_questions')->orderBy('id', 'asc')->get();
+        $examSubmissions = DB::table('campus_exam_submissions')->orderBy('id', 'desc')->get();
         $challenges = DB::table('campus_challenges')->orderBy('id', 'desc')->get();
         $totalCertificatesCount = DB::table('campus_certificates')->count();
         $certificates = DB::table('campus_certificates')->orderBy('id', 'desc')->take(100)->get();
@@ -69,6 +70,7 @@ class AdminController extends Controller
             'attendances',
             'exams',
             'examQuestions',
+            'examSubmissions',
             'challenges',
             'certificates',
             'resources',
@@ -539,13 +541,106 @@ class AdminController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', 'សំណួរ QCM ត្រូវបានបញ្ចូលដោយជោគជ័យ!');
+        // Auto-recalculate total points for the exam
+        $totalPts = DB::table('campus_exam_questions')->where('exam_id', $request->exam_id)->sum('points');
+        DB::table('campus_exams')->where('id', $request->exam_id)->update([
+            'total_points' => $totalPts,
+            'updated_at' => now()
+        ]);
+
+        return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', 'សំណួរ QCM ត្រូវបានបញ្ចូលដោយជោគជ័យ! (ពិន្ទុសរុប: ' . $totalPts . ' PTS)');
     }
 
     public function deleteExamQuestion($id)
     {
-        DB::table('campus_exam_questions')->where('id', $id)->delete();
+        $question = DB::table('campus_exam_questions')->where('id', $id)->first();
+        if ($question) {
+            $examId = $question->exam_id;
+            DB::table('campus_exam_questions')->where('id', $id)->delete();
+            $totalPts = DB::table('campus_exam_questions')->where('exam_id', $examId)->sum('points');
+            DB::table('campus_exams')->where('id', $examId)->update([
+                'total_points' => $totalPts,
+                'updated_at' => now()
+            ]);
+        }
         return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', 'សំណួរត្រូវបានលុបចេញ។');
+    }
+
+    /**
+     * Export Exam Results to CSV for Admin
+     */
+    public function exportExamResults($id)
+    {
+        $exam = DB::table('campus_exams')->where('id', $id)->first();
+        if (!$exam) {
+            return redirect()->route('admin.index', ['tab' => 'exams'])->with('error', 'Exam not found.');
+        }
+
+        $submissions = DB::table('campus_exam_submissions')
+            ->where('exam_id', $id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $filename = 'exam_results_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $exam->title) . '_' . date('Ymd_His') . '.csv';
+
+        $callback = function () use ($submissions, $exam) {
+            $file = fopen('php://output', 'w');
+            // Write UTF-8 BOM so Excel opens Khmer text without mojibake
+            fputs($file, "\xEF\xBB\xBF");
+
+            // Header row
+            fputcsv($file, [
+                'No',
+                'Student ID',
+                'Student Name',
+                'Course Code',
+                'Exam Title',
+                'Earned Score',
+                'Total Possible',
+                'Percentage (%)',
+                'Grade',
+                'Status',
+                'Passed',
+                'Submitted At'
+            ]);
+
+            foreach ($submissions as $idx => $sub) {
+                fputcsv($file, [
+                    $idx + 1,
+                    $sub->student_id,
+                    $sub->student_name,
+                    $sub->course_code,
+                    $sub->exam_title,
+                    $sub->earned_score,
+                    $sub->total_possible,
+                    $sub->percentage . '%',
+                    $sub->grade,
+                    $sub->status,
+                    $sub->is_passed ? 'YES' : 'NO',
+                    $sub->submitted_at ?: $sub->created_at,
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * Delete Exam Submission (Allows Student to Retake)
+     */
+    public function deleteExamSubmission($id)
+    {
+        $sub = DB::table('campus_exam_submissions')->where('id', $id)->first();
+        if ($sub) {
+            DB::table('campus_exam_submissions')->where('id', $id)->delete();
+            return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', "បានលុបលទ្ធផលរបស់ {$sub->student_name} រួចរាល់។ សិស្សអាចប្រឡងឡើងវិញបាន!");
+        }
+        return redirect()->route('admin.index', ['tab' => 'exams'])->with('error', 'Submission not found.');
     }
 
     // =========================================================================

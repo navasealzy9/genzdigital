@@ -234,6 +234,12 @@ class CampusController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
+        $myExamSubmissions = DB::table('campus_exam_submissions')
+            ->where('student_id', $student['id'])
+            ->orderBy('id', 'desc')
+            ->get()
+            ->keyBy('exam_id');
+
         return view('campus.index', compact(
             'student',
             'attendanceList',
@@ -242,6 +248,7 @@ class CampusController extends Controller
             'chats',
             'tools',
             'exams',
+            'myExamSubmissions',
             'challenges',
             'resources',
             'certificates',
@@ -989,9 +996,12 @@ class CampusController extends Controller
                 ->get(['id', 'exam_id', 'question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'points']);
         }
 
+        $calcTotalPoints = $questions->sum('points') ?: ($exam->total_points ?: 100);
+
         return response()->json([
             'success' => true,
             'exam' => $exam,
+            'total_points' => $calcTotalPoints,
             'questions' => $questions,
         ]);
     }
@@ -1026,18 +1036,20 @@ class CampusController extends Controller
 
             $questionDetails[] = [
                 'id' => $q->id,
+                'question' => $q->question_text,
                 'is_correct' => $isCorrect,
                 'submitted' => $submitted,
                 'correct_option' => $q->correct_option,
                 'points_earned' => $isCorrect ? $q->points : 0,
+                'points_possible' => $q->points,
             ];
         }
 
         // If no questions exist, provide default full score simulation
         if ($totalPossible === 0) {
-            $totalPossible = 100;
-            $earnedScore = 90;
-            $correctCount = 4;
+            $totalPossible = $exam->total_points ?: 100;
+            $earnedScore = $totalPossible;
+            $correctCount = 1;
         }
 
         $percentage = round(($earnedScore / $totalPossible) * 100);
@@ -1046,23 +1058,57 @@ class CampusController extends Controller
         $statusColor = $isPassed ? '#10b981' : '#ef4444';
         $grade = $percentage >= 90 ? 'A' : ($percentage >= 80 ? 'B' : ($percentage >= 70 ? 'C' : ($percentage >= 50 ? 'D' : 'F')));
 
-        // Save score into campus_scores for this student
+        // Identify Student (Logged In or Guest Fallback)
         $studentId = 'GZ20260482';
+        $studentName = 'Maya Chen';
+        $studentAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250';
+
         if (\Illuminate\Support\Facades\Auth::check()) {
             $user = \Illuminate\Support\Facades\Auth::user();
-            $studentId = $user->student_id ?: 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT);
+            $studentRecord = DB::table('campus_students')->where('email', $user->email)->first();
+            $studentId = $user->student_id ?: ($studentRecord ? $studentRecord->student_id : 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT));
+            $studentName = $user->name;
+            $studentAvatar = $user->avatar ?: ($studentRecord ? $studentRecord->avatar : $studentAvatar);
         }
 
+        // 1. Record Submission into campus_exam_submissions
+        $submissionId = DB::table('campus_exam_submissions')->insertGetId([
+            'exam_id' => $exam->id,
+            'exam_title' => $exam->title,
+            'course_code' => $exam->course,
+            'student_id' => $studentId,
+            'student_name' => $studentName,
+            'student_avatar' => $studentAvatar,
+            'earned_score' => $earnedScore,
+            'total_possible' => $totalPossible,
+            'percentage' => $percentage,
+            'grade' => $grade,
+            'status' => $isPassed ? 'Passed' : 'Failed',
+            'is_passed' => $isPassed,
+            'answers_json' => json_encode($answers),
+            'question_details_json' => json_encode($questionDetails),
+            'submitted_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 2. Save/Update Score in campus_scores
         DB::table('campus_scores')->updateOrInsert(
             [
                 'student_id' => $studentId,
                 'code' => $exam->course,
             ],
             [
+                'student_name' => $studentName,
                 'subject' => $exam->title,
                 'score' => $earnedScore,
                 'grade' => $grade,
                 'credits' => 3,
+                'mid_term' => round($percentage * 0.4, 1),
+                'assignment' => 20,
+                'final_exam' => round($percentage * 0.4, 1),
+                'semester' => 'Semester 1 - 2026',
+                'status' => $isPassed ? 'Passed' : 'Failed',
                 'updated_at' => now(),
                 'created_at' => now(),
             ]
@@ -1070,6 +1116,7 @@ class CampusController extends Controller
 
         return response()->json([
             'success' => true,
+            'submission_id' => $submissionId,
             'message' => $isPassed
                 ? "អបអរសាទរ! អ្នកបានប្រឡងជាប់ ({$percentage}%) និទ្ទេស {$grade}"
                 : "សូមព្យាយាមម្តងទៀត! ពិន្ទុរបស់អ្នកគឺ {$percentage}% (ក្រោម 50% ធ្លាក់)",

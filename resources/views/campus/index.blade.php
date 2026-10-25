@@ -1341,13 +1341,19 @@
                         $isOpen = true; // Auto-unlock if scheduled exam time has arrived
                     }
                 }
+                $mySub = isset($myExamSubmissions) ? $myExamSubmissions->get($exam->id) : null;
             @endphp
             <div class="col">
-                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 {{ $isOpen ? 'border-success' : 'border-secondary' }}">
+                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 {{ $mySub ? ($mySub->is_passed ? 'border-success' : 'border-danger') : ($isOpen ? 'border-primary' : 'border-secondary') }}">
                     <div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
                             <span class="badge {{ $isOpen ? 'bg-primary' : 'bg-secondary' }} text-white fw-bold">{{ $exam->category ?: 'Midterm exam' }}</span>
-                            @if($isOpen)
+                            @if($mySub)
+                                <span class="badge {{ $mySub->is_passed ? 'bg-success' : 'bg-danger' }} text-white fw-bold">
+                                    <i data-lucide="{{ $mySub->is_passed ? 'check-circle' : 'alert-circle' }}" style="width: 12px; height: 12px;" class="me-1"></i> 
+                                    បានប្រឡងរួច: {{ $mySub->earned_score }}/{{ $mySub->total_possible }} ({{ $mySub->percentage }}% • {{ $mySub->grade }})
+                                </span>
+                            @elseif($isOpen)
                                 <span class="badge bg-success text-white fw-bold"><i data-lucide="unlock" style="width: 12px; height: 12px;" class="me-1"></i> ADMIN បានបើក (OPEN)</span>
                             @else
                                 <span class="badge bg-secondary-subtle text-secondary fw-bold"><i data-lucide="lock" style="width: 12px; height: 12px;" class="me-1"></i> រង់ចាំ ADMIN បើក (LOCKED)</span>
@@ -1365,7 +1371,20 @@
                     </div>
                     
                     <div class="pt-3 border-top">
-                        @if($isOpen)
+                        @if($mySub)
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-success flex-grow-1 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-1.5" onclick="showCompletedExamResult({{ json_encode($mySub) }}, '{{ addslashes($exam->title) }}')">
+                                    <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+                                    <span>មើលលទ្ធផល ({{ $mySub->percentage }}%)</span>
+                                </button>
+                                @if($isOpen)
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold d-flex align-items-center gap-1" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})" title="ប្រឡងឡើងវិញ (Retake Exam)">
+                                        <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i>
+                                        <span>ប្រឡងឡើងវិញ</span>
+                                    </button>
+                                @endif
+                            </div>
+                        @elseif($isOpen)
                             <button class="btn btn-success w-100 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-2" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})">
                                 <i data-lucide="pencil-line" style="width: 16px; height: 16px;"></i>
                                 <span>ចូលប្រឡង QCM (Take Exam - Auto Score)</span>
@@ -2713,7 +2732,7 @@
                     សំណួរត្រឹមត្រូវ: <strong>4</strong> ក្នុងចំណោម <strong>4</strong> សំណួរ។ ពិន្ទុត្រូវបានកត់ត្រាចូលក្នុង Academic Records របស់អ្នកដោយស្វ័យប្រវត្តិ។
                 </p>
 
-                <button type="button" class="btn rounded-pill px-5 py-2.5 fw-bold shadow w-100" id="result-dismiss-btn" data-bs-dismiss="modal" style="background-color: #10b981; color: #fff; border: none;">
+                <button type="button" class="btn rounded-pill px-5 py-2.5 fw-bold shadow w-100" id="result-dismiss-btn" data-bs-dismiss="modal" onclick="window.location.reload()" style="background-color: #10b981; color: #fff; border: none;">
                     រួចរាល់ (Done & View Scores)
                 </button>
             </div>
@@ -3435,6 +3454,10 @@
             const data = await res.json();
             activeExamQuestions = data.questions || [];
 
+            if (data.total_points) {
+                document.getElementById('qcm-exam-info').textContent = `Total Points: ${data.total_points} • Select your answers carefully`;
+            }
+
             if (activeExamQuestions.length === 0) {
                 container.innerHTML = `
                     <div class="p-4 text-center text-secondary">
@@ -3491,6 +3514,12 @@
                 answers[q.id] = selected.value;
             }
         });
+
+        const answeredCount = Object.keys(answers).length;
+        if (activeExamQuestions.length > 0 && answeredCount === 0) {
+            alert('សូមជ្រើសរើសចម្លើយសំណួរ មុននឹងចុចដាក់បញ្ចូល! (Please select an answer before submitting)');
+            return;
+        }
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const submitBtn = document.getElementById('btn-submit-exam');
@@ -3556,7 +3585,7 @@
                 }
                 if (dismissBtn) {
                     dismissBtn.style.backgroundColor = '#10b981';
-                    dismissBtn.textContent = 'ជាប់ការប្រឡង (Done & View Scores)';
+                    dismissBtn.textContent = 'រួចរាល់ (Done & View Scores)';
                 }
                 if (window.confetti) {
                     window.confetti({ particleCount: 130, spread: 85, origin: { y: 0.6 } });
@@ -3598,6 +3627,82 @@
             submitBtn.textContent = 'Submit & Calculate Score';
             showToast('Failed to submit exam.');
         }
+    }
+
+    function showCompletedExamResult(sub, title) {
+        if (!sub) return;
+        document.getElementById('result-exam-title').textContent = title || sub.exam_title;
+        document.getElementById('result-score-display').textContent = `${sub.earned_score} / ${sub.total_possible}`;
+        document.getElementById('result-pct-display').textContent = `${sub.percentage}%`;
+        document.getElementById('result-grade-display').textContent = sub.grade;
+        document.getElementById('result-summary-text').innerHTML = `
+            ពិន្ទុសរុប: <strong>${sub.earned_score} / ${sub.total_possible} (${sub.percentage}%)</strong> • និទ្ទេស: <strong>${sub.grade}</strong>។ បានប្រឡងនៅថ្ងៃ ${sub.submitted_at || ''}។
+        `;
+
+        const isPassed = (sub.percentage >= 50);
+        const badge = document.getElementById('result-status-badge');
+        const iconContainer = document.getElementById('result-icon-container');
+        const iconWrapper = document.getElementById('result-icon-wrapper');
+        const scoreBox = document.getElementById('result-score-box');
+        const gradeDisplay = document.getElementById('result-grade-display');
+        const passFailLabel = document.getElementById('result-pass-fail-label');
+        const dismissBtn = document.getElementById('result-dismiss-btn');
+
+        if (isPassed) {
+            if (badge) {
+                badge.style.backgroundColor = '#10b981';
+                badge.textContent = `🎉 ជាប់ការប្រឡង (PASSED - ${sub.percentage}%)`;
+            }
+            if (iconContainer) {
+                iconContainer.style.border = '3px solid #10b981';
+                iconContainer.style.background = 'rgba(16, 185, 129, 0.2)';
+            }
+            if (iconWrapper) {
+                iconWrapper.innerHTML = '<i data-lucide="check-circle-2" class="text-success" style="width: 44px; height: 44px;"></i>';
+            }
+            if (scoreBox) {
+                scoreBox.style.border = '2px solid #10b981';
+                scoreBox.style.boxShadow = '0 0 18px rgba(16, 185, 129, 0.35)';
+            }
+            if (gradeDisplay) gradeDisplay.style.color = '#10b981';
+            if (passFailLabel) {
+                passFailLabel.textContent = 'ជាប់ការប្រឡង (PASSED)';
+                passFailLabel.style.color = '#10b981';
+            }
+            if (dismissBtn) {
+                dismissBtn.style.backgroundColor = '#10b981';
+                dismissBtn.textContent = 'បិទផ្ទាំងលទ្ធផល (Close)';
+            }
+        } else {
+            if (badge) {
+                badge.style.backgroundColor = '#ef4444';
+                badge.textContent = `⚠️ ធ្លាក់ការប្រឡង (FAILED - ${sub.percentage}%)`;
+            }
+            if (iconContainer) {
+                iconContainer.style.border = '3px solid #ef4444';
+                iconContainer.style.background = 'rgba(239, 68, 68, 0.2)';
+            }
+            if (iconWrapper) {
+                iconWrapper.innerHTML = '<i data-lucide="x-circle" class="text-danger" style="width: 44px; height: 44px;"></i>';
+            }
+            if (scoreBox) {
+                scoreBox.style.border = '2px solid #ef4444';
+                scoreBox.style.boxShadow = '0 0 18px rgba(239, 68, 68, 0.35)';
+            }
+            if (gradeDisplay) gradeDisplay.style.color = '#ef4444';
+            if (passFailLabel) {
+                passFailLabel.textContent = 'ធ្លាក់ការប្រឡង (FAILED)';
+                passFailLabel.style.color = '#ef4444';
+            }
+            if (dismissBtn) {
+                dismissBtn.style.backgroundColor = '#ef4444';
+                dismissBtn.textContent = 'បិទផ្ទាំងលទ្ធផល (Close)';
+            }
+        }
+
+        const resultModal = new bootstrap.Modal(document.getElementById('examResultModal'));
+        resultModal.show();
+        renderIcons();
     }
 
     // ==============================================================

@@ -62,6 +62,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::delete('/exams/{id}', [AdminController::class, 'deleteExam'])->name('exams.delete');
     Route::post('/exams/qcm-question', [AdminController::class, 'storeExamQuestion'])->name('exams.storeQuestion');
     Route::delete('/exams/qcm-question/{id}', [AdminController::class, 'deleteExamQuestion'])->name('exams.deleteQuestion');
+    Route::get('/exams/{id}/export-results', [AdminController::class, 'exportExamResults'])->name('exams.exportResults');
+    Route::delete('/exams/submissions/{id}', [AdminController::class, 'deleteExamSubmission'])->name('exams.deleteSubmission');
 
     // 5. Challenge & Fullscreen Leaderboard
     Route::post('/challenges', [AdminController::class, 'storeChallenge'])->name('challenges.store');
