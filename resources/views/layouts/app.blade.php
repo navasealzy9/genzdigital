@@ -284,12 +284,23 @@
         }
 
         .student-pass-meta-box {
-            background: rgba(0, 0, 0, 0.16);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 18px;
-            padding: 0.9rem 1.2rem;
+            background: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .student-pass-card .btn-link {
+            color: #ffffff;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .student-pass-card .btn-link:hover {
+            color: #ffffff;
+            opacity: 1 !important;
+            transform: translateY(-1px);
         }
 
         /* Flippable 3D ID Card */

@@ -296,34 +296,36 @@
                         <div class="overflow-hidden w-100">
                             <h3 class="fs-4 fw-bolder mb-1 text-white tracking-tight text-truncate" style="letter-spacing: -0.01em;">{{ $student['name'] }}</h3>
                             
-                            <div class="d-flex align-items-center gap-1.5 mb-2 flex-wrap">
-                                <span class="badge rounded-pill fw-semibold font-monospace px-2.5 py-0.5 text-white" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 11px;">
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                <span class="font-monospace fw-medium text-white opacity-90" style="font-size: 12px; letter-spacing: 0.02em;">
                                     ID • {{ $student['id'] }}
                                 </span>
-                                <span class="badge rounded-pill fw-bold text-uppercase d-inline-flex align-items-center shadow-xs" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(52, 211, 153, 0.4); color: #ffffff; font-size: 10px; letter-spacing: 0.06em; padding: 3px 9px;">
-                                    <span style="width: 5px; height: 5px; border-radius: 50%; background-color: #10b981; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px #10b981;"></span>
+                                <span class="text-white-50 opacity-40">•</span>
+                                <span class="d-inline-flex align-items-center text-white fw-semibold" style="font-size: 11.5px;">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #34d399; display: inline-block; margin-right: 5px; box-shadow: 0 0 6px #34d399;"></span>
                                     {{ $student['status'] }}
                                 </span>
                             </div>
 
-                            <!-- iOS Frosted Action Buttons -->
-                            <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                                <button type="button" class="btn btn-sm rounded-pill text-white d-inline-flex align-items-center gap-1 shadow-xs fw-semibold" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.28); font-size: 11px; padding: 4px 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);" onclick="event.stopPropagation(); switchTab('qrpass');">
-                                    <i data-lucide="qr-code" style="width: 12px; height: 12px;"></i>
+                            <!-- iOS Ultra-Clean Action Links (No Background) -->
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <button type="button" class="btn btn-link p-0 text-white text-decoration-none fw-semibold d-inline-flex align-items-center gap-1.5 shadow-none opacity-90 hover-opacity-100" style="font-size: 12px;" onclick="event.stopPropagation(); switchTab('qrpass');">
+                                    <i data-lucide="qr-code" style="width: 13px; height: 13px;"></i>
                                     <span>View Pass</span>
                                 </button>
-                                <button type="button" class="btn btn-sm rounded-pill text-white d-inline-flex align-items-center gap-1 shadow-xs fw-semibold" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.28); font-size: 11px; padding: 4px 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);" onclick="event.stopPropagation(); openAvatarCropModal();">
-                                    <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+                                <span class="text-white-50 opacity-40">•</span>
+                                <button type="button" class="btn btn-link p-0 text-white text-decoration-none fw-semibold d-inline-flex align-items-center gap-1.5 shadow-none opacity-90 hover-opacity-100" style="font-size: 12px;" onclick="event.stopPropagation(); openAvatarCropModal();">
+                                    <i data-lucide="camera" style="width: 13px; height: 13px;"></i>
                                     <span>Change Photo</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Footer Details: Modern Frosted Card Box -->
-                    <div class="student-pass-meta-box position-relative z-1">
+                    <!-- Footer Details: Ultra-Clean Transparent Divider (No Background Box) -->
+                    <div class="student-pass-meta-box position-relative z-1 pt-3 mt-3 border-top border-white border-opacity-20">
                         <div class="row g-2 text-white align-items-center">
-                            <div class="col-4 border-end border-white border-opacity-15">
+                            <div class="col-4 border-end border-white border-opacity-20">
                                 <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Gender</small>
                                 <span class="fw-bold fs-6 text-white">{{ $student['gender'] }}</span>
                             </div>
