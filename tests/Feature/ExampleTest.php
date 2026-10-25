@@ -82,6 +82,16 @@ class ExampleTest extends TestCase
         // Logout Admin
         $this->get('/logout');
 
+        // Test that Admin registration is strictly prohibited
+        $adminRegisterAttempt = $this->post('/register', [
+            'name' => 'Hacker Admin',
+            'email' => 'fake_admin@genzdigital.edu',
+            'password' => 'secret123',
+            'password_confirmation' => 'secret123',
+            'role' => 'admin',
+        ]);
+        $adminRegisterAttempt->assertSessionHasErrors('role');
+
         // Test New Student Registration: Features Locked until Admin assigns a class
         $randomEmail = 'test_student_' . uniqid() . '@genzdigital.edu';
         $randomStudentId = 'GZ' . rand(100000, 999999);

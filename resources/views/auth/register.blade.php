@@ -511,22 +511,18 @@
                 <form action="{{ route('register.post') }}" method="POST">
                     @csrf
 
-                    <!-- Segmented Role Selector -->
-                    <div class="mb-2.5">
-                        <label class="clean-field-label">SELECT ACCOUNT ROLE</label>
-                        <div class="role-selector-pill">
-                            <input type="radio" name="role" id="role-student" value="student" class="d-none" checked>
-                            <input type="radio" name="role" id="role-admin" value="admin" class="d-none">
-                            
-                            <button type="button" class="role-pill-btn active" id="btn-role-student" onclick="setRole('student')">
-                                <i data-lucide="graduation-cap" style="width: 15px; height: 15px;"></i>
-                                <span>🎓 Student</span>
-                            </button>
-                            <button type="button" class="role-pill-btn" id="btn-role-admin" onclick="setRole('admin')">
-                                <i data-lucide="shield" style="width: 15px; height: 15px;"></i>
-                                <span>🛡️ Admin / Faculty</span>
-                            </button>
+                    <!-- Account Type: Student Account Only -->
+                    <input type="hidden" name="role" value="student">
+                    <div class="mb-3 p-2.5 rounded-3 border d-flex align-items-center justify-content-between" style="background: rgba(37, 99, 235, 0.05); border-color: rgba(37, 99, 235, 0.15) !important;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary text-white rounded-pill px-2.5 py-1 fw-bold" style="font-size: 11px;">
+                                🎓 Student Enrollment
+                            </span>
+                            <span class="small text-secondary" style="font-size: 11.5px;">ចុះឈ្មោះគណនីនិស្សិត</span>
                         </div>
+                        <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 10px;">
+                            Active
+                        </span>
                     </div>
 
                     <!-- Row 1: Full Name & Gender -->
@@ -684,28 +680,6 @@
             if (!icon) return;
             icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
             if (window.lucide) window.lucide.createIcons();
-        }
-
-        function setRole(role) {
-            const studentBtn = document.getElementById('btn-role-student');
-            const adminBtn = document.getElementById('btn-role-admin');
-            const studentRadio = document.getElementById('role-student');
-            const adminRadio = document.getElementById('role-admin');
-            const extraFields = document.getElementById('student-extra-fields');
-
-            if (role === 'student') {
-                studentBtn.classList.add('active');
-                adminBtn.classList.remove('active');
-                studentRadio.checked = true;
-                adminRadio.checked = false;
-                if (extraFields) extraFields.style.display = 'block';
-            } else {
-                adminBtn.classList.add('active');
-                studentBtn.classList.remove('active');
-                adminRadio.checked = true;
-                studentRadio.checked = false;
-                if (extraFields) extraFields.style.display = 'none';
-            }
         }
     </script>
 </body>

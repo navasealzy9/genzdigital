@@ -69,17 +69,24 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        // Prohibit Admin registration
+        if (strtolower((string) $request->input('role')) === 'admin') {
+            return back()->withErrors([
+                'role' => 'ការចុះឈ្មោះគណនី Admin មិនត្រូវបានអនុញ្ញាតទេ! គណនី Admin អាចផ្តល់ជូនបានតែដោយរដ្ឋបាលសាកលវិទ្យាល័យប៉ុណ្ណោះ។ (Admin registration is strictly prohibited).',
+            ])->withInput();
+        }
+
         $request->validate([
             'name' => 'required|string|max:191',
             'email' => 'required|email|max:191|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:student,admin',
+            'role' => 'nullable|string',
             'student_id' => 'nullable|string|max:100',
             'major' => 'nullable|string|max:191',
             'gender' => 'nullable|string|max:50',
         ]);
 
-        $role = $request->input('role', 'student');
+        $role = 'student'; // Strictly enforce student role for self-registration
         $studentId = $request->student_id ?: ('GZ' . date('Y') . rand(1000, 9999));
         $major = $request->major ?: 'Visual Communication';
         $gender = $request->gender ?: 'Female';
