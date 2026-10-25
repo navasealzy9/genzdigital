@@ -160,11 +160,11 @@
                     <span class="d-none d-sm-inline">Copy Link Share</span>
                 </button>
 
-                <!-- Download Real PDF -->
-                <a href="{{ route('campus.resource.download', $resource->id) }}" class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm">
-                    <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                    <span>Download PDF</span>
-                </a>
+                <!-- Download Disabled / Protected -->
+                <span class="badge bg-secondary bg-opacity-50 text-white-50 border border-secondary rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5">
+                    <i data-lucide="lock" style="width: 13px; height: 13px;"></i>
+                    <span>Download Disabled (Protected)</span>
+                </span>
             </div>
         </div>
     </header>

@@ -1379,7 +1379,7 @@
             </button>
             <div>
                 <h4 class="fw-bolder mb-0 tracking-tight">Course Resources & Files</h4>
-                <small class="text-secondary">ឯកសារមេរៀនជា PDF តាមថ្នាក់ • មើល View Online & ទាញយក Download</small>
+                <small class="text-secondary">ឯកសារមេរៀនជា PDF តាមថ្នាក់ • មើលលើផ្ទាំងនេះ (Protected Read-Only)</small>
             </div>
         </div>
         <span class="badge bg-primary-subtle text-primary py-2 px-3 rounded-pill fw-bold">
@@ -1418,31 +1418,16 @@
                         </div>
                     </div>
                     
-                    <div class="d-flex flex-column gap-2">
-                        <!-- 1. Dedicated PDF Viewer Tab -->
-                        <a href="{{ route('campus.resource.view', $res->id) }}" target="_blank" class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-1.5">
-                            <i data-lucide="external-link" style="width: 15px; height: 15px;"></i>
-                            <span>View PDF Online (បើកអានក្នុងផេកថ្មី)</span>
-                        </a>
-
-                        <!-- 2. Quick Modal Viewer (Right on Page) -->
-                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold py-1.5 d-flex align-items-center justify-content-center gap-1.5" onclick="openPdfQuickModal('{{ asset($res->file_url ?: 'uploads/slides/slides_1792915639.pdf') }}', '{{ addslashes($res->title) }}', '{{ addslashes($res->file_name) }}', '{{ route('campus.resource.view', $res->id) }}', '{{ route('campus.resource.download', $res->id) }}')">
-                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <!-- Quick Modal Viewer (Protected on Page) -->
+                        <button type="button" class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-2" onclick="openPdfQuickModal('{{ asset($res->file_url ?: 'uploads/slides/slides_1792915639.pdf') }}', '{{ addslashes($res->title) }}', '{{ addslashes($res->file_name) }}', '#', '#')">
+                            <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
                             <span>Quick View Modal (មើលលើផ្ទាំងនេះ)</span>
                         </button>
-
-                        <div class="d-flex gap-2">
-                            <!-- Copy Link Share Button -->
-                            <button class="btn btn-outline-info btn-sm rounded-pill w-50 fw-bold d-flex align-items-center justify-content-center gap-1" onclick="copyDirectResourceLink('{{ route('campus.resource.view', $res->id) }}')">
-                                <i data-lucide="share-2" style="width: 13px; height: 13px;"></i>
-                                <span style="font-size: 11px;">Copy Link Share</span>
-                            </button>
-
-                            <!-- Download File Button -->
-                            <a href="{{ route('campus.resource.download', $res->id) }}" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill w-50 fw-semibold d-flex align-items-center justify-content-center gap-1" onclick="showToast('Downloading {{ $res->file_name }}...')">
-                                <i data-lucide="download" style="width: 13px; height: 13px;"></i>
-                                <span style="font-size: 11px;">Download PDF</span>
-                            </a>
+                        <div class="text-center pt-1">
+                            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1" style="font-size: 10px;">
+                                <i data-lucide="lock" style="width: 10px; height: 10px;" class="me-1"></i> Read-Only • មិនអនុញ្ញាតអោយ View ក្រៅផ្ទាំង ឬ Download ឡើយ
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -2651,9 +2636,10 @@
                                 <span class="small fw-bold d-block">{{ $res->file_name }}</span>
                                 <small class="text-secondary">{{ $res->course }} • {{ $res->file_size }}</small>
                             </div>
-                            <a href="{{ route('campus.resource.download', $res->id) }}" class="btn btn-sm btn-primary rounded-2 d-flex align-items-center gap-1" target="_blank" onclick="showToast('Downloading {{ $res->file_name }}...')">
-                                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1" onclick="openPdfQuickModal('{{ asset($res->file_url ?: 'uploads/slides/slides_1792915639.pdf') }}', '{{ addslashes($res->title) }}', '{{ addslashes($res->file_name) }}', '#', '#')">
+                                <i data-lucide="eye" style="width: 13px; height: 13px;"></i>
+                                <span style="font-size: 11.5px;">View</span>
+                            </button>
                         </div>
                     @empty
                         <div class="text-center py-3 text-secondary small">No resources uploaded yet.</div>
@@ -3135,14 +3121,9 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <a href="#" id="pdf-modal-newtab-btn" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
-                        <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
-                        <span class="d-none d-sm-inline">Full Screen Page</span>
-                    </a>
-                    <a href="#" id="pdf-modal-download-btn" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
-                        <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                        <span class="d-none d-sm-inline">Download PDF</span>
-                    </a>
+                    <span class="badge bg-secondary bg-opacity-50 text-white-50 border border-secondary rounded-pill px-2.5 py-1" style="font-size: 11px;">
+                        <i data-lucide="shield" style="width: 12px; height: 12px;" class="me-1"></i> Protected View
+                    </span>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>
@@ -3154,7 +3135,9 @@
             </div>
 
             <div class="modal-footer border-0 pt-0 d-flex justify-content-between align-items-center">
-                <span class="text-white-50 small">GenZ Digital Campus PDF Viewer • Real-Time Reader</span>
+                <span class="text-white-50 small" style="font-size: 11.5px;">
+                    <i data-lucide="lock" style="width: 12px; height: 12px;" class="me-1"></i> ឯកសារនេះត្រូវបានការពារ — មិនអនុញ្ញាតអោយ Download ឬបើកក្នុងផេកក្រៅឡើយ
+                </span>
                 <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -4330,14 +4313,10 @@
         const titleEl = document.getElementById('pdf-viewer-title');
         const subtitleEl = document.getElementById('pdf-viewer-subtitle');
         const iframeEl = document.getElementById('pdf-modal-iframe');
-        const newtabEl = document.getElementById('pdf-modal-newtab-btn');
-        const downloadEl = document.getElementById('pdf-modal-download-btn');
 
         if (titleEl) titleEl.textContent = title;
         if (subtitleEl) subtitleEl.textContent = fileName;
-        if (iframeEl) iframeEl.src = fileUrl + '#toolbar=1';
-        if (newtabEl) newtabEl.href = viewPageUrl;
-        if (downloadEl) downloadEl.href = downloadUrl;
+        if (iframeEl) iframeEl.src = fileUrl + '#toolbar=0&navpanes=0';
 
         const modalEl = document.getElementById('pdfViewerModal');
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
