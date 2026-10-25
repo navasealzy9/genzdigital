@@ -616,167 +616,389 @@
 <!-- ====================================================================== -->
 <div id="screen-profile" class="screen-section d-none">
     @auth
-        <div class="mb-4">
-        <h4 class="fw-bolder mb-0 tracking-tight">Student Profile</h4>
-        <small class="text-secondary">Manage digital pass & account settings</small>
+    <!-- Profile Page Header -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4">
+        <div>
+            <h4 class="fw-bolder mb-0 tracking-tight">Student Profile</h4>
+            <small class="text-secondary">Official Digital Pass, Academic Credentials & System Settings</small>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5">
+                <span class="p-1 rounded-circle bg-success d-inline-block"></span>
+                <span>{{ $student['status'] ?? 'Active' }} Student</span>
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold" onclick="toggleAppTheme()">
+                <i data-lucide="moon" style="width: 14px; height: 14px;"></i>
+                <span class="ms-1 d-none d-sm-inline">Theme</span>
+            </button>
+        </div>
     </div>
 
     <div class="row g-4">
-        <!-- Left: Flippable 3D Digital ID Pass Card -->
+        <!-- Left Column: 3D Flip Pass Card, Quick Stats & Action Cards -->
         <div class="col-12 col-lg-5 col-xl-4">
+            <!-- 3D Luxury Student Pass Card -->
             <div class="perspective-1000 mb-3">
-                <div id="student-flip-card" class="flip-card" onclick="toggleCardFlip()">
+                <div id="student-flip-card" class="flip-card" onclick="toggleCardFlip()" title="Click to flip pass">
                     <div class="flip-card-inner">
                         <!-- Front View -->
                         <div class="flip-card-front position-relative overflow-hidden">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center gap-1.5">
-                                    <img src="{{ asset('images/genz-logo.png') }}" alt="Logo" style="width: 18px; height: 18px; object-fit: contain;">
-                                    <span class="text-uppercase fw-bold text-white" style="font-size: 10px; letter-spacing: 0.14em;">
-                                        GENZ DIGITAL ID PASS
+                            <!-- Background Ambient Light -->
+                            <div style="position: absolute; top: -60px; right: -40px; width: 190px; height: 190px; background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; pointer-events: none;"></div>
+
+                            <!-- Card Top Bar: Logo, Chip & Flip Button -->
+                            <div class="d-flex justify-content-between align-items-center position-relative z-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ asset('images/genz-logo.png') }}" alt="Logo" style="width: 20px; height: 20px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                                    <span class="text-uppercase fw-bold text-white tracking-wider" style="font-size: 10px; letter-spacing: 0.16em;">
+                                        GENZ DIGITAL PASS
                                     </span>
                                 </div>
-                                <span class="badge rounded-pill px-2.5 py-1 text-white" style="background: rgba(255, 255, 255, 0.2); font-size: 9.5px; border: 1px solid rgba(255, 255, 255, 0.25);">
-                                    Tap to flip 🔄
-                                </span>
+                                
+                                <div class="d-flex align-items-center gap-1.5">
+                                    <!-- Contactless NFC Wave Icon -->
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                                        <path d="M6 8a6 6 0 0 1 12 0"/>
+                                        <path d="M8.5 10.5a3.5 3.5 0 0 1 7 0"/>
+                                        <path d="M11 13a1 1 0 0 1 2 0"/>
+                                    </svg>
+                                    <span class="badge rounded-pill px-2.5 py-1 text-white shadow-xs" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); font-size: 9.5px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                                        Flip 🔄
+                                    </span>
+                                </div>
                             </div>
 
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="position-relative cursor-pointer" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
-                                    <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow" style="width: 62px; height: 62px; border: 2.5px solid rgba(255, 255, 255, 0.85);">
-                                    <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 20px; height: 20px; border: 1.5px solid #ffffff;">
-                                        <i data-lucide="camera" style="width: 10px; height: 10px;"></i>
+                            <!-- Card Middle: Avatar & Student Details -->
+                            <div class="d-flex align-items-center gap-3 my-auto position-relative z-1">
+                                <div class="position-relative cursor-pointer flex-shrink-0" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
+                                    <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow" style="width: 64px; height: 64px; border: 2.5px solid rgba(255, 255, 255, 0.9);">
+                                    <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 22px; height: 22px; border: 2px solid #ffffff;">
+                                        <i data-lucide="camera" style="width: 11px; height: 11px;"></i>
                                     </div>
                                 </div>
-                                <div>
-                                    <h4 class="fw-bolder mb-0 text-white fs-5 tracking-tight d-flex align-items-center gap-1.5">
-                                        <span>{{ $student['name'] }}</span>
+                                <div class="min-w-0 flex-grow-1">
+                                    <h5 class="fw-bolder mb-0 text-white tracking-tight d-flex align-items-center gap-1.5 text-truncate" style="font-size: 16.5px;">
+                                        <span class="text-truncate">{{ $student['name'] }}</span>
                                         @include('partials.verified-badge', ['size' => 16])
-                                    </h4>
+                                    </h5>
                                     <small class="text-white-50 font-monospace d-block" style="font-size: 11px;">ID • {{ $student['id'] }}</small>
-                                    <small class="badge bg-white bg-opacity-15 text-white fw-semibold mt-1" style="font-size: 10.5px;">{{ $student['major'] }}</small>
+                                    
+                                    <!-- Beautiful Major Badge -->
+                                    <div class="d-inline-flex align-items-center gap-1 px-2.5 py-0.5 rounded-pill mt-1" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); max-width: 100%;">
+                                        <i data-lucide="sparkles" style="width: 10px; height: 10px; color: #fde047; flex-shrink: 0;"></i>
+                                        <span class="text-white fw-semibold text-truncate" style="font-size: 10.5px;">
+                                            {{ !empty($student['major']) ? $student['major'] : 'Digital Technology & AI' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-15 text-white-50 font-monospace" style="font-size: 9.5px;">
-                                <span>VALID: {{ $student['valid_until'] }}</span>
-                                <span class="text-success fw-bold text-uppercase">● {{ $student['status'] }}</span>
+                            <!-- Card Bottom Bar: Validity & Status -->
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-20 text-white-50 font-monospace position-relative z-1" style="font-size: 9.5px;">
+                                <div class="d-flex align-items-center gap-1">
+                                    <span>VALID THRU:</span>
+                                    <span class="text-white fw-bold">{{ $student['valid_until'] }}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1.5 text-white fw-bold text-uppercase">
+                                    <span class="p-1 rounded-circle bg-success shadow-xs d-inline-block"></span>
+                                    <span>{{ $student['status'] }}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Back View (QR Scanner) -->
-                        <div class="flip-card-back align-items-center text-center">
-                            <span class="text-uppercase fw-bold text-secondary" style="font-size: 9.5px; letter-spacing: 0.1em;">
-                                SCAN TO VERIFY ACCESS
-                            </span>
-
-                            <div class="bg-white p-2 rounded-3 shadow-sm">
-                                <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect width="5" height="5" x="3" y="3" rx="1"/>
-                                    <rect width="5" height="5" x="16" y="3" rx="1"/>
-                                    <rect width="5" height="5" x="3" y="16" rx="1"/>
-                                    <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
-                                    <path d="M21 21v.01"/>
-                                    <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
-                                    <path d="M3 12h.01"/>
-                                    <path d="M12 3h.01"/>
-                                    <path d="M12 16v.01"/>
-                                    <path d="M16 12h1"/>
-                                    <path d="M21 12v.01"/>
-                                    <path d="M12 21v-1"/>
-                                </svg>
+                        <!-- Back View (QR Scanner & NFC Strip) -->
+                        <div class="flip-card-back align-items-center text-center position-relative">
+                            <!-- Magnetic Stripe -->
+                            <div style="background: #090d16; height: 32px; margin: -1.35rem -1.45rem 0.5rem -1.45rem; border-top-left-radius: 24px; border-top-right-radius: 24px; display: flex; align-items: center; justify-content: flex-end; padding-right: 1.25rem;">
+                                <span style="font-size: 8px; color: rgba(255,255,255,0.35); font-family: monospace; letter-spacing: 0.14em;">SECURE NFC ACCREDITED PASS</span>
                             </div>
 
-                            <span class="text-secondary" style="font-size: 10.5px;">
-                                NFC Enabled • Pass ID {{ $student['pass_id'] }}
+                            <div class="my-auto d-flex flex-column align-items-center">
+                                <span class="text-uppercase fw-bold text-white-50 mb-1.5" style="font-size: 9px; letter-spacing: 0.12em;">
+                                    SCAN TO VERIFY ACCESS
+                                </span>
+
+                                <div class="bg-white p-2 rounded-3 shadow d-inline-block">
+                                    <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="5" height="5" x="3" y="3" rx="1"/>
+                                        <rect width="5" height="5" x="16" y="3" rx="1"/>
+                                        <rect width="5" height="5" x="3" y="16" rx="1"/>
+                                        <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
+                                        <path d="M21 21v.01"/>
+                                        <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
+                                        <path d="M3 12h.01"/>
+                                        <path d="M12 3h.01"/>
+                                        <path d="M12 16v.01"/>
+                                        <path d="M16 12h1"/>
+                                        <path d="M21 12v.01"/>
+                                        <path d="M12 21v-1"/>
+                                    </svg>
+                                </div>
+
+                                <div class="mt-2 text-white-50 font-monospace text-uppercase" style="font-size: 9.5px; letter-spacing: 0.08em;">
+                                    NFC ID • {{ $student['pass_id'] }}
+                                </div>
+                            </div>
+
+                            <span class="text-white-50" style="font-size: 9px;">
+                                Tap at turnstiles or smart attendance desks
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Action Buttons -->
-            <div class="d-flex flex-column gap-2">
-                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="switchTab('qrpass')">
-                    <div class="d-flex align-items-center gap-3">
-                        <i data-lucide="qr-code" class="text-primary" style="width: 20px; height: 20px;"></i>
-                        <span class="fw-bold" style="font-size: 13.5px;">Digital Student Pass (QR)</span>
+            <!-- Quick Stat Metric Bar -->
+            <div class="row g-2 mb-3">
+                <div class="col-4">
+                    <div class="p-2.5 rounded-3 bg-body border text-center shadow-xs">
+                        <span class="text-secondary d-block" style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Attendance</span>
+                        <div class="fw-bolder text-success fs-6 my-0.5">{{ $student['overall_attendance'] ?? '98%' }}</div>
+                        <small class="text-secondary d-block text-truncate" style="font-size: 9.5px;">Overall Rate</small>
                     </div>
-                    <i data-lucide="chevron-right" class="text-secondary opacity-50" style="width: 18px; height: 18px;"></i>
-                </button>
+                </div>
+                <div class="col-4">
+                    <div class="p-2.5 rounded-3 bg-body border text-center shadow-xs">
+                        <span class="text-secondary d-block" style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Enrolled</span>
+                        <div class="fw-bolder text-primary fs-6 my-0.5">{{ $enrolledClasses->count() }} <span style="font-size: 11px;">Classes</span></div>
+                        <small class="text-secondary d-block text-truncate" style="font-size: 9.5px;">Active Terms</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2.5 rounded-3 bg-body border text-center shadow-xs">
+                        <span class="text-secondary d-block" style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Credits</span>
+                        <div class="fw-bolder text-purple fs-6 my-0.5">{{ $totalCredits ?: 12 }} <span style="font-size: 11px;">Pts</span></div>
+                        <small class="text-secondary d-block text-truncate" style="font-size: 9.5px;">Earned Pts</small>
+                    </div>
+                </div>
+            </div>
 
-                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="openAvatarCropModal()">
-                    <div class="d-flex align-items-center gap-3">
-                        <i data-lucide="camera" class="text-info" style="width: 20px; height: 20px;"></i>
-                        <div>
-                            <span class="fw-bold d-block" style="font-size: 13.5px;">Change Profile Photo (Crop)</span>
-                            <small class="text-secondary" style="font-size: 11px;">Upload, crop & update your Digital Pass photo</small>
+            <!-- Group 1: Academic & Pass Services -->
+            <div class="tool-card p-2 mb-3 border shadow-xs">
+                <div class="px-2 pt-1.5 pb-2 border-bottom">
+                    <span class="text-uppercase text-secondary fw-bold" style="font-size: 10px; letter-spacing: 0.08em;">Academic & Pass Services</span>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    <!-- Item 1: Digital Pass QR -->
+                    <button type="button" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row" onclick="switchTab('qrpass')">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                                <i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-body" style="font-size: 13px;">Digital Student Pass (QR)</span>
+                                <small class="text-secondary" style="font-size: 11px;">Full screen QR pass for campus access</small>
+                            </div>
                         </div>
-                    </div>
-                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 9.5px;">Crop Tool</span>
-                </button>
+                        <i data-lucide="chevron-right" class="text-secondary opacity-50" style="width: 16px; height: 16px;"></i>
+                    </button>
 
-                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="switchTab('attendance')">
-                    <div class="d-flex align-items-center gap-3">
-                        <i data-lucide="check-circle-2" class="text-success" style="width: 20px; height: 20px;"></i>
-                        <span class="fw-bold" style="font-size: 13.5px;">Detailed Attendance Records</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="text-secondary opacity-50" style="width: 18px; height: 18px;"></i>
-                </button>
-
-                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="switchTab('resource')">
-                    <div class="d-flex align-items-center gap-3">
-                        <i data-lucide="folder-down" class="text-primary" style="width: 20px; height: 20px;"></i>
-                        <div>
-                            <span class="fw-bold d-block" style="font-size: 13.5px;">Learning Resources & PDF Lessons</span>
-                            <small class="text-secondary" style="font-size: 11px;">បើកអានឯកសារ PDF មេរៀន និងទាញយក Download</small>
+                    <!-- Item 2: Crop Photo -->
+                    <button type="button" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row" onclick="openAvatarCropModal()">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #06b6d4, #0ea5e9);">
+                                <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-body" style="font-size: 13px;">Change Profile Photo (Crop)</span>
+                                <small class="text-secondary" style="font-size: 11px;">Upload & crop your digital pass portrait</small>
+                            </div>
                         </div>
-                    </div>
-                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 9.5px;">{{ $resources->count() }} Files</span>
-                </button>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size: 9.5px;">Crop Tool</span>
+                    </button>
 
-                <button class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border text-start" onclick="toggleAppTheme()">
-                    <div class="d-flex align-items-center gap-3">
-                        <i data-lucide="moon" class="text-warning" style="width: 20px; height: 20px;"></i>
-                        <span class="fw-bold" style="font-size: 13.5px;">Switch Light / Dark Theme</span>
-                    </div>
-                    <span class="badge bg-secondary-subtle text-secondary fw-bold" style="font-size: 9.5px;">Theme</span>
-                </button>
-
-                @if(Auth::check() && Auth::user()->role === 'admin')
-                    <a href="{{ route('admin.index') }}" class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border border-primary-subtle text-start text-decoration-none">
-                        <div class="d-flex align-items-center gap-3 text-primary">
-                            <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
-                            <span class="fw-bold" style="font-size: 13.5px;">Switch to Admin Console</span>
+                    <!-- Item 3: Attendance -->
+                    <button type="button" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row" onclick="switchTab('attendance')">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #10b981, #059669);">
+                                <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-body" style="font-size: 13px;">Detailed Attendance Records</span>
+                                <small class="text-secondary" style="font-size: 11px;">Track daily session check-ins & logs</small>
+                            </div>
                         </div>
-                        <span class="badge bg-primary text-white fw-bold" style="font-size: 9.5px;">ADMIN</span>
+                        <i data-lucide="chevron-right" class="text-secondary opacity-50" style="width: 16px; height: 16px;"></i>
+                    </button>
+
+                    <!-- Item 4: Resources -->
+                    <button type="button" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row" onclick="switchTab('resource')">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                                <i data-lucide="folder-down" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-body" style="font-size: 13px;">Learning Resources & Lessons</span>
+                                <small class="text-secondary" style="font-size: 11px;">Read PDF lecture slides & downloads</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size: 9.5px;">{{ $resources->count() }} Files</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 2: Preferences & Account Security -->
+            <div class="tool-card p-2 mb-3 border shadow-xs">
+                <div class="px-2 pt-1.5 pb-2 border-bottom">
+                    <span class="text-uppercase text-secondary fw-bold" style="font-size: 10px; letter-spacing: 0.08em;">Preferences & Account</span>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    <!-- Item 1: Theme -->
+                    <button type="button" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row" onclick="toggleAppTheme()">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i data-lucide="moon" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-body" style="font-size: 13px;">Theme Appearance</span>
+                                <small class="text-secondary" style="font-size: 11px;">Switch Light / Dark Campus Mode</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-body-secondary text-body rounded-pill px-2.5 py-1 fw-bold" style="font-size: 9.5px;">Toggle</span>
+                    </button>
+
+                    @if(Auth::check() && Auth::user()->role === 'admin')
+                        <!-- Item 2: Admin Console -->
+                        <a href="{{ route('admin.index') }}" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row text-decoration-none">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #4f46e5, #4338ca);">
+                                    <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold d-block text-primary" style="font-size: 13px;">Admin Management Console</span>
+                                    <small class="text-secondary" style="font-size: 11px;">Access admin portal & class controls</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-primary text-white rounded-pill px-2.5 py-1 fw-bold" style="font-size: 9.5px;">ADMIN</span>
+                        </a>
+                    @endif
+
+                    <!-- Item 3: Log Out -->
+                    <a href="{{ route('logout') }}" class="list-group-item list-group-item-action border-0 px-2.5 py-2.5 rounded-3 d-flex align-items-center justify-content-between profile-action-row text-decoration-none">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-danger" style="font-size: 13px;">Sign Out of Account</span>
+                                <small class="text-secondary" style="font-size: 11px;">Safely end active student session</small>
+                            </div>
+                        </div>
+                        <i data-lucide="arrow-right" class="text-danger opacity-75" style="width: 18px; height: 18px;"></i>
                     </a>
-                @endif
-
-                <a href="{{ route('logout') }}" class="tool-card p-3 d-flex flex-row justify-content-between align-items-center w-100 border border-danger-subtle text-start text-decoration-none">
-                    <div class="d-flex align-items-center gap-3 text-danger">
-                        <i data-lucide="log-out" style="width: 20px; height: 20px;"></i>
-                        <span class="fw-bold" style="font-size: 13.5px;">Log Out of Student Pass</span>
-                    </div>
-                    <i data-lucide="arrow-right" class="text-danger opacity-75" style="width: 18px; height: 18px;"></i>
-                </a>
+                </div>
             </div>
         </div>
 
-        <!-- Right: Attendance Summary & Student Statistics -->
+        <!-- Right Column: Student Personal Information & Academic Attendance -->
         <div class="col-12 col-lg-7 col-xl-8">
-            <div class="tool-card p-3 p-md-4 mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h5 class="fw-bold mb-0 fs-6">Academic Attendance Records</h5>
-                        <small class="text-secondary">Official record for current academic year</small>
+            <!-- 1. Student Personal & Academic Information Card -->
+            <div class="tool-card p-3 p-md-4 mb-4 border shadow-xs">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                            <i data-lucide="id-card" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 fs-6">Official Student Credentials</h5>
+                            <small class="text-secondary">Verified Academic Registry Profile</small>
+                        </div>
                     </div>
-                    <span class="badge {{ $isEnrolled ? 'bg-primary-subtle text-primary' : 'bg-warning-subtle text-warning' }} fw-bold fs-7">
+                    <span class="badge bg-primary-subtle text-primary fw-bold px-2.5 py-1 rounded-pill" style="font-size: 10px;">
+                        VERIFIED ID
+                    </span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 rounded-3 bg-body border shadow-2xs h-100">
+                            <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">FULL LEGAL NAME</small>
+                            <div class="fw-bold fs-6 mt-1 d-flex align-items-center gap-1.5 text-body">
+                                <span>{{ $student['name'] }}</span>
+                                @include('partials.verified-badge', ['size' => 15])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 rounded-3 bg-body border shadow-2xs h-100">
+                            <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">STUDENT ID NUMBER</small>
+                            <div class="fw-bold fs-6 font-monospace mt-1 text-primary">
+                                {{ $student['id'] }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 rounded-3 bg-body border shadow-2xs h-100">
+                            <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">ACADEMIC MAJOR / PROGRAM</small>
+                            <div class="fw-bold fs-6 mt-1 text-body">
+                                {{ !empty($student['major']) ? $student['major'] : 'Digital Technology & AI' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 rounded-3 bg-body border shadow-2xs h-100">
+                            <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">REGISTERED EMAIL</small>
+                            <div class="fw-bold fs-6 mt-1 text-body text-truncate">
+                                {{ Auth::user()->email ?? 'student@genzdigital.edu' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 rounded-3 bg-body border shadow-2xs h-100">
+                            <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">GENDER / IDENTITY</small>
+                            <div class="fw-bold fs-6 mt-1 text-body">
+                                {{ $student['gender'] ?? 'Not Specified' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 rounded-3 bg-body border shadow-2xs h-100">
+                            <small class="text-secondary d-block fw-semibold" style="font-size: 11px;">DIGITAL PASS VALIDITY</small>
+                            <div class="fw-bold fs-6 mt-1 text-success d-flex align-items-center gap-1.5">
+                                <span class="p-1 rounded-circle bg-success shadow-xs d-inline-block"></span>
+                                <span>Active Until {{ $student['valid_until'] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Academic Attendance Records Card -->
+            <div class="tool-card p-3 p-md-4 mb-3 border shadow-xs">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="p-2 rounded-3 bg-success-subtle text-success">
+                            <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 fs-6">Academic Attendance Records</h5>
+                            <small class="text-secondary">Official live record for current academic year</small>
+                        </div>
+                    </div>
+                    <span class="badge {{ $isEnrolled ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle' }} fw-bold fs-7 rounded-pill px-3 py-1.5">
                         {{ $isEnrolled ? 'Overall ' . $student['overall_attendance'] : 'Pending Class Assignment' }}
                     </span>
                 </div>
 
                 @if($isEnrolled)
+                    <!-- Visual Attendance Rate Bar -->
+                    <div class="p-3 rounded-3 bg-body border mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1.5">
+                            <span class="small fw-bold text-body">Overall Attendance Integrity</span>
+                            <span class="fw-bolder text-primary">{{ $student['overall_attendance'] }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ intval($student['overall_attendance']) ?: 95 }}%;" aria-valuenow="{{ intval($student['overall_attendance']) ?: 95 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="text-secondary small">
@@ -792,10 +1014,10 @@
                                 @foreach($attendanceList as $att)
                                     <tr>
                                         <td class="fw-bold">{{ $att['subject'] }}</td>
-                                        <td><span class="badge bg-body-secondary text-secondary">{{ $att['code'] }}</span></td>
+                                        <td><span class="badge bg-body-secondary text-secondary font-monospace">{{ $att['code'] }}</span></td>
                                         <td class="small text-secondary">{{ $att['last_check'] }}</td>
                                         <td>
-                                            <span class="badge {{ $att['status'] === 'Excellent' || $att['status'] === 'Good' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning' }} fw-bold">
+                                            <span class="badge {{ $att['status'] === 'Excellent' || $att['status'] === 'Good' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle' }} fw-bold rounded-pill px-2.5">
                                                 {{ $att['status'] }}
                                             </span>
                                         </td>

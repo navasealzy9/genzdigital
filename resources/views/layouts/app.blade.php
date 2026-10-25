@@ -311,15 +311,16 @@
         .flip-card {
             position: relative;
             width: 100%;
-            height: 220px;
+            height: 228px;
             cursor: pointer;
+            perspective: 1200px;
         }
 
         .flip-card-inner {
             position: relative;
             width: 100%;
             height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
         }
 
@@ -331,26 +332,39 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            border-radius: 24px;
-            padding: 1.5rem;
+            border-radius: 26px;
+            padding: 1.35rem 1.45rem;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            box-shadow: 0 15px 35px -10px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 18px 38px -10px rgba(37, 99, 235, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.18) inset;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow: hidden;
         }
 
         .flip-card-front {
-            background: linear-gradient(135deg, #2563eb, #6366f1, #9333ea);
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 35%, #4f46e5 70%, #7c3aed 100%);
             color: #ffffff;
         }
 
         .flip-card-back {
-            background: #1e293b;
+            background: linear-gradient(145deg, #090d16 0%, #0f172a 50%, #1e293b 100%);
             color: #ffffff;
             transform: rotateY(180deg);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .profile-action-row {
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            background: transparent !important;
+        }
+        .profile-action-row:hover {
+            background: rgba(148, 163, 184, 0.12) !important;
+            transform: translateX(4px);
+        }
+        [data-bs-theme="dark"] .profile-action-row:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
         }
 
         /* Modern Tool Card (iOS 26 Frosted Glass Widget) */
