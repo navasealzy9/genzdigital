@@ -8,6 +8,8 @@
 
     <title>Admin Portal - GenZ Digital Campus OS</title>
     <link rel="icon" type="image/png" href="{{ asset('images/genz-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/genz-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/genz-logo.png') }}">
 
     <!-- Google Fonts: Google Sans & Khmer Sans (Kantumruy Pro, Noto Sans Khmer) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
