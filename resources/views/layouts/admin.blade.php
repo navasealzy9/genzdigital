@@ -7,9 +7,9 @@
     <script>window.BASE_URL = "{{ url('/') }}";</script>
 
     <title>Admin Portal - GenZ Digital Campus OS</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/genz-logo.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/genz-logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/genz-logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/genz-logo.png') }}?v=26.0">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/genz-logo.png') }}?v=26.0">
+    <link rel="apple-touch-icon" href="{{ asset('images/genz-logo.png') }}?v=26.0">
 
     <!-- Google Fonts: Google Sans & Khmer Sans (Kantumruy Pro, Noto Sans Khmer) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
