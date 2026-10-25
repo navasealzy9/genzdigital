@@ -797,7 +797,7 @@
 <div id="screen-classCart" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1026,7 +1026,7 @@
 <div id="screen-score" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1110,7 +1110,7 @@
 <div id="screen-resource" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1198,7 +1198,7 @@
 <div id="screen-scan" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1340,7 +1340,7 @@
 <div id="screen-exam" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1408,7 +1408,7 @@
 <div id="screen-certificates" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1464,7 +1464,7 @@
 <div id="screen-showscreen" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1533,7 +1533,7 @@
 <div id="screen-collab" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1590,7 +1590,7 @@
 <div id="screen-challenge" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1650,7 +1650,7 @@
 <div id="screen-attendance" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1772,7 +1772,7 @@
 <div id="screen-library" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1826,7 +1826,7 @@
 <div id="screen-news" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>
@@ -1878,7 +1878,7 @@
 <div id="screen-qrpass" class="screen-section d-none">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-light rounded-circle shadow-xs border text-body d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;" onclick="switchTab('home')" title="Back to Home">
+            <button type="button" class="btn-ios-circle" onclick="switchTab('home')" title="Back to Home">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
             <div>

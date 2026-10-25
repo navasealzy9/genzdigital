@@ -43,7 +43,11 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            background-color: #f8fafc;
+            background-color: #f6f8fc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.04) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
             color: #0f172a;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
@@ -57,25 +61,28 @@
         }
 
         [data-bs-theme="dark"] body {
-            background-color: #0b0f19;
+            background-color: #090d16;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(147, 51, 234, 0.08) 0px, transparent 50%);
             color: #f8fafc;
         }
 
-        /* Top Navigation Header */
+        /* Top Navigation Header (iOS 26 Frosted Glass) */
         .main-navbar {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.65);
             position: sticky;
             top: 0;
             z-index: 1030;
-            transition: background 0.3s ease, border-color 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         [data-bs-theme="dark"] .main-navbar {
-            background: rgba(15, 23, 42, 0.85);
-            border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+            background: rgba(11, 15, 25, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .gz-title-gradient {
@@ -91,19 +98,19 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Desktop Nav Tabs */
+        /* Desktop Nav Tabs (iOS Segmented Style) */
         .desktop-nav-link {
             border: none;
             background: transparent;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
+            padding: 0.45rem 0.95rem;
+            border-radius: 9999px;
             font-weight: 700;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             color: #64748b;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
+            gap: 0.45rem;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .desktop-nav-link:hover {
@@ -112,8 +119,9 @@
         }
 
         .desktop-nav-link.active {
-            color: #2563eb !important;
-            background: rgba(37, 99, 235, 0.12) !important;
+            color: #1d4ed8 !important;
+            background: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
         [data-bs-theme="dark"] .desktop-nav-link {
@@ -127,27 +135,33 @@
 
         [data-bs-theme="dark"] .desktop-nav-link.active {
             color: #60a5fa !important;
-            background: rgba(96, 165, 250, 0.18) !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
         }
 
-        /* Mobile Bottom Nav (visible only on mobile screens < 768px) */
+        /* Mobile Bottom Nav (iOS 26 Floating Frosted Dock < 768px) */
         .mobile-bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            bottom: 12px;
+            left: 14px;
+            right: 14px;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0.45rem 0.6rem;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(28px) saturate(200%);
+            -webkit-backdrop-filter: blur(28px) saturate(200%);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.03);
             z-index: 1040;
-            transition: background 0.3s ease, border-color 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         [data-bs-theme="dark"] .mobile-bottom-nav {
-            background: rgba(15, 23, 42, 0.92);
-            border-top: 1px solid rgba(30, 41, 59, 0.8);
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6);
         }
 
         .mobile-tab-btn {
@@ -156,20 +170,28 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             color: #94a3b8;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            transition: all 0.2s ease;
+            padding: 0.35rem 0.65rem;
+            border-radius: 18px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
+        }
+
+        .mobile-tab-btn:active {
+            transform: scale(0.92);
         }
 
         .mobile-tab-btn.active {
             color: #2563eb !important;
+            background: rgba(37, 99, 235, 0.08);
         }
 
         [data-bs-theme="dark"] .mobile-tab-btn.active {
             color: #60a5fa !important;
+            background: rgba(96, 165, 250, 0.12);
         }
 
         .mobile-tab-dot {
@@ -184,6 +206,47 @@
 
         .mobile-tab-btn.active .mobile-tab-dot {
             opacity: 1;
+        }
+
+        /* iOS 26 Circular Frosted Glass Button */
+        .btn-ios-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.72) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+        }
+
+        .btn-ios-circle:hover {
+            transform: translateY(-2px) scale(1.05);
+            background: #ffffff !important;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+            color: #2563eb;
+        }
+
+        .btn-ios-circle:active {
+            transform: scale(0.92);
+        }
+
+        [data-bs-theme="dark"] .btn-ios-circle {
+            background: rgba(30, 41, 59, 0.7) !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            color: #f8fafc;
+        }
+
+        [data-bs-theme="dark"] .btn-ios-circle:hover {
+            background: rgba(51, 65, 85, 0.9) !important;
+            color: #60a5fa;
         }
 
         /* Student Pass Gradient Card */
@@ -299,59 +362,68 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
-        /* Modern Tool Card */
+        /* Modern Tool Card (iOS 26 Frosted Glass Widget) */
         .tool-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.74);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            border-radius: 24px;
+            padding: 1.25rem;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
         }
 
         .tool-card:hover {
-            border-color: #93c5fd;
-            transform: translateY(-4px);
-            box-shadow: 0 16px 30px -8px rgba(37, 99, 235, 0.12);
+            border-color: rgba(147, 197, 253, 0.9);
+            transform: translateY(-5px) scale(1.015);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 20px 38px -8px rgba(37, 99, 235, 0.14), 0 0 0 1px rgba(59, 130, 246, 0.18) inset;
         }
 
         .tool-card:active {
-            transform: scale(0.98);
+            transform: scale(0.965);
         }
 
         [data-bs-theme="dark"] .tool-card {
-            background: rgba(30, 41, 59, 0.75);
-            border-color: rgba(51, 65, 85, 0.8);
+            background: rgba(22, 30, 48, 0.65);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
             color: #f8fafc;
         }
 
         [data-bs-theme="dark"] .tool-card:hover {
-            background: #1e293b;
-            border-color: #3b82f6;
-            box-shadow: 0 16px 30px -8px rgba(0, 0, 0, 0.4);
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(96, 165, 250, 0.45);
+            box-shadow: 0 22px 42px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(96, 165, 250, 0.25) inset;
         }
 
         .tool-icon-box {
-            width: 46px;
-            height: 46px;
-            border-radius: 14px;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
-            font-size: 1.2rem;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
-            transition: transform 0.25s ease;
+            font-size: 1.25rem;
+            box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            flex-shrink: 0;
         }
 
         .tool-card:hover .tool-icon-box {
-            transform: scale(1.08) rotate(3deg);
+            transform: scale(1.08) rotate(-2deg);
         }
 
         /* Campus Hero Welcome Banner */
