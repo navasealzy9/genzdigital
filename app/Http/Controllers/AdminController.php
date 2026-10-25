@@ -449,6 +449,13 @@ class AdminController extends Controller
     // =========================================================================
     public function storeExam(Request $request)
     {
+        if ($request->filled('exam_date_day') && $request->filled('exam_date_time')) {
+            $ts = strtotime($request->input('exam_date_day') . ' ' . $request->input('exam_date_time'));
+            if ($ts) {
+                $request->merge(['exam_date' => date('M d, Y • h:i A', $ts)]);
+            }
+        }
+
         $request->validate([
             'title' => 'required|string|max:191',
             'course' => 'required|string|max:191',
@@ -538,6 +545,13 @@ class AdminController extends Controller
     // =========================================================================
     public function storeChallenge(Request $request)
     {
+        if ($request->filled('deadline_custom_date')) {
+            $ts = strtotime($request->input('deadline_custom_date') . ' ' . $request->input('deadline_custom_time', '23:59'));
+            if ($ts) {
+                $request->merge(['deadline' => date('M d, Y • h:i A', $ts)]);
+            }
+        }
+
         $request->validate([
             'title' => 'required|string|max:191',
             'points' => 'required|integer',
@@ -611,6 +625,13 @@ class AdminController extends Controller
     // =========================================================================
     public function storeCertificate(Request $request)
     {
+        if ($request->filled('issue_date')) {
+            $ts = strtotime($request->issue_date);
+            if ($ts) {
+                $request->merge(['issue_date' => date('F d, Y', $ts)]);
+            }
+        }
+
         $request->validate([
             'title' => 'required|string|max:191',
             'recipient' => 'required|string|max:191',
@@ -651,7 +672,9 @@ class AdminController extends Controller
 
         $students = $query->get();
         $count = 0;
-        $issueDate = $request->input('issue_date', date('M d, Y'));
+        $rawIssueDate = $request->input('issue_date', date('F d, Y'));
+        $ts = strtotime($rawIssueDate);
+        $issueDate = $ts ? date('F d, Y', $ts) : $rawIssueDate;
 
         foreach ($students as $st) {
             $credentialId = 'GZ-' . strtoupper(substr(md5(uniqid($st->student_id, true)), 0, 8));
@@ -876,6 +899,11 @@ class AdminController extends Controller
     // =========================================================================
     public function storeQrCode(Request $request)
     {
+        if ($request->input('expires_at') === 'custom' && $request->filled('expires_custom_time')) {
+            $timeFormatted = date('h:i A', strtotime($request->expires_custom_time));
+            $request->merge(['expires_at' => "Today {$timeFormatted}"]);
+        }
+
         $request->validate([
             'title' => 'required|string|max:191',
             'type' => 'required|string|max:50',
@@ -966,6 +994,12 @@ class AdminController extends Controller
     // =========================================================================
     public function storeClass(Request $request)
     {
+        if ($request->filled('schedule_start') && $request->filled('schedule_end')) {
+            $startFormatted = date('h:i A', strtotime($request->schedule_start));
+            $endFormatted = date('h:i A', strtotime($request->schedule_end));
+            $request->merge(['schedule_time' => "{$startFormatted} - {$endFormatted}"]);
+        }
+
         $request->validate([
             'title' => 'required|string|max:191',
             'code' => 'required|string|max:50',

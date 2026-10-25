@@ -1667,9 +1667,18 @@
 
     <!-- Attendance History Table (Detailed Subject Breakdown: មុខវិជ្ជា ថ្ងៃខែឆ្នាំ ម៉ោង វគ្គសិក្សា) -->
     <div class="tool-card overflow-hidden">
-        <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="fw-bold mb-0">ប្រវត្តិនៃការចុះវត្តមានសិក្សា (Detailed Attendance Logs • ២ Sessions ក្នុង ១ ថ្ងៃ)</h6>
-            <span class="badge bg-primary-subtle text-primary fw-bold">Live Synced</span>
+        <div class="p-3 px-4 border-bottom d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+            <div>
+                <h6 class="fw-bold mb-0">ប្រវត្តិនៃការចុះវត្តមានសិក្សា (Detailed Attendance Logs • ២ Sessions ក្នុង ១ ថ្ងៃ)</h6>
+                <small class="text-secondary" style="font-size: 11px;">ចុចជ្រើសរើសថ្ងៃខែដើម្បីមើលកំណត់ត្រាវត្តមាន</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 175px;">
+                    <span class="input-group-text bg-body-secondary"><i data-lucide="calendar" style="width: 13px; height: 13px;"></i></span>
+                    <input type="date" id="client-att-date-filter" class="form-control" title="Filter by date" onchange="filterClientAttendance(this.value)">
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-2.5" onclick="document.getElementById('client-att-date-filter').value=''; filterClientAttendance('');" title="Reset Filter">All</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -1687,7 +1696,7 @@
                 <tbody>
                     @if(isset($myAttendanceHistory) && $myAttendanceHistory->count() > 0)
                         @foreach($myAttendanceHistory->take(15) as $log)
-                            <tr>
+                            <tr class="client-att-row" data-date="{{ $log->session_date ?: ($log->created_at ? \Carbon\Carbon::parse($log->created_at)->format('Y-m-d') : date('Y-m-d')) }}">
                                 <td class="ps-4">
                                     <span class="fw-bold small d-block">{{ $log->subject }}</span>
                                     <small class="text-secondary" style="font-size: 11px;">Faculty of Digital Sciences</small>
@@ -2920,6 +2929,19 @@
 
 @push('scripts')
 <script>
+    // Attendance history date filter (Click to Select Date)
+    function filterClientAttendance(dateVal) {
+        const rows = document.querySelectorAll('.client-att-row');
+        rows.forEach(r => {
+            const rowDate = r.getAttribute('data-date') || '';
+            if (!dateVal || rowDate === dateVal || r.textContent.includes(dateVal)) {
+                r.style.display = '';
+            } else {
+                r.style.display = 'none';
+            }
+        });
+    }
+
     // 3D Card Flip
     function toggleCardFlip() {
         const card = document.getElementById('student-flip-card');

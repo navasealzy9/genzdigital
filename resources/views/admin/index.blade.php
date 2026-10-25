@@ -1049,6 +1049,15 @@
                 <option value="Session 2">🌙 Session 2 (រសៀល)</option>
             </select>
 
+            <!-- Filter by Check-in Date (Interactive Date Picker) -->
+            <div class="input-group input-group-sm" style="max-width: 175px;">
+                <span class="input-group-text bg-body-secondary"><i data-lucide="calendar" style="width: 13px; height: 13px;"></i></span>
+                <input type="date" id="attendance-date-filter" class="form-control" title="Filter by Check-in Date" onchange="filterAttendanceDate(this.value)">
+                <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('attendance-date-filter').value=''; filterAttendanceDate('');" title="Clear Date">
+                    <i data-lucide="x" style="width: 12px; height: 12px;"></i>
+                </button>
+            </div>
+
             <!-- 3 Export Options: Excel, PDF, Print -->
             <a href="{{ route('admin.attendance.export', ['format' => 'excel']) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1" id="btn-export-excel">
                 <i data-lucide="file-spreadsheet" style="width: 15px; height: 15px;"></i>
@@ -1083,7 +1092,7 @@
                 </thead>
                 <tbody>
                     @foreach($attendances as $att)
-                        <tr class="att-row" data-code="{{ $att->code }}" data-session="{{ $att->session_name ?? 'Session 1' }}">
+                        <tr class="att-row" data-code="{{ $att->code }}" data-session="{{ $att->session_name ?? 'Session 1' }}" data-date="{{ $att->created_at ? date('Y-m-d', strtotime($att->created_at)) : '' }}">
                             <td class="fw-bold">{{ $att->student_name }}</td>
                             <td><span class="badge bg-body-secondary text-secondary font-monospace">{{ $att->student_id }}</span></td>
                             <td>{{ $att->subject }} <span class="badge bg-primary-subtle text-primary">{{ $att->code }}</span></td>
@@ -1651,8 +1660,19 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Issue Date</label>
-                        <input type="text" name="issue_date" class="form-control" value="{{ date('F d, Y') }}" required>
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>ថ្ងៃខែឆ្នាំចេញវិញ្ញាបនបត្រ (Issue Date)</span>
+                            <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-secondary"><i data-lucide="calendar" style="width: 15px; height: 15px;"></i></span>
+                            <input type="date" name="issue_date" id="batch_cert_issue_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <div class="d-flex gap-1.5 mt-1.5 flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('batch_cert_issue_date').value = '{{ date('Y-m-d') }}'">ថ្ងៃនេះ (Today)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('batch_cert_issue_date').value = '{{ date('Y-m-t') }}'">ដាច់ខែនេះ (End of Month)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('batch_cert_issue_date').value = '{{ date('Y-12-31') }}'">ដាច់ឆ្នាំ (Year End)</button>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
@@ -1710,8 +1730,44 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Date & Time</label>
-                        <input type="text" name="exam_date" class="form-control" required placeholder="e.g. Nov 15, 2026 • 09:00 AM">
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>កាលបរិច្ឆេទ & ម៉ោងប្រឡង (Exam Date & Time)</span>
+                            <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
+                        </label>
+                        
+                        <!-- Quick preset slot dropdown -->
+                        <div class="mb-2">
+                            <select id="exam_quick_preset" class="form-select form-select-sm" onchange="applyExamPreset(this.value)">
+                                <option value="">-- ជ្រើសរើសវេនប្រឡងដែលមានស្រាប់ (Preset Slot) --</option>
+                                <option value="today_morning">🌅 ថ្ងៃនេះ (Today) • 09:00 AM - 10:30 AM (ព្រឹក)</option>
+                                <option value="today_afternoon">🌇 ថ្ងៃនេះ (Today) • 02:00 PM - 03:30 PM (រសៀល)</option>
+                                <option value="tomorrow_morning">🌅 ថ្ងៃស្អែក (Tomorrow) • 09:00 AM - 10:30 AM (ព្រឹក)</option>
+                                <option value="tomorrow_afternoon">🌇 ថ្ងៃស្អែក (Tomorrow) • 02:00 PM - 03:30 PM (រសៀល)</option>
+                                <option value="next_week_morning">📅 សប្តាហ៍ក្រោយ (Next Week) • 09:00 AM - 10:30 AM (ព្រឹក)</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-body-secondary"><i data-lucide="calendar" style="width: 14px; height: 14px;"></i></span>
+                                    <input type="date" name="exam_date_day" id="exam_date_day" class="form-control" value="{{ date('Y-m-d') }}" required onchange="syncExamDateTime()">
+                                </div>
+                                <small class="text-secondary" style="font-size: 10.5px;">ជ្រើសរើសថ្ងៃខែឆ្នាំ (Click Calendar)</small>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-body-secondary"><i data-lucide="clock" style="width: 14px; height: 14px;"></i></span>
+                                    <input type="time" name="exam_date_time" id="exam_date_time" class="form-control" value="09:00" required onchange="syncExamDateTime()">
+                                </div>
+                                <small class="text-secondary" style="font-size: 10.5px;">ជ្រើសរើសម៉ោង (Click Clock)</small>
+                            </div>
+                        </div>
+                        <input type="hidden" name="exam_date" id="exam_date_combined" value="{{ date('M d, Y') }} • 09:00 AM">
+                        <div class="mt-2 p-2 rounded-2 bg-body-secondary small d-flex align-items-center justify-content-between">
+                            <span class="text-secondary" style="font-size: 11px;">កាលវិភាគកំណត់៖</span>
+                            <span class="fw-bold font-monospace text-primary" id="exam_date_preview" style="font-size: 11.5px;">{{ date('M d, Y') }} • 09:00 AM</span>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Room</label>
@@ -1858,8 +1914,28 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Deadline / Round</label>
-                        <input type="text" name="deadline" class="form-control" value="Live Now (15 mins)" required>
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>កាលកំណត់បញ្ចប់ (Deadline / Round Duration)</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis fw-normal">ចុច Select បាន</span>
+                        </label>
+                        <select name="deadline" id="challenge_deadline_select" class="form-select mb-2" onchange="handleChallengeDeadlineChange(this.value)" required>
+                            <option value="Live Now (15 mins)" selected>⚡ Live Now (15 mins)</option>
+                            <option value="Live Now (30 mins)">⚡ Live Now (30 mins)</option>
+                            <option value="Live Now (45 mins)">⚡ Live Now (45 mins)</option>
+                            <option value="Live Now (1 Hour)">⚡ Live Now (1 Hour)</option>
+                            <option value="Today 11:59 PM">🌙 Today 11:59 PM (ដាច់យប់នេះ)</option>
+                            <option value="Within 24 Hours">⏱️ Within 24 Hours (ក្នុងរយៈពេល ២៤ ម៉ោង)</option>
+                            <option value="Within 48 Hours">⏱️ Within 48 Hours (ក្នុងរយៈពេល ៤៨ ម៉ោង)</option>
+                            <option value="custom">📅 ជ្រើសរើសថ្ងៃ & ម៉ោងជាក់លាក់ (Custom Date & Time)</option>
+                        </select>
+                        <div id="challenge_custom_datetime_box" class="d-none row g-2 mt-1">
+                            <div class="col-7">
+                                <input type="date" name="deadline_custom_date" id="challenge_custom_date" class="form-control form-control-sm" value="{{ date('Y-m-d') }}" onchange="syncChallengeCustomDeadline()">
+                            </div>
+                            <div class="col-5">
+                                <input type="time" name="deadline_custom_time" id="challenge_custom_time" class="form-control form-control-sm" value="23:59" onchange="syncChallengeCustomDeadline()">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
@@ -1902,12 +1978,39 @@
                         <small class="text-secondary" style="font-size: 11px;">សិស្សត្រូវស្កេនវត្តមានចំនួន ២ ដងក្នុង ១ ថ្ងៃ (Session 1 ព្រឹក និង Session 2 រសៀល)។</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Session Date (ថ្ងៃបង្រៀន)</label>
-                        <input type="date" name="session_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>កាលបរិច្ឆេទ Session (Session Date)</span>
+                            <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-secondary"><i data-lucide="calendar" style="width: 15px; height: 15px;"></i></span>
+                            <input type="date" name="session_date" id="qr_session_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <div class="d-flex gap-1.5 mt-1.5 flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('qr_session_date').value = '{{ date('Y-m-d') }}'">ថ្ងៃនេះ (Today)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('qr_session_date').value = '{{ date('Y-m-d', strtotime('+1 day')) }}'">ថ្ងៃស្អែក (Tomorrow)</button>
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Expiration</label>
-                        <input type="text" name="expires_at" class="form-control" value="Today 11:59 PM" required>
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>ម៉ោងផុតកំណត់ (Expiration Time)</span>
+                            <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
+                        </label>
+                        <select name="expires_at" id="qr_expires_select" class="form-select mb-2" onchange="handleQrExpiresChange(this.value)" required>
+                            <option value="Today 11:59 PM" selected>🌙 Today 11:59 PM (ដាច់យប់នេះ)</option>
+                            <option value="Today 11:30 AM">🌅 Today 11:30 AM (ចប់វេនព្រឹក Session 1)</option>
+                            <option value="Today 05:00 PM">🌇 Today 05:00 PM (ចប់វេនរសៀល Session 2)</option>
+                            <option value="Within 1 Hour">⏱️ Within 1 Hour (ក្នុងរយៈពេល ១ ម៉ោង)</option>
+                            <option value="Within 2 Hours">⏱️ Within 2 Hours (ក្នុងរយៈពេល ២ ម៉ោង)</option>
+                            <option value="Within 4 Hours">⏱️ Within 4 Hours (ក្នុងរយៈពេល ៤ ម៉ោង)</option>
+                            <option value="custom">⚙️ ជ្រើសរើសម៉ោងជាក់លាក់ (Custom Time Picker)</option>
+                        </select>
+                        <div id="qr_custom_time_box" class="d-none mt-1">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-body-secondary"><i data-lucide="clock" style="width: 14px; height: 14px;"></i></span>
+                                <input type="time" name="expires_custom_time" id="qr_custom_time_input" class="form-control" value="23:59">
+                            </div>
+                        </div>
                     </div>
                     <input type="hidden" name="type" value="Attendance">
                 </div>
@@ -2073,8 +2176,39 @@
                         <input type="text" name="prof" class="form-control" required placeholder="e.g. Dr. Jennifer Wu">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Schedule Time</label>
-                        <input type="text" name="schedule_time" class="form-control" required placeholder="e.g. 02:00 PM - 04:30 PM">
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>ម៉ោងសិក្សា (Class Schedule Time)</span>
+                            <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
+                        </label>
+
+                        <!-- Preset Schedule Slots Dropdown -->
+                        <select id="class_schedule_preset" class="form-select form-select-sm mb-2" onchange="applySchedulePreset(this.value)">
+                            <option value="">-- ជ្រើសរើសម៉ោងសិក្សាជាកញ្ចប់ (Preset Schedule Slots) --</option>
+                            <option value="08:00 - 10:30">🌅 08:00 AM - 10:30 AM (ព្រឹក - វេនទី១)</option>
+                            <option value="09:00 - 11:30">🌅 09:00 AM - 11:30 AM (ព្រឹក - វេនទី២)</option>
+                            <option value="01:00 - 03:30">🌇 01:00 PM - 03:30 PM (រសៀល - វេនទី១)</option>
+                            <option value="02:00 - 04:30" selected>🌇 02:00 PM - 04:30 PM (រសៀល - វេនទី២)</option>
+                            <option value="05:30 - 08:00">🌙 05:30 PM - 08:00 PM (ល្ងាច - Evening)</option>
+                            <option value="custom">⚙️ ជ្រើសរើសម៉ោងដោយខ្លួនឯង (Custom Time Picker)</option>
+                        </select>
+
+                        <!-- Custom Start Time and End Time Pickers -->
+                        <div class="row g-2 align-items-center">
+                            <div class="col-5">
+                                <label class="small text-secondary d-block" style="font-size: 10.5px;">ចាប់ផ្តើម (Start)</label>
+                                <input type="time" name="schedule_start" id="schedule_start" class="form-control form-control-sm" value="14:00" required onchange="syncScheduleTime()">
+                            </div>
+                            <div class="col-2 text-center pt-3 text-secondary fw-bold">ទៅ</div>
+                            <div class="col-5">
+                                <label class="small text-secondary d-block" style="font-size: 10.5px;">បញ្ចប់ (End)</label>
+                                <input type="time" name="schedule_end" id="schedule_end" class="form-control form-control-sm" value="16:30" required onchange="syncScheduleTime()">
+                            </div>
+                        </div>
+                        <input type="hidden" name="schedule_time" id="schedule_time_combined" value="02:00 PM - 04:30 PM">
+                        <div class="mt-2 p-2 rounded-2 bg-body-secondary small d-flex align-items-center justify-content-between">
+                            <span class="text-secondary" style="font-size: 11px;">ម៉ោងដែលបានកំណត់៖</span>
+                            <span class="fw-bold font-monospace text-primary" id="schedule_time_preview" style="font-size: 11.5px;">02:00 PM - 04:30 PM</span>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
@@ -2153,8 +2287,19 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Issue Date</label>
-                        <input type="text" name="issue_date" class="form-control" value="{{ date('F d, Y') }}" required>
+                        <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                            <span>ថ្ងៃខែឆ្នាំចេញវិញ្ញាបនបត្រ (Issue Date)</span>
+                            <span class="badge bg-primary-subtle text-primary fw-normal">ចុច Select បាន</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-secondary"><i data-lucide="calendar" style="width: 15px; height: 15px;"></i></span>
+                            <input type="date" name="issue_date" id="single_cert_issue_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <div class="d-flex gap-1.5 mt-1.5 flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('single_cert_issue_date').value = '{{ date('Y-m-d') }}'">ថ្ងៃនេះ (Today)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('single_cert_issue_date').value = '{{ date('Y-m-t') }}'">ដាច់ខែនេះ (End of Month)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0.5 px-2 rounded-pill" style="font-size: 11px;" onclick="document.getElementById('single_cert_issue_date').value = '{{ date('Y-12-31') }}'">ដាច់ឆ្នាំ (Year End)</button>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
@@ -2442,18 +2587,34 @@
     }
 
     // =========================================================================
-    // 10. Attendance: Filter by Class & Update Export Links
+    // 10. Attendance: Multi-filter (Class, Session, Date) & Update Export Links
     // =========================================================================
-    function filterAttendanceTable(classCode) {
+    let currentAttClass = 'ALL';
+    let currentAttSession = 'ALL';
+    let currentAttDate = '';
+
+    function applyAttendanceFilters() {
         const rows = document.querySelectorAll('.att-row');
         rows.forEach(r => {
             const code = r.getAttribute('data-code');
-            if (classCode === 'ALL' || code === classCode) {
+            const sess = r.getAttribute('data-session') || '';
+            const rowDate = r.getAttribute('data-date') || '';
+
+            const matchClass = (currentAttClass === 'ALL' || code === currentAttClass);
+            const matchSession = (currentAttSession === 'ALL' || sess.includes(currentAttSession));
+            const matchDate = (!currentAttDate || rowDate === currentAttDate || r.textContent.includes(currentAttDate));
+
+            if (matchClass && matchSession && matchDate) {
                 r.style.display = '';
             } else {
                 r.style.display = 'none';
             }
         });
+    }
+
+    function filterAttendanceTable(classCode) {
+        currentAttClass = classCode;
+        applyAttendanceFilters();
 
         // Update Excel & PDF links
         const excelBtn = document.getElementById('btn-export-excel');
@@ -2468,15 +2629,164 @@
     }
 
     function filterAttendanceSession(sessionName) {
-        const rows = document.querySelectorAll('.att-row');
-        rows.forEach(r => {
-            const sess = r.getAttribute('data-session') || '';
-            if (sessionName === 'ALL' || sess.includes(sessionName)) {
-                r.style.display = '';
-            } else {
-                r.style.display = 'none';
+        currentAttSession = sessionName;
+        applyAttendanceFilters();
+    }
+
+    function filterAttendanceDate(dateVal) {
+        currentAttDate = dateVal;
+        applyAttendanceFilters();
+    }
+
+    // =========================================================================
+    // DATE & TIME PICKER SYNC HELPERS (All Interactive Selectable Inputs)
+    // =========================================================================
+    function formatTime12H(timeStr) {
+        if (!timeStr) return '';
+        const parts = timeStr.split(':');
+        let hours = parseInt(parts[0], 10);
+        const minutes = parts[1] || '00';
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const strHours = hours < 10 ? '0' + hours : hours;
+        return `${strHours}:${minutes} ${ampm}`;
+    }
+
+    function formatDateMedium(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T00:00:00');
+        if (isNaN(d.getTime())) return dateStr;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const m = months[d.getMonth()];
+        const day = ('0' + d.getDate()).slice(-2);
+        const y = d.getFullYear();
+        return `${m} ${day}, ${y}`;
+    }
+
+    function syncExamDateTime() {
+        const dayInput = document.getElementById('exam_date_day');
+        const timeInput = document.getElementById('exam_date_time');
+        const combined = document.getElementById('exam_date_combined');
+        const preview = document.getElementById('exam_date_preview');
+
+        if (!dayInput || !timeInput || !combined) return;
+
+        const dateFormatted = formatDateMedium(dayInput.value);
+        const timeFormatted = formatTime12H(timeInput.value);
+        const result = `${dateFormatted} • ${timeFormatted}`;
+
+        combined.value = result;
+        if (preview) preview.textContent = result;
+    }
+
+    function applyExamPreset(preset) {
+        const dayInput = document.getElementById('exam_date_day');
+        const timeInput = document.getElementById('exam_date_time');
+        if (!dayInput || !timeInput) return;
+
+        const now = new Date();
+        if (preset === 'today_morning') {
+            dayInput.value = now.toISOString().split('T')[0];
+            timeInput.value = '09:00';
+        } else if (preset === 'today_afternoon') {
+            dayInput.value = now.toISOString().split('T')[0];
+            timeInput.value = '14:00';
+        } else if (preset === 'tomorrow_morning') {
+            const tm = new Date(now.getTime() + 86400000);
+            dayInput.value = tm.toISOString().split('T')[0];
+            timeInput.value = '09:00';
+        } else if (preset === 'tomorrow_afternoon') {
+            const tm = new Date(now.getTime() + 86400000);
+            dayInput.value = tm.toISOString().split('T')[0];
+            timeInput.value = '14:00';
+        } else if (preset === 'next_week_morning') {
+            const nw = new Date(now.getTime() + 7 * 86400000);
+            dayInput.value = nw.toISOString().split('T')[0];
+            timeInput.value = '09:00';
+        }
+        syncExamDateTime();
+    }
+
+    function syncScheduleTime() {
+        const startInput = document.getElementById('schedule_start');
+        const endInput = document.getElementById('schedule_end');
+        const combined = document.getElementById('schedule_time_combined');
+        const preview = document.getElementById('schedule_time_preview');
+
+        if (!startInput || !endInput || !combined) return;
+
+        const startFormatted = formatTime12H(startInput.value);
+        const endFormatted = formatTime12H(endInput.value);
+        const result = `${startFormatted} - ${endFormatted}`;
+
+        combined.value = result;
+        if (preview) preview.textContent = result;
+    }
+
+    function applySchedulePreset(preset) {
+        if (!preset) return;
+        if (preset === 'custom') return;
+        const parts = preset.split(' - ');
+        if (parts.length === 2) {
+            const startInput = document.getElementById('schedule_start');
+            const endInput = document.getElementById('schedule_end');
+            if (startInput && endInput) {
+                startInput.value = parts[0].trim();
+                endInput.value = parts[1].trim();
+                syncScheduleTime();
             }
-        });
+        }
+    }
+
+    function handleChallengeDeadlineChange(val) {
+        const customBox = document.getElementById('challenge_custom_datetime_box');
+        if (!customBox) return;
+        if (val === 'custom') {
+            customBox.classList.remove('d-none');
+            syncChallengeCustomDeadline();
+        } else {
+            customBox.classList.add('d-none');
+        }
+    }
+
+    function syncChallengeCustomDeadline() {
+        const dateInput = document.getElementById('challenge_custom_date');
+        const timeInput = document.getElementById('challenge_custom_time');
+        const select = document.getElementById('challenge_deadline_select');
+        if (!dateInput || !timeInput || !select) return;
+
+        const dateFormatted = formatDateMedium(dateInput.value);
+        const timeFormatted = formatTime12H(timeInput.value);
+        const customOpt = select.querySelector('option[value="custom"]') || select.querySelector('option[data-custom="true"]');
+        if (customOpt) {
+            customOpt.setAttribute('data-custom', 'true');
+            customOpt.value = `${dateFormatted} • ${timeFormatted}`;
+            select.value = customOpt.value;
+        }
+    }
+
+    function handleQrExpiresChange(val) {
+        const customBox = document.getElementById('qr_custom_time_box');
+        if (!customBox) return;
+        if (val === 'custom') {
+            customBox.classList.remove('d-none');
+            syncQrCustomTime(document.getElementById('qr_custom_time_input')?.value || '23:59');
+        } else {
+            customBox.classList.add('d-none');
+        }
+    }
+
+    function syncQrCustomTime(timeVal) {
+        const select = document.getElementById('qr_expires_select');
+        if (!select) return;
+        const timeFormatted = formatTime12H(timeVal);
+        const customOpt = select.querySelector('option[value="custom"]') || select.querySelector('option[data-custom="true"]');
+        if (customOpt) {
+            customOpt.setAttribute('data-custom', 'true');
+            customOpt.value = `Today ${timeFormatted}`;
+            select.value = customOpt.value;
+        }
     }
 
     function updateAttStatus(id, newStatus) {
