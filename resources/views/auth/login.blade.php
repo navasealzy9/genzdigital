@@ -4,9 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - GenZ Digital Campus OS</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/genz-logo.png') }}?v=26.0">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/genz-logo.png') }}?v=26.0">
-    <link rel="apple-touch-icon" href="{{ asset('images/genz-logo.png') }}?v=26.0">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/genz-logo.png') }}?v=26.1">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/genz-logo.png') }}?v=26.1">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/genz-logo.png') }}?v=26.1">
 
     <!-- Google Fonts: Google Sans & Khmer Sans (Kantumruy Pro, Noto Sans Khmer) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
