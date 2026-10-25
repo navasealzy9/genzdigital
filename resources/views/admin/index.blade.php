@@ -2135,7 +2135,7 @@
                                         <th class="text-center">និទ្ទេស</th>
                                         <th class="text-center">ស្ថានភាព</th>
                                         <th>កាលបរិច្ឆេទប្រឡង</th>
-                                        <th class="text-end" style="width: 70px;">សកម្មភាព</th>
+                                        <th class="text-end" style="width: 175px;">សកម្មភាព / ReExam</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2181,13 +2181,29 @@
                                                 {{ $sub->submitted_at ? date('M d, Y • h:i A', strtotime($sub->submitted_at)) : date('M d, Y • h:i A', strtotime($sub->created_at)) }}
                                             </td>
                                             <td class="text-end">
-                                                <form action="{{ route('admin.exams.deleteSubmission', $sub->id) }}" method="POST" class="d-inline" onsubmit="return confirm('តើអ្នកពិតជាចង់លុបលទ្ធផលនេះដើម្បីឱ្យសិស្សប្រឡងឡើងវិញមែនទេ? (Delete to allow retake)')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" title="លុបដើម្បីឱ្យសិស្សប្រឡងឡើងវិញ (Allow Retake)">
-                                                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
-                                                    </button>
-                                                </form>
+                                                <div class="d-inline-flex align-items-center gap-1.5">
+                                                    <form action="{{ route('admin.exams.allowReExam', $sub->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @if(!empty($sub->allow_reexam))
+                                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" title="ចុចដើម្បីបិទសិទ្ធិ ReExam វិញ">
+                                                                <i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i>
+                                                                <span>ReExam Allowed</span>
+                                                            </button>
+                                                        @else
+                                                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1 shadow-xs" title="ចុចដើម្បីអនុញ្ញាតឱ្យសិស្ស [{{ $sub->student_name }}] ប្រឡងឡើងវិញ (ReExam)">
+                                                                <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i>
+                                                                <span>ReExam</span>
+                                                            </button>
+                                                        @endif
+                                                    </form>
+                                                    <form action="{{ route('admin.exams.deleteSubmission', $sub->id) }}" method="POST" class="d-inline" onsubmit="return confirm('តើអ្នកពិតជាចង់លុបកំណត់ត្រារបស់ {{ $sub->student_name }} មែនទេ?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" title="លុបកំណត់ត្រា">
+                                                            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

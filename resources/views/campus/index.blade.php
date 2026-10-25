@@ -1399,17 +1399,25 @@
                     }
                 }
                 $mySub = isset($myExamSubmissions) ? $myExamSubmissions->get($exam->id) : null;
+                $canReExam = $mySub && !empty($mySub->allow_reexam);
             @endphp
             <div class="col">
-                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 {{ $mySub ? ($mySub->is_passed ? 'border-success' : 'border-danger') : ($isOpen ? 'border-primary' : 'border-secondary') }}">
+                <div class="tool-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 {{ $mySub ? ($canReExam ? 'border-warning' : ($mySub->is_passed ? 'border-success' : 'border-danger')) : ($isOpen ? 'border-primary' : 'border-secondary') }}">
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
                             <span class="badge {{ $isOpen ? 'bg-primary' : 'bg-secondary' }} text-white fw-bold">{{ $exam->category ?: 'Midterm exam' }}</span>
                             @if($mySub)
-                                <span class="badge {{ $mySub->is_passed ? 'bg-success' : 'bg-danger' }} text-white fw-bold">
-                                    <i data-lucide="{{ $mySub->is_passed ? 'check-circle' : 'alert-circle' }}" style="width: 12px; height: 12px;" class="me-1"></i> 
-                                    បានប្រឡងរួច: {{ $mySub->earned_score }}/{{ $mySub->total_possible }} ({{ $mySub->percentage }}% • {{ $mySub->grade }})
-                                </span>
+                                @if($canReExam)
+                                    <span class="badge bg-warning text-dark fw-bold shadow-xs">
+                                        <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;" class="me-1"></i> 
+                                        ADMIN បានអនុញ្ញាតឱ្យប្រឡងឡើងវិញ (ReExam)
+                                    </span>
+                                @else
+                                    <span class="badge {{ $mySub->is_passed ? 'bg-success' : 'bg-danger' }} text-white fw-bold">
+                                        <i data-lucide="{{ $mySub->is_passed ? 'check-circle' : 'alert-circle' }}" style="width: 12px; height: 12px;" class="me-1"></i> 
+                                        បានប្រឡងរួច: {{ $mySub->earned_score }}/{{ $mySub->total_possible }} ({{ $mySub->percentage }}% • {{ $mySub->grade }})
+                                    </span>
+                                @endif
                             @elseif($isOpen)
                                 <span class="badge bg-success text-white fw-bold"><i data-lucide="unlock" style="width: 12px; height: 12px;" class="me-1"></i> ADMIN បានបើក (OPEN)</span>
                             @else
@@ -1429,18 +1437,33 @@
                     
                     <div class="pt-3 border-top">
                         @if($mySub)
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-success flex-grow-1 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-1.5" onclick="showCompletedExamResult({{ json_encode($mySub) }}, '{{ addslashes($exam->title) }}')">
-                                    <i data-lucide="award" style="width: 16px; height: 16px;"></i>
-                                    <span>មើលលទ្ធផល ({{ $mySub->percentage }}%)</span>
-                                </button>
-                                @if($isOpen)
-                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold d-flex align-items-center gap-1" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})" title="ប្រឡងឡើងវិញ (Retake Exam)">
-                                        <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i>
-                                        <span>ប្រឡងឡើងវិញ</span>
+                            @if($canReExam)
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-warning flex-grow-1 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-1.5" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})">
+                                            <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i>
+                                            <span>ចូលប្រឡងឡើងវិញ (ReExam Now)</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold d-flex align-items-center gap-1" onclick="showCompletedExamResult({{ json_encode($mySub) }}, '{{ addslashes($exam->title) }}')" title="មើលលទ្ធផលលើកមុន">
+                                            <i data-lucide="award" style="width: 14px; height: 14px;"></i>
+                                            <span>លទ្ធផលមុន</span>
+                                        </button>
+                                    </div>
+                                    <small class="text-success text-center fw-semibold" style="font-size: 0.72rem;">
+                                        <i data-lucide="check-circle" style="width: 11px; height: 11px;" class="me-0.5"></i> Admin បានចុច ReExam លើឈ្មោះរបស់អ្នករួចរាល់
+                                    </small>
+                                </div>
+                            @else
+                                <div class="d-flex flex-column gap-1.5">
+                                    <button class="btn btn-outline-success w-100 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-1.5" onclick="showCompletedExamResult({{ json_encode($mySub) }}, '{{ addslashes($exam->title) }}')">
+                                        <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+                                        <span>មើលលទ្ធផល ({{ $mySub->percentage }}% • {{ $mySub->grade }})</span>
                                     </button>
-                                @endif
-                            </div>
+                                    <small class="text-secondary text-center" style="font-size: 0.72rem;">
+                                        <i data-lucide="lock" style="width: 11px; height: 11px;" class="me-0.5 d-inline-block"></i>មិនអាចប្រឡងឡើងវិញបានទេ លុះត្រាតែ Admin ចុច button ReExam
+                                    </small>
+                                </div>
+                            @endif
                         @elseif($isOpen)
                             <button class="btn btn-success w-100 rounded-pill fw-bold py-2 shadow-xs d-flex align-items-center justify-content-center gap-2" onclick="startTakeExamAJAX({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->total_points ?: 100 }})">
                                 <i data-lucide="pencil-line" style="width: 16px; height: 16px;"></i>
@@ -3502,6 +3525,8 @@
 
         const container = document.getElementById('qcm-questions-container');
         container.innerHTML = `<div class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading questions...</div>`;
+        const submitBtnElem = document.getElementById('btn-submit-exam');
+        if (submitBtnElem) submitBtnElem.style.display = 'inline-block';
 
         const modal = new bootstrap.Modal(document.getElementById('takeExamModal'));
         modal.show();
@@ -3509,6 +3534,22 @@
         try {
             const res = await fetch(`${window.BASE_URL}/api/exams/${examId}/questions`);
             const data = await res.json();
+
+            if (!res.ok || (data.already_submitted && !data.allow_reexam)) {
+                container.innerHTML = `
+                    <div class="p-4 text-center">
+                        <div class="alert alert-warning border-0 rounded-4 p-3 shadow-xs">
+                            <i data-lucide="lock" style="width: 32px; height: 32px;" class="mb-2 text-warning"></i>
+                            <h6 class="fw-bold text-dark mb-1">${data.message || '⚠️ អ្នកបានប្រឡងមុខវិជ្ជានេះរួចរាល់ហើយ'}</h6>
+                            <p class="small text-secondary mb-0">មិនអាចប្រឡងឡើងវិញបានទេ លុះត្រាតែ Admin ចុច button ReExam លើឈ្មោះរបស់អ្នក។</p>
+                        </div>
+                    </div>
+                `;
+                if (submitBtnElem) submitBtnElem.style.display = 'none';
+                renderIcons();
+                return;
+            }
+
             activeExamQuestions = data.questions || [];
 
             if (data.total_points) {
@@ -3595,6 +3636,14 @@
             });
             const data = await res.json();
 
+            if (!res.ok) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i data-lucide="check-circle-2" style="width: 16px; height: 16px;" class="me-1"></i> Submit & Calculate Score`;
+                renderIcons();
+                alert(data.message || '⚠️ អ្នកបានប្រឡងមុខវិជ្ជានេះរួចរាល់ហើយ! មិនអាចប្រឡងឡើងវិញបានទេ ទាល់តែ Admin ចុច button ReExam លើឈ្មោះរបស់អ្នក។');
+                return;
+            }
+
             // Hide take exam modal
             bootstrap.Modal.getInstance(document.getElementById('takeExamModal')).hide();
             submitBtn.disabled = false;
@@ -3676,6 +3725,11 @@
 
             const resultModal = new bootstrap.Modal(document.getElementById('examResultModal'));
             resultModal.show();
+            if (dismissBtn) {
+                dismissBtn.onclick = function() {
+                    location.reload();
+                };
+            }
             showToast(`Exam graded: ${data.earned_score}/${data.total_possible} (${data.grade})!`);
             renderIcons();
         } catch (err) {

@@ -638,9 +638,43 @@ class AdminController extends Controller
         $sub = DB::table('campus_exam_submissions')->where('id', $id)->first();
         if ($sub) {
             DB::table('campus_exam_submissions')->where('id', $id)->delete();
-            return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', "បានលុបលទ្ធផលរបស់ {$sub->student_name} រួចរាល់។ សិស្សអាចប្រឡងឡើងវិញបាន!");
+            return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', "បានលុបលទ្ធផលរបស់ {$sub->student_name} រួចរាល់។");
         }
         return redirect()->route('admin.index', ['tab' => 'exams'])->with('error', 'Submission not found.');
+    }
+
+    /**
+     * Allow or Toggle ReExam for a student submission
+     */
+    public function allowReExam(Request $request, $id)
+    {
+        $sub = DB::table('campus_exam_submissions')->where('id', $id)->first();
+        if (!$sub) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Submission not found.'], 404);
+            }
+            return redirect()->route('admin.index', ['tab' => 'exams'])->with('error', 'Submission not found.');
+        }
+
+        $newVal = empty($sub->allow_reexam) ? 1 : 0;
+        DB::table('campus_exam_submissions')->where('id', $id)->update([
+            'allow_reexam' => $newVal,
+            'updated_at' => now(),
+        ]);
+
+        $msg = $newVal 
+            ? "✅ បានបើកសិទ្ធិ ReExam ឱ្យសិស្ស [{$sub->student_name}] រួចរាល់! សិស្សអាចចូលប្រឡងឡើងវិញបាន។" 
+            : "🔒 បានបិទសិទ្ធិ ReExam សម្រាប់សិស្ស [{$sub->student_name}] រួចរាល់។";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'allow_reexam' => (bool)$newVal,
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect()->route('admin.index', ['tab' => 'exams'])->with('success', $msg);
     }
 
     // =========================================================================

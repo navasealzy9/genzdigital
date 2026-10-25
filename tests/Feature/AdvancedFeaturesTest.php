@@ -103,6 +103,7 @@ class AdvancedFeaturesTest extends TestCase
     public function test_exam_qcm_and_auto_scoring(): void
     {
         $exam = DB::table('campus_exams')->first();
+        DB::table('campus_exam_submissions')->where('exam_id', $exam->id)->delete();
 
         // 1. Admin adds QCM question
         $qcmResponse = $this->post('/admin/exams/qcm-question', [
@@ -354,11 +355,14 @@ class AdvancedFeaturesTest extends TestCase
     }
 
     /**
-     * Test 15. Exam QCM Scoring: >=50% Pass (Color Green) & <50% Fail (Color Red)
+     * Test 15. Exam QCM Scoring: >=50% Pass (Color Green) & <50% Fail (Color Red) + ReExam Lock & Unlock
      */
     public function test_client_exam_qcm_green_pass_and_red_fail_scoring(): void
     {
         $exam = DB::table('campus_exams')->first();
+        // Clear previous submissions for test isolation
+        DB::table('campus_exam_submissions')->where('exam_id', $exam->id)->delete();
+
         $allQuestions = DB::table('campus_exam_questions')->where('exam_id', $exam->id)->get();
 
         if ($allQuestions->count() > 0) {
@@ -378,6 +382,26 @@ class AdvancedFeaturesTest extends TestCase
                 'status_color' => '#10b981'
             ]);
 
+            // Attempting to submit again without Admin clicking ReExam must be blocked with 422!
+            $blockedResponse = $this->postJson("/api/exams/{$exam->id}/submit", [
+                'answers' => $allCorrectAnswers
+            ]);
+            $blockedResponse->assertStatus(422);
+            $blockedResponse->assertJson([
+                'success' => false,
+                'error_code' => 'ALREADY_SUBMITTED'
+            ]);
+
+            // Admin clicks ReExam button for this submission
+            $sub = DB::table('campus_exam_submissions')->where('exam_id', $exam->id)->first();
+            $this->assertNotNull($sub);
+            $adminReExam = $this->post("/admin/exams/submissions/{$sub->id}/re-exam");
+            $adminReExam->assertRedirect();
+
+            // Verify allow_reexam is now true
+            $subUpdated = DB::table('campus_exam_submissions')->where('id', $sub->id)->first();
+            $this->assertEquals(1, $subUpdated->allow_reexam);
+
             // All wrong answers -> 0% < 50% FAIL (Red: #ef4444)
             $allWrongAnswers = [];
             foreach ($allQuestions as $q) {
@@ -393,6 +417,10 @@ class AdvancedFeaturesTest extends TestCase
                 'is_passed' => false,
                 'status_color' => '#ef4444'
             ]);
+
+            // Verify allow_reexam is automatically locked back to 0 after retake
+            $subLocked = DB::table('campus_exam_submissions')->where('id', $sub->id)->first();
+            $this->assertEquals(0, $subLocked->allow_reexam);
         }
     }
 

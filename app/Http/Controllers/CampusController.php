@@ -234,8 +234,14 @@ class CampusController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
+        $targetStudentId = $student['id'];
+        if ($targetStudentId === 'GUEST') {
+            $targetStudentId = 'GZ20260482';
+        }
+
         $myExamSubmissions = DB::table('campus_exam_submissions')
-            ->where('student_id', $student['id'])
+            ->where('student_id', $targetStudentId)
+            ->orWhere('student_id', $student['id'])
             ->orderBy('id', 'desc')
             ->get()
             ->keyBy('exam_id');
@@ -1021,6 +1027,19 @@ class CampusController extends Controller
             return response()->json(['error' => 'Exam not found'], 404);
         }
 
+        // Identify Student (Logged In or Guest Fallback)
+        $studentId = 'GZ20260482';
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $studentRecord = DB::table('campus_students')->where('email', $user->email)->first();
+            $studentId = $user->student_id ?: ($studentRecord ? $studentRecord->student_id : 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT));
+        }
+
+        $existingSub = DB::table('campus_exam_submissions')
+            ->where('exam_id', $id)
+            ->where('student_id', $studentId)
+            ->first();
+
         $questions = DB::table('campus_exam_questions')
             ->where('exam_id', $id)
             ->get(['id', 'exam_id', 'question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'points']);
@@ -1078,6 +1097,11 @@ class CampusController extends Controller
             'exam' => $exam,
             'total_points' => $calcTotalPoints,
             'questions' => $questions,
+            'already_submitted' => $existingSub ? true : false,
+            'allow_reexam' => $existingSub ? (bool)$existingSub->allow_reexam : true,
+            'message' => ($existingSub && empty($existingSub->allow_reexam))
+                ? '⚠️ អ្នកបានប្រឡងមុខវិជ្ជានេះរួចរាល់ហើយ! មិនអាចប្រឡងឡើងវិញបានទេ ទាល់តែ Admin ចុច button ReExam លើឈ្មោះរបស់អ្នក។'
+                : null,
         ]);
     }
 
@@ -1146,26 +1170,62 @@ class CampusController extends Controller
             $studentAvatar = $user->avatar ?: ($studentRecord ? $studentRecord->avatar : $studentAvatar);
         }
 
-        // 1. Record Submission into campus_exam_submissions
-        $submissionId = DB::table('campus_exam_submissions')->insertGetId([
-            'exam_id' => $exam->id,
-            'exam_title' => $exam->title,
-            'course_code' => $exam->course,
-            'student_id' => $studentId,
-            'student_name' => $studentName,
-            'student_avatar' => $studentAvatar,
-            'earned_score' => $earnedScore,
-            'total_possible' => $totalPossible,
-            'percentage' => $percentage,
-            'grade' => $grade,
-            'status' => $isPassed ? 'Passed' : 'Failed',
-            'is_passed' => $isPassed,
-            'answers_json' => json_encode($answers),
-            'question_details_json' => json_encode($questionDetails),
-            'submitted_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Check if student has already submitted this exam
+        $existingSub = DB::table('campus_exam_submissions')
+            ->where('exam_id', $exam->id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        if ($existingSub && empty($existingSub->allow_reexam)) {
+            return response()->json([
+                'success' => false,
+                'error_code' => 'ALREADY_SUBMITTED',
+                'message' => '⚠️ អ្នកបានប្រឡងមុខវិជ្ជានេះរួចរាល់ហើយ! មិនអាចប្រឡងឡើងវិញបានទេ ទាល់តែ Admin ចុច button ReExam លើឈ្មោះរបស់អ្នក។',
+            ], 422);
+        }
+
+        // 1. Record / Update Submission into campus_exam_submissions
+        if ($existingSub) {
+            DB::table('campus_exam_submissions')->where('id', $existingSub->id)->update([
+                'exam_title' => $exam->title,
+                'course_code' => $exam->course,
+                'student_name' => $studentName,
+                'student_avatar' => $studentAvatar,
+                'earned_score' => $earnedScore,
+                'total_possible' => $totalPossible,
+                'percentage' => $percentage,
+                'grade' => $grade,
+                'status' => $isPassed ? 'Passed' : 'Failed',
+                'is_passed' => $isPassed,
+                'allow_reexam' => false,
+                'answers_json' => json_encode($answers),
+                'question_details_json' => json_encode($questionDetails),
+                'submitted_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $submissionId = $existingSub->id;
+        } else {
+            $submissionId = DB::table('campus_exam_submissions')->insertGetId([
+                'exam_id' => $exam->id,
+                'exam_title' => $exam->title,
+                'course_code' => $exam->course,
+                'student_id' => $studentId,
+                'student_name' => $studentName,
+                'student_avatar' => $studentAvatar,
+                'earned_score' => $earnedScore,
+                'total_possible' => $totalPossible,
+                'percentage' => $percentage,
+                'grade' => $grade,
+                'status' => $isPassed ? 'Passed' : 'Failed',
+                'is_passed' => $isPassed,
+                'allow_reexam' => false,
+                'answers_json' => json_encode($answers),
+                'question_details_json' => json_encode($questionDetails),
+                'submitted_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         // 2. Save/Update Score in campus_scores
         DB::table('campus_scores')->updateOrInsert(
