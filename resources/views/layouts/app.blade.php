@@ -191,40 +191,62 @@
             position: relative;
             overflow: hidden;
             border-radius: 24px;
-            padding: 1.5rem;
+            padding: 1.6rem;
             color: #ffffff;
-            background: linear-gradient(135deg, #2563eb 0%, #4338ca 60%, #1e40af 100%);
-            box-shadow: 0 15px 30px -8px rgba(37, 99, 235, 0.35);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 35%, #2563eb 70%, #3b82f6 100%);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 20px 40px -12px rgba(29, 78, 216, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
 
         .student-pass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 35px -8px rgba(37, 99, 235, 0.5);
+            transform: translateY(-3px) scale(1.008);
+            box-shadow: 0 28px 50px -14px rgba(29, 78, 216, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
         }
 
         .pass-glow-1 {
             position: absolute;
-            right: -2rem;
-            top: -2rem;
-            width: 12rem;
-            height: 12rem;
-            background: rgba(255, 255, 255, 0.12);
+            right: -3rem;
+            top: -3rem;
+            width: 14rem;
+            height: 14rem;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.35) 0%, rgba(37, 99, 235, 0) 70%);
             border-radius: 9999px;
-            filter: blur(30px);
             pointer-events: none;
         }
 
         .pass-glow-2 {
             position: absolute;
-            right: 1.5rem;
-            bottom: 1.5rem;
-            width: 8rem;
-            height: 8rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            left: -3rem;
+            bottom: -3rem;
+            width: 14rem;
+            height: 14rem;
+            background: radial-gradient(circle, rgba(147, 197, 253, 0.25) 0%, rgba(30, 58, 138, 0) 70%);
             border-radius: 9999px;
             pointer-events: none;
+        }
+
+        .pass-chip-pattern {
+            position: absolute;
+            right: 1.25rem;
+            top: 4rem;
+            opacity: 0.22;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .student-pass-card:hover .pass-chip-pattern {
+            opacity: 0.35;
+        }
+
+        .student-pass-meta-box {
+            background: rgba(15, 23, 42, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 16px;
+            padding: 0.85rem 1.15rem;
         }
 
         /* Flippable 3D ID Card */

@@ -285,50 +285,78 @@
                     <div class="pass-glow-1"></div>
                     <div class="pass-glow-2"></div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-uppercase fw-bold text-light" style="font-size: 10px; letter-spacing: 0.15em; opacity: 0.9;">
-                            GENZ DIGITAL STUDENT PASS
-                        </span>
-                        <div class="d-flex align-items-center gap-1 px-2.5 py-1 rounded-pill" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 10.5px; border: 1px solid rgba(255, 255, 255, 0.25);">
-                            <span class="bg-success rounded-circle" style="width: 7px; height: 7px; box-shadow: 0 0 8px #10b981;"></span>
-                            <span class="fw-semibold">{{ $student['status'] }}</span>
+                    <!-- Contactless / Chip Pattern Background Watermark -->
+                    <div class="pass-chip-pattern">
+                        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3"/>
+                            <path d="M5 18a6 6 0 0 0 6-6c0-2.5-1-4-2-6"/>
+                            <path d="M2 21a9.5 9.5 0 0 0 9.5-9.5c0-4-2-7-3.5-9.5"/>
+                        </svg>
+                    </div>
+
+                    <!-- Top Card Header: Brand & Live Status -->
+                    <div class="d-flex justify-content-between align-items-center mb-3.5 position-relative z-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Logo" style="width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));">
+                            <div>
+                                <span class="d-block text-uppercase fw-bold text-white lh-1" style="font-size: 10.5px; letter-spacing: 0.14em;">
+                                    GENZ DIGITAL STUDENT PASS
+                                </span>
+                                <small class="text-white-50 font-monospace" style="font-size: 9px; letter-spacing: 0.08em;">SMART ACADEMIC OS • 2026</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill" style="background: rgba(16, 185, 129, 0.22); border: 1px solid rgba(52, 211, 153, 0.45); backdrop-filter: blur(8px);">
+                            <span class="rounded-circle bg-success position-relative" style="width: 7px; height: 7px; box-shadow: 0 0 8px #10b981;"></span>
+                            <span class="fw-bold text-white text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">{{ $student['status'] }}</span>
                         </div>
                     </div>
 
                     <!-- Profile Info Row -->
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="position-relative cursor-pointer" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
-                            <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow" style="width: 68px; height: 68px; border: 3px solid rgba(255, 255, 255, 0.45);">
-                            <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 24px; height: 24px; border: 2px solid #ffffff;">
+                    <div class="d-flex align-items-center gap-3 mb-3.5 position-relative z-1">
+                        <div class="position-relative cursor-pointer flex-shrink-0" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
+                            <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow-lg" style="width: 70px; height: 70px; border: 3px solid rgba(255, 255, 255, 0.85); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4) !important;">
+                            <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 24px; height: 24px; border: 2px solid #ffffff;">
                                 <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
                             </div>
                         </div>
-                        <div>
-                            <h3 class="fs-4 fw-bold mb-0 text-white tracking-tight">{{ $student['name'] }}</h3>
-                            <small class="text-white-50 fw-medium">ID • {{ $student['id'] }}</small>
-                            <div class="mt-1 d-flex align-items-center gap-1.5 flex-wrap">
-                                <button class="btn btn-link p-0 text-white text-decoration-none fw-bold d-inline-flex align-items-center gap-1" style="font-size: 11.5px;" onclick="event.stopPropagation(); switchTab('qrpass');">
-                                    <span>View pass</span>
-                                    <i data-lucide="external-link" style="width: 11px; height: 11px;"></i>
+
+                        <div class="overflow-hidden w-100">
+                            <h3 class="fs-4 fw-bolder mb-1 text-white tracking-tight text-truncate" style="letter-spacing: -0.01em;">{{ $student['name'] }}</h3>
+                            <div class="d-flex align-items-center gap-1.5 mb-2 flex-wrap">
+                                <span class="badge font-monospace fw-semibold px-2 py-0.5 rounded-pill text-white" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 10.5px;">
+                                    ID • {{ $student['id'] }}
+                                </span>
+                                <span class="badge font-monospace px-2 py-0.5 rounded-pill text-white-50" style="background: rgba(0, 0, 0, 0.25); font-size: 10px;">
+                                    PASS #{{ $student['pass_id'] ?? 'GZ-01' }}
+                                </span>
+                            </div>
+
+                            <!-- Modern Action Pill Buttons -->
+                            <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                <button type="button" class="btn btn-sm text-white rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1 shadow-xs" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); font-size: 11px; font-weight: 600; backdrop-filter: blur(8px);" onclick="event.stopPropagation(); switchTab('qrpass');">
+                                    <i data-lucide="qr-code" style="width: 12px; height: 12px;"></i>
+                                    <span>View Pass</span>
                                 </button>
-                                <span class="text-white-50">•</span>
-                                <button class="btn btn-link p-0 text-white text-decoration-none fw-bold d-inline-flex align-items-center gap-1" style="font-size: 11.5px;" onclick="event.stopPropagation(); openAvatarCropModal();">
-                                    <i data-lucide="camera" style="width: 11px; height: 11px;"></i>
-                                    <span>Change photo</span>
+                                <button type="button" class="btn btn-sm text-white rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1 shadow-xs" style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); font-size: 11px; font-weight: 600; backdrop-filter: blur(8px);" onclick="event.stopPropagation(); openAvatarCropModal();">
+                                    <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+                                    <span>Change Photo</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Footer Details Row -->
-                    <div class="pt-3 border-top border-white border-opacity-25 row g-2 text-white">
-                        <div class="col-5">
-                            <small class="text-white-50 d-block" style="font-size: 10.5px;">Gender</small>
-                            <span class="fw-bold fs-6">{{ $student['gender'] }}</span>
-                        </div>
-                        <div class="col-7">
-                            <small class="text-white-50 d-block" style="font-size: 10.5px;">Major</small>
-                            <span class="fw-bold fs-6 text-truncate d-block">{{ $student['major'] }}</span>
+                    <!-- Footer Details: Modern Frosted Card Box -->
+                    <div class="student-pass-meta-box position-relative z-1">
+                        <div class="row g-2 text-white align-items-center">
+                            <div class="col-4 border-end border-white border-opacity-15">
+                                <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Gender</small>
+                                <span class="fw-bold fs-6 text-white">{{ $student['gender'] }}</span>
+                            </div>
+                            <div class="col-8 ps-3">
+                                <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Department / Major</small>
+                                <span class="fw-bold fs-6 text-truncate d-block text-white" title="{{ $student['major'] }}">{{ $student['major'] }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -587,33 +615,36 @@
                 <div id="student-flip-card" class="flip-card" onclick="toggleCardFlip()">
                     <div class="flip-card-inner">
                         <!-- Front View -->
-                        <div class="flip-card-front">
+                        <div class="flip-card-front position-relative overflow-hidden">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-uppercase fw-bold text-light" style="font-size: 10px; letter-spacing: 0.15em;">
-                                    GENZ DIGITAL ID PASS
-                                </span>
-                                <span class="badge bg-white bg-opacity-25 rounded-pill px-2.5 py-1" style="font-size: 9.5px;">
+                                <div class="d-flex align-items-center gap-1.5">
+                                    <img src="{{ asset('images/genz-logo.png') }}" alt="Logo" style="width: 18px; height: 18px; object-fit: contain;">
+                                    <span class="text-uppercase fw-bold text-white" style="font-size: 10px; letter-spacing: 0.14em;">
+                                        GENZ DIGITAL ID PASS
+                                    </span>
+                                </div>
+                                <span class="badge rounded-pill px-2.5 py-1 text-white" style="background: rgba(255, 255, 255, 0.2); font-size: 9.5px; border: 1px solid rgba(255, 255, 255, 0.25);">
                                     Tap to flip 🔄
                                 </span>
                             </div>
 
                             <div class="d-flex align-items-center gap-3">
                                 <div class="position-relative cursor-pointer" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
-                                    <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow" style="width: 60px; height: 60px; border: 2.5px solid rgba(255, 255, 255, 0.5);">
+                                    <img src="{{ $student['avatar'] }}" alt="{{ $student['name'] }}" class="user-avatar-element rounded-circle object-fit-cover shadow" style="width: 62px; height: 62px; border: 2.5px solid rgba(255, 255, 255, 0.85);">
                                     <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 20px; height: 20px; border: 1.5px solid #ffffff;">
                                         <i data-lucide="camera" style="width: 10px; height: 10px;"></i>
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 class="fw-bold mb-0 text-white fs-5">{{ $student['name'] }}</h4>
-                                    <small class="text-white-50 d-block" style="font-size: 11.5px;">ID: {{ $student['id'] }}</small>
-                                    <small class="text-light fw-medium d-block" style="font-size: 12px;">{{ $student['major'] }}</small>
+                                    <h4 class="fw-bolder mb-0 text-white fs-5 tracking-tight">{{ $student['name'] }}</h4>
+                                    <small class="text-white-50 font-monospace d-block" style="font-size: 11px;">ID • {{ $student['id'] }}</small>
+                                    <small class="badge bg-white bg-opacity-15 text-white fw-semibold mt-1" style="font-size: 10.5px;">{{ $student['major'] }}</small>
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-15 text-white-50" style="font-size: 10px;">
-                                <span>VALID UNTIL: {{ $student['valid_until'] }}</span>
-                                <span>STATUS: {{ $student['status'] }}</span>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-15 text-white-50 font-monospace" style="font-size: 9.5px;">
+                                <span>VALID: {{ $student['valid_until'] }}</span>
+                                <span class="text-success fw-bold text-uppercase">● {{ $student['status'] }}</span>
                             </div>
                         </div>
 
