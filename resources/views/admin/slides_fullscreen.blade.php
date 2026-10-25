@@ -216,6 +216,42 @@
             padding: 0.85rem 2rem;
             z-index: 100;
         }
+
+        /* Floating On-Stage Navigation Arrows */
+        .slide-nav-overlay-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 60;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+        }
+
+        .slide-nav-overlay-btn:hover {
+            background: #2563eb;
+            border-color: #60a5fa;
+            color: #ffffff;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slide-nav-overlay-btn.prev {
+            left: 14px;
+        }
+
+        .slide-nav-overlay-btn.next {
+            right: 14px;
+        }
     </style>
 </head>
 <body>
@@ -298,10 +334,28 @@
                 </div>
             </div>
 
-            <!-- 2. Image Mode Viewport (Active when uploaded file is Image) -->
+            <!-- 2. Office / PowerPoint Mode Viewport (Active when uploaded file is PPTX/PPT/DOCX) -->
+            <div id="office-slide-viewport" class="pdf-viewer-viewport d-none p-0 w-100 h-100 position-relative">
+                <iframe id="office-slide-iframe" class="w-100 h-100 border-0 rounded-4" allowfullscreen allow="autoplay"></iframe>
+                <div id="office-loading-spinner" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-black bg-opacity-80 rounded-4" style="z-index: 10;">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <h5 class="fw-bold text-white mb-1">កំពុងដំណើរការ PowerPoint Presentation...</h5>
+                    <small class="text-white-50">Rendering PowerPoint slides via Microsoft Office Online Engine</small>
+                </div>
+            </div>
+
+            <!-- 3. Image Mode Viewport (Active when uploaded file is Image) -->
             <div id="image-slide-viewport" class="pdf-viewer-viewport d-none">
                 <img id="image-slide-img" src="" alt="Slide Image" class="pdf-render-canvas" style="object-fit: contain;">
             </div>
+
+            <!-- Floating On-Stage Navigation Arrows -->
+            <button class="slide-nav-overlay-btn prev" onclick="changeSlide(-1)" title="ថយក្រោយ (Previous Slide)">
+                <i data-lucide="chevron-left" style="width: 22px; height: 22px;"></i>
+            </button>
+            <button class="slide-nav-overlay-btn next" onclick="changeSlide(1)" title="ទៅមុខ (Next Slide)">
+                <i data-lucide="chevron-right" style="width: 22px; height: 22px;"></i>
+            </button>
 
             <!-- 3. Fallback / Interactive HTML Slide Viewport -->
             <div id="html-slide-viewport" class="d-none flex-grow-1 d-flex flex-column justify-content-between py-2">
@@ -436,11 +490,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) window.lucide.createIcons();
 
-            // Check if uploaded file is a PDF
-            if (rawFilePath && (rawFilePath.toLowerCase().endsWith('.pdf') || rawFileType === 'pdf')) {
+            const isPdf = rawFilePath && (rawFilePath.toLowerCase().endsWith('.pdf') || rawFileType === 'pdf');
+            const isImage = rawFilePath && (rawFileType === 'image' || /\.(png|jpe?g|webp)$/i.test(rawFilePath));
+            const isOffice = rawFilePath && (rawFileType === 'presentation' || rawFileType === 'word' || /\.(pptx?|ppsx?|docx?)$/i.test(rawFilePath));
+
+            if (isPdf) {
                 loadPdfPresentation(rawFilePath);
-            } else if (rawFilePath && (rawFileType === 'image' || /\.(png|jpe?g|webp)$/i.test(rawFilePath))) {
+            } else if (isImage) {
                 loadImagePresentation(rawFilePath);
+            } else if (isOffice) {
+                loadOfficePresentation(rawFilePath);
             } else {
                 loadHtmlPresentation();
             }
@@ -522,6 +581,7 @@
         function loadImagePresentation(url) {
             currentMode = 'image';
             document.getElementById('pdf-slide-viewport').classList.add('d-none');
+            document.getElementById('office-slide-viewport').classList.add('d-none');
             document.getElementById('html-slide-viewport').classList.add('d-none');
             document.getElementById('image-slide-viewport').classList.remove('d-none');
             document.getElementById('image-slide-img').src = url;
@@ -529,10 +589,50 @@
             updateSlideIndicators(1, 1);
         }
 
-        // ---------------- 3. HTML Slide Deck Engine (Fallback) ----------------
+        // ---------------- 3. Office / PowerPoint Presentation Engine ----------------
+        function loadOfficePresentation(url) {
+            currentMode = 'office';
+            document.getElementById('pdf-slide-viewport').classList.add('d-none');
+            document.getElementById('image-slide-viewport').classList.add('d-none');
+            document.getElementById('html-slide-viewport').classList.add('d-none');
+            document.getElementById('office-slide-viewport').classList.remove('d-none');
+            document.getElementById('pdf-zoom-controls').style.display = 'none';
+
+            const isWord = rawFileType === 'word' || /\.(docx?|doc)$/i.test(url);
+            document.getElementById('slide-category-badge').textContent = isWord ? 'WORD DOCUMENT' : 'POWERPOINT PRESENTATION';
+            document.getElementById('slide-mode-badge').textContent = isWord ? '● Word Document Live' : '● PowerPoint Live Presentation';
+
+            totalSlides = {{ $teachingSlides && $teachingSlides->total_slides ? $teachingSlides->total_slides : 32 }};
+            currentSlideIdx = 1;
+            updateSlideIndicators(currentSlideIdx, totalSlides);
+
+            // Construct Microsoft Office Online Embed Viewer URL
+            let embedUrl = url;
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.endsWith('.test')) {
+                try {
+                    const parsed = new URL(url, window.location.origin);
+                    embedUrl = 'https://genzdigital.goatplay.site' + parsed.pathname;
+                } catch(e) {}
+            }
+
+            const iframe = document.getElementById('office-slide-iframe');
+            const officeSpinner = document.getElementById('office-loading-spinner');
+            iframe.src = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(embedUrl);
+
+            iframe.onload = () => {
+                if (officeSpinner) officeSpinner.style.display = 'none';
+            };
+
+            setTimeout(() => {
+                if (officeSpinner) officeSpinner.style.display = 'none';
+            }, 3000);
+        }
+
+        // ---------------- 4. HTML Slide Deck Engine (Fallback) ----------------
         function loadHtmlPresentation() {
             currentMode = 'html';
             document.getElementById('pdf-slide-viewport').classList.add('d-none');
+            document.getElementById('office-slide-viewport').classList.add('d-none');
             document.getElementById('image-slide-viewport').classList.add('d-none');
             document.getElementById('html-slide-viewport').classList.remove('d-none');
             totalSlides = demoHtmlSlides.length;
@@ -573,6 +673,19 @@
                 if (nextNum >= 1 && nextNum <= totalSlides) {
                     currentSlideIdx = nextNum;
                     queueRenderPdfPage(currentSlideIdx);
+                }
+            } else if (currentMode === 'office') {
+                const nextNum = currentSlideIdx + dir;
+                if (nextNum >= 1 && nextNum <= totalSlides) {
+                    currentSlideIdx = nextNum;
+                    updateSlideIndicators(currentSlideIdx, totalSlides);
+                }
+                const iframe = document.getElementById('office-slide-iframe');
+                if (iframe) {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.postMessage({ action: dir > 0 ? 'next' : 'prev', slide: currentSlideIdx }, '*');
+                    } catch(e) {}
                 }
             } else if (currentMode === 'html') {
                 let nextIdx = (currentSlideIdx - 1) + dir;
@@ -654,11 +767,11 @@
             lastGestureTriggerTime = now;
 
             if (fingerCount === 1) {
-                showGestureBadge('☝️', 'ម្រាមដៃ ១ ៖ ស្លាយថយក្រោយ (Previous Slide)');
                 changeSlide(-1);
+                showGestureBadge('☝️', `ម្រាមដៃ ១ ៖ ថយក្រោយ (Slide ${currentSlideIdx} / ${totalSlides})`);
             } else if (fingerCount === 2) {
-                showGestureBadge('✌️', 'ម្រាមដៃ ២ ៖ ស្លាយបន្ទាប់ (Next Slide)');
                 changeSlide(1);
+                showGestureBadge('✌️', `ម្រាមដៃ ២ ៖ ទៅមុខ (Slide ${currentSlideIdx} / ${totalSlides})`);
             }
         }
 

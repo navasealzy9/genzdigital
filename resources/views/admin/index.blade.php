@@ -838,6 +838,95 @@
             </div>
         </div>
     </div>
+
+    <!-- ================================================================= -->
+    <!-- LIVE SLIDE PREVIEW & INTERACTIVE CONTROLS (NEXT / PREVIOUS)       -->
+    <!-- ================================================================= -->
+    @if($teachingSlides && $teachingSlides->file_path)
+    <div class="admin-card p-3 p-md-4 mb-4 border border-primary border-opacity-25 shadow-sm">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-3 border-bottom">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary px-2.5 py-1 rounded-pill fw-bold" style="font-size: 11px;">
+                        <i data-lucide="monitor-play" style="width: 13px; height: 13px; vertical-align: -2px;" class="me-1"></i> LIVE SLIDE PREVIEW
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill" style="font-size: 11px;">
+                        ● Active Presentation Ready
+                    </span>
+                </div>
+                <h5 class="fw-bolder mb-0 text-body">{{ $teachingSlides->title }}</h5>
+                <small class="text-secondary font-monospace" style="font-size: 11px;">
+                    Course: <strong>{{ $teachingSlides->course }}</strong> • File: {{ basename($teachingSlides->file_path) }} ({{ strtoupper($teachingSlides->file_type) }})
+                </small>
+            </div>
+
+            <!-- Slide Controller Buttons -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Slide Counter Badge -->
+                <span class="badge bg-body-secondary text-body border px-3 py-2 rounded-pill font-monospace fw-bold" id="admin-preview-counter">
+                    SLIDE 1 OF {{ $teachingSlides->total_slides ?: 1 }}
+                </span>
+
+                <!-- Next & Previous Navigation Buttons -->
+                <div class="btn-group shadow-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 py-1.5 fw-bold" id="admin-prev-btn" onclick="adminPreviewNav(-1)">
+                        <i data-lucide="arrow-left" style="width: 15px; height: 15px;" class="me-1"></i> ថយក្រោយ (Prev)
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm px-3 py-1.5 fw-bold" id="admin-next-btn" onclick="adminPreviewNav(1)">
+                        ទៅមុខ (Next) <i data-lucide="arrow-right" style="width: 15px; height: 15px;" class="ms-1"></i>
+                    </button>
+                </div>
+
+                <!-- Open Full Screen Button with Gesture Icon -->
+                <a href="{{ route('admin.slides.fullscreen') }}" target="_blank" class="btn btn-success btn-sm fw-bold px-3 py-1.5 rounded-pill shadow-sm d-flex align-items-center gap-1.5">
+                    <i data-lucide="maximize-2" style="width: 15px; height: 15px;"></i>
+                    <span>បើក Full Screen (AI Gesture)</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Preview Display Container -->
+        <div class="rounded-4 overflow-hidden border bg-black position-relative" style="height: 520px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);">
+            <!-- PDF Canvas Viewport -->
+            <div id="admin-pdf-viewport" class="w-100 h-100 d-none d-flex align-items-center justify-content-center overflow-auto p-2">
+                <canvas id="admin-pdf-canvas" class="rounded shadow" style="max-width: 100%; max-height: 100%; object-fit: contain; background: #fff;"></canvas>
+            </div>
+
+            <!-- Office Iframe Viewport (PPTX / PPT / DOCX) -->
+            <div id="admin-office-viewport" class="w-100 h-100 d-none position-relative">
+                <iframe id="admin-office-iframe" class="w-100 h-100 border-0" allowfullscreen allow="autoplay"></iframe>
+            </div>
+
+            <!-- Image Viewport -->
+            <div id="admin-image-viewport" class="w-100 h-100 d-none d-flex align-items-center justify-content-center p-3">
+                <img id="admin-image-tag" src="" class="img-fluid rounded shadow" style="max-height: 100%; object-fit: contain;">
+            </div>
+
+            <!-- Loading Spinner Overlay -->
+            <div id="admin-preview-loading" class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-75 d-flex flex-column align-items-center justify-content-center text-white" style="z-index: 10;">
+                <div class="spinner-border text-primary mb-2" role="status"></div>
+                <div class="fw-bold small">កំពុងដំណើរការ Live Slide Preview...</div>
+                <small class="text-white-50" style="font-size: 11px;">Loading slide content directly in dashboard</small>
+            </div>
+        </div>
+
+        <!-- Bottom Controls & Instruction Bar -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mt-3 pt-2 text-secondary small">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-warning text-dark fw-bold">☝️ ✌️ AI Camera Gesture</span>
+                <span>អ្នកអាចចុចប៊ូតុង <strong>Prev / Next</strong> ខាងលើដើម្បីមើលស្លាយ ឬបើក <strong>Full Screen</strong> ដើម្បីបញ្ជាដោយលើកម្រាមដៃ!</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="btn btn-sm btn-link text-decoration-none text-secondary p-0" onclick="reloadAdminPreview()">
+                    <i data-lucide="refresh-cw" style="width: 13px; height: 13px;" class="me-1"></i> Refresh Preview
+                </button>
+                <a href="{{ asset($teachingSlides->file_path) }}" download class="btn btn-sm btn-link text-decoration-none text-primary fw-semibold p-0">
+                    <i data-lucide="download" style="width: 14px; height: 14px;" class="me-1"></i> ទាញយក File ស្លាយដើម (Download)
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
 <!-- ====================================================================== -->
@@ -2612,5 +2701,141 @@
         document.body.appendChild(form);
         form.submit();
     }
+
+    // -----------------------------------------------------------------
+    // SLIDE PREVIEW & CONTROLS IN ADMIN DASHBOARD (TAB 7)
+    // -----------------------------------------------------------------
+    const adminSlidePath = "{{ $teachingSlides && $teachingSlides->file_path ? asset($teachingSlides->file_path) : '' }}";
+    const adminSlideType = "{{ $teachingSlides ? $teachingSlides->file_type : '' }}";
+    let adminSlideTotal = {{ $teachingSlides && $teachingSlides->total_slides ? $teachingSlides->total_slides : 1 }};
+    let adminSlideCurrent = 1;
+    let adminPdfDoc = null;
+    let isAdminPdfRendering = false;
+
+    function initAdminSlidePreview() {
+        if (!adminSlidePath) return;
+
+        const isPdf = adminSlidePath.toLowerCase().endsWith('.pdf') || adminSlideType === 'pdf';
+        const isImage = adminSlideType === 'image' || /\.(png|jpe?g|webp)$/i.test(adminSlidePath);
+        const isOffice = adminSlideType === 'presentation' || adminSlideType === 'word' || /\.(pptx?|ppsx?|docx?)$/i.test(adminSlidePath);
+
+        const loadingOverlay = document.getElementById('admin-preview-loading');
+        const pdfViewport = document.getElementById('admin-pdf-viewport');
+        const officeViewport = document.getElementById('admin-office-viewport');
+        const imageViewport = document.getElementById('admin-image-viewport');
+
+        if (isPdf) {
+            if (pdfViewport) pdfViewport.classList.remove('d-none');
+            if (typeof pdfjsLib === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.onload = () => {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    loadAdminPdf(adminSlidePath);
+                };
+                document.head.appendChild(script);
+            } else {
+                loadAdminPdf(adminSlidePath);
+            }
+        } else if (isOffice) {
+            if (officeViewport) officeViewport.classList.remove('d-none');
+            let embedUrl = adminSlidePath;
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.endsWith('.test')) {
+                try {
+                    const parsed = new URL(adminSlidePath, window.location.origin);
+                    embedUrl = 'https://genzdigital.goatplay.site' + parsed.pathname;
+                } catch(e) {}
+            }
+            const iframe = document.getElementById('admin-office-iframe');
+            if (iframe) {
+                iframe.src = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(embedUrl);
+                iframe.onload = () => {
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
+                };
+                setTimeout(() => {
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
+                }, 3000);
+            }
+        } else if (isImage) {
+            if (imageViewport) imageViewport.classList.remove('d-none');
+            const img = document.getElementById('admin-image-tag');
+            if (img) img.src = adminSlidePath;
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
+    }
+
+    async function loadAdminPdf(url) {
+        try {
+            const loadingTask = pdfjsLib.getDocument(url);
+            adminPdfDoc = await loadingTask.promise;
+            adminSlideTotal = adminPdfDoc.numPages;
+            adminSlideCurrent = 1;
+            updateAdminCounter();
+            renderAdminPdfPage(1);
+            const loadingOverlay = document.getElementById('admin-preview-loading');
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        } catch (err) {
+            console.warn('Admin PDF preview error:', err);
+            const loadingOverlay = document.getElementById('admin-preview-loading');
+            if (loadingOverlay) loadingOverlay.innerHTML = '<div class="text-danger small">Cannot render PDF preview</div>';
+        }
+    }
+
+    async function renderAdminPdfPage(num) {
+        if (!adminPdfDoc) return;
+        isAdminPdfRendering = true;
+        const page = await adminPdfDoc.getPage(num);
+        const canvas = document.getElementById('admin-pdf-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const viewport = page.getViewport({ scale: 1.0 });
+        const containerHeight = document.getElementById('admin-pdf-viewport')?.clientHeight || 480;
+        const scale = (containerHeight - 40) / viewport.height;
+        const scaledViewport = page.getViewport({ scale: scale > 0 ? scale : 1.0 });
+
+        canvas.height = scaledViewport.height;
+        canvas.width = scaledViewport.width;
+
+        await page.render({
+            canvasContext: ctx,
+            viewport: scaledViewport
+        }).promise;
+        isAdminPdfRendering = false;
+        updateAdminCounter();
+    }
+
+    function adminPreviewNav(dir) {
+        const nextNum = adminSlideCurrent + dir;
+        if (nextNum >= 1 && nextNum <= adminSlideTotal) {
+            adminSlideCurrent = nextNum;
+            updateAdminCounter();
+            if (adminPdfDoc) {
+                renderAdminPdfPage(adminSlideCurrent);
+            } else {
+                const iframe = document.getElementById('admin-office-iframe');
+                if (iframe) {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.postMessage({ action: dir > 0 ? 'next' : 'prev', slide: adminSlideCurrent }, '*');
+                    } catch(e) {}
+                }
+            }
+        }
+    }
+
+    function updateAdminCounter() {
+        const counter = document.getElementById('admin-preview-counter');
+        if (counter) counter.textContent = `SLIDE ${adminSlideCurrent} OF ${adminSlideTotal}`;
+    }
+
+    function reloadAdminPreview() {
+        const loadingOverlay = document.getElementById('admin-preview-loading');
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        initAdminSlidePreview();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initAdminSlidePreview();
+    });
 </script>
 @endpush

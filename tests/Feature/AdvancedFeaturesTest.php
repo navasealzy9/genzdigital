@@ -191,6 +191,15 @@ class AdvancedFeaturesTest extends TestCase
         $response->assertSee('AI GESTURE TRACKER');
         $response->assertSee('webcam-feed');
         $response->assertSee('toggleWebCam');
+        $response->assertSee('office-slide-iframe');
+        $response->assertSee('slide-nav-overlay-btn');
+
+        // Verify Admin Tab Live Preview & Controls
+        $adminResponse = $this->get('/admin?tab=slides');
+        $adminResponse->assertStatus(200);
+        $adminResponse->assertSee('admin-tab-slides');
+        $adminResponse->assertSee('LIVE SLIDE PREVIEW');
+        $adminResponse->assertSee('adminPreviewNav');
     }
 
     /**

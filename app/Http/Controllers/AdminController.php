@@ -689,6 +689,7 @@ class AdminController extends Controller
 
         $filePath = null;
         $fileType = 'pdf';
+        $detectedSlideCount = null;
 
         if ($request->hasFile('slide_file')) {
             $file = $request->file('slide_file');
@@ -702,18 +703,41 @@ class AdminController extends Controller
             
             if (in_array($ext, ['png', 'jpg', 'jpeg', 'webp'])) {
                 $fileType = 'image';
+                $detectedSlideCount = 1;
             } elseif (in_array($ext, ['ppt', 'pptx'])) {
                 $fileType = 'presentation';
+                if ($ext === 'pptx' && class_exists('ZipArchive')) {
+                    $zip = new \ZipArchive();
+                    if ($zip->open(public_path('uploads/slides/' . $filename)) === true) {
+                        $count = 0;
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $stat = $zip->statIndex($i);
+                            if (preg_match('#ppt/slides/slide[0-9]+\.xml#', $stat['name'])) {
+                                $count++;
+                            }
+                        }
+                        if ($count > 0) {
+                            $detectedSlideCount = $count;
+                        }
+                        $zip->close();
+                    }
+                }
+                if (!$detectedSlideCount) {
+                    $detectedSlideCount = 20;
+                }
             } elseif (in_array($ext, ['doc', 'docx'])) {
                 $fileType = 'word';
+                $detectedSlideCount = 5;
             } else {
                 $fileType = 'pdf';
+                $detectedSlideCount = 6;
             }
         }
 
         $existing = DB::table('campus_teaching_slides')->where('id', 1)->first();
         $finalPath = $filePath ?: ($existing ? $existing->file_path : '/uploads/slides/slides_1792829007.pdf');
         $finalType = $request->hasFile('slide_file') ? $fileType : ($existing ? $existing->file_type : 'pdf');
+        $finalSlideCount = $detectedSlideCount ?: ($existing && $existing->total_slides > 0 ? $existing->total_slides : 1);
 
         DB::table('campus_teaching_slides')->updateOrInsert(
             ['id' => 1],
@@ -724,7 +748,7 @@ class AdminController extends Controller
                 'file_type' => $finalType,
                 'gesture_enabled' => true,
                 'current_slide' => 1,
-                'total_slides' => 6,
+                'total_slides' => $finalSlideCount,
                 'slide_notes' => 'Presentation file updated with AI Hand Gesture Tracking.',
                 'updated_at' => now(),
             ]
