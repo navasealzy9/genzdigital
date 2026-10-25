@@ -284,27 +284,6 @@
                 <div class="student-pass-card student-pass-sticky" onclick="switchTab('qrpass')">
                     <div class="pass-glow-1"></div>
 
-                    <!-- Top Card Header: Brand & Live Status -->
-                    <div class="d-flex justify-content-between align-items-center mb-3.5 position-relative z-1">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow-xs p-1" style="width: 26px; height: 26px;">
-                                <img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Logo" style="width: 100%; height: 100%; object-fit: contain;">
-                            </div>
-                            <div>
-                                <span class="d-block text-uppercase fw-bold text-white lh-1" style="font-size: 10.5px; letter-spacing: 0.12em;">
-                                    GENZ DIGITAL STUDENT PASS
-                                </span>
-                                <small class="text-white-50 font-monospace" style="font-size: 9px; letter-spacing: 0.05em;">SMART ACADEMIC OS • 2026</small>
-                            </div>
-                        </div>
-
-                        <!-- Clean Active Pill with separated glowing dot -->
-                        <span class="badge rounded-pill fw-bold text-uppercase d-inline-flex align-items-center shadow-xs" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(52, 211, 153, 0.4); color: #ffffff; font-size: 10px; letter-spacing: 0.08em; padding: 4px 10px;">
-                            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; display: inline-block; margin-right: 6px; box-shadow: 0 0 6px #10b981; flex-shrink: 0;"></span>
-                            {{ $student['status'] }}
-                        </span>
-                    </div>
-
                     <!-- Profile Info Row -->
                     <div class="d-flex align-items-center gap-3 mb-3.5 position-relative z-1">
                         <div class="position-relative cursor-pointer flex-shrink-0" onclick="event.stopPropagation(); openAvatarCropModal()" title="Change Profile Photo (Crop)">
@@ -317,9 +296,13 @@
                         <div class="overflow-hidden w-100">
                             <h3 class="fs-4 fw-bolder mb-1 text-white tracking-tight text-truncate" style="letter-spacing: -0.01em;">{{ $student['name'] }}</h3>
                             
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center gap-1.5 mb-2 flex-wrap">
                                 <span class="badge rounded-pill fw-semibold font-monospace px-2.5 py-0.5 text-white" style="background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 11px;">
                                     ID • {{ $student['id'] }}
+                                </span>
+                                <span class="badge rounded-pill fw-bold text-uppercase d-inline-flex align-items-center shadow-xs" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(52, 211, 153, 0.4); color: #ffffff; font-size: 10px; letter-spacing: 0.06em; padding: 3px 9px;">
+                                    <span style="width: 5px; height: 5px; border-radius: 50%; background-color: #10b981; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px #10b981;"></span>
+                                    {{ $student['status'] }}
                                 </span>
                             </div>
 
