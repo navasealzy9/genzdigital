@@ -257,15 +257,15 @@
             padding: 1.6rem;
             color: #ffffff;
             background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 0 20px 45px -12px rgba(37, 99, 235, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+            border: none !important;
+            box-shadow: 0 20px 45px -12px rgba(37, 99, 235, 0.42);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
 
         .student-pass-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 26px 55px -12px rgba(37, 99, 235, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+            box-shadow: 0 26px 55px -12px rgba(37, 99, 235, 0.55);
         }
 
         .student-pass-card:active {

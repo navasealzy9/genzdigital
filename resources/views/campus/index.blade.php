@@ -322,14 +322,14 @@
                         </div>
                     </div>
 
-                    <!-- Footer Details: Ultra-Clean Transparent Divider (No Background Box) -->
-                    <div class="student-pass-meta-box position-relative z-1 pt-3 mt-3 border-top border-white border-opacity-20">
-                        <div class="row g-2 text-white align-items-center">
-                            <div class="col-4 border-end border-white border-opacity-20">
+                    <!-- Footer Details: Ultra-Clean Seamless (No Background Box, No Borders) -->
+                    <div class="student-pass-meta-box position-relative z-1 pt-2 mt-2">
+                        <div class="row g-3 text-white align-items-center">
+                            <div class="col-4">
                                 <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Gender</small>
                                 <span class="fw-bold fs-6 text-white">{{ $student['gender'] }}</span>
                             </div>
-                            <div class="col-8 ps-3">
+                            <div class="col-8">
                                 <small class="text-white-50 text-uppercase d-block fw-semibold" style="font-size: 9.5px; letter-spacing: 0.08em;">Major</small>
                                 <span class="fw-bold fs-6 text-truncate d-block text-white" title="{{ $student['major'] }}">{{ $student['major'] }}</span>
                             </div>
@@ -1890,7 +1890,7 @@
                     </div>
                 </div>
 
-                <div class="pt-3 border-top border-white border-opacity-25 d-flex justify-content-between text-white small">
+                <div class="pt-3 d-flex justify-content-between text-white small">
                     <span>Valid Until: {{ $student['valid_until'] }}</span>
                     <span>Pass ID: {{ $student['pass_id'] }}</span>
                 </div>

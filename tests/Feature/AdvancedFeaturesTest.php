@@ -427,7 +427,7 @@ class AdvancedFeaturesTest extends TestCase
     public function test_student_enrollment_lifecycle_and_qr_two_sessions(): void
     {
         // 1. New student registers
-        $uniqueId = 'GZ_REG_' . rand(10000, 99999);
+        $uniqueId = 'GZ_REG_' . time() . '_' . rand(100, 999);
         $studentEmail = 'newstudent.' . uniqid() . '@genzdigital.edu';
         DB::table('campus_students')->insert([
             'name' => 'Sophea Dara',
