@@ -68,10 +68,9 @@ class Gen5Game
             $counts = $this->eligiblePlayers($match)->selectRaw('p.team, COUNT(*) as total')->groupBy('p.team')->pluck('total', 'team');
             $team = ($counts[1] ?? 0) <= ($counts[2] ?? 0) ? 1 : 2;
             $members = (int) ($counts[$team] ?? 0);
-            abort_if($members >= 40, 409, 'This match is full (40 students per team).');
             DB::table('gen5_players')->insert([
                 'match_id' => $id, 'user_id' => $user->id, 'team' => $team,
-                'x' => $team === 1 ? 2 : self::WIDTH - 3, 'y' => 1 + $members % (self::HEIGHT - 2),
+                ...$this->spawn($team, $members),
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             $this->event($match, 'joined', $team, $user->name);
@@ -123,8 +122,34 @@ class Gen5Game
             abort_unless($match->status === 'lobby', 409, 'Teams lock when the match starts.');
             $row = DB::table('gen5_players')->where('match_id', $id)->where('id', $player)->first();
             abort_unless($row, 404);
-            abort_if(DB::table('gen5_players')->where('match_id', $id)->where('team', $team)->where('id', '!=', $player)->count() >= 40, 409, 'This team is full.');
-            DB::table('gen5_players')->where('id', $row->id)->update(['team' => $team, 'x' => $team === 1 ? 2 : self::WIDTH - 3, 'updated_at' => now()]);
+            $members = DB::table('gen5_players')->where('match_id', $id)->where('team', $team)->where('id', '!=', $player)->count();
+            DB::table('gen5_players')->where('id', $row->id)->update(['team' => $team, ...$this->spawn($team, $members), 'updated_at' => now()]);
+            $this->persist($match);
+        });
+    }
+
+    public function generateTeams(int $id): void
+    {
+        DB::transaction(function () use ($id) {
+            $match = DB::table('gen5_matches')->where('id', $id)->lockForUpdate()->first();
+            abort_unless($match, 404);
+            abort_unless($match->status === 'lobby', 409, 'Teams can only be generated before the match starts.');
+            $course = DB::table('learning_courses')->find($match->course_id);
+            abort_unless($course && $course->status !== 'archived', 422, 'This class is archived.');
+            $students = DB::table('learning_enrollments as e')->join('users as u', 'u.id', '=', 'e.user_id')
+                ->where('e.course_id', $match->course_id)->where('e.status', 'active')
+                ->where('u.role', 'student')->where('u.status', 'Active')->pluck('u.id')->shuffle()->values();
+            abort_if($students->count() < 2, 422, 'The class needs at least two active enrolled students to generate teams.');
+            DB::table('gen5_players')->where('match_id', $id)->whereNotIn('user_id', $students)->delete();
+            $rows = [];
+            foreach ($students as $index => $student) {
+                $team = $index % 2 + 1;
+                $rows[] = ['match_id' => $id, 'user_id' => $student, 'team' => $team,
+                    ...$this->spawn($team, intdiv($index, 2)), 'next_move_at' => 0, 'next_action_at' => 0,
+                    'builds' => 0, 'attacks' => 0, 'created_at' => now(), 'updated_at' => now()];
+            }
+            DB::table('gen5_players')->upsert($rows, ['match_id', 'user_id'], ['team', 'x', 'y', 'next_move_at', 'next_action_at', 'builds', 'attacks', 'updated_at']);
+            $this->event($match, 'generated');
             $this->persist($match);
         });
     }
@@ -205,7 +230,10 @@ class Gen5Game
         // Read a consistent revision while actions are serialized on the match row.
         return DB::transaction(function () use ($user, $id) {
             $match = DB::table('gen5_matches')->where('id', $id)->sharedLock()->first();
-            $players = $this->eligiblePlayers($match)->select('p.id', 'p.user_id', 'p.team', 'p.x', 'p.y', 'p.next_move_at', 'p.next_action_at', 'p.builds', 'p.attacks', 'u.name')->orderBy('p.id')->get();
+            $players = $this->eligiblePlayers($match)->select('p.id', 'p.user_id', 'p.team', 'p.x', 'p.y', 'p.next_move_at', 'p.next_action_at', 'p.builds', 'p.attacks', 'u.name', 'u.avatar')->orderBy('p.id')->get();
+            foreach ($players as $player) {
+                $player->avatar = $this->avatarUrl($player->avatar);
+            }
             $board = array_values(json_decode($match->board, true));
             $scores = $this->scores($board);
 
@@ -239,6 +267,30 @@ class Gen5Game
         return DB::table('gen5_players as p')->join('users as u', 'u.id', '=', 'p.user_id')
             ->join('learning_enrollments as e', fn ($join) => $join->on('e.user_id', '=', 'p.user_id')->where('e.course_id', $match->course_id))
             ->where('p.match_id', $match->id)->where('e.status', 'active')->where('u.status', 'Active')->where('u.role', 'student');
+    }
+
+    private function spawn(int $team, int $index): array
+    {
+        $rows = self::HEIGHT - 2;
+        $cells = (int) (self::WIDTH / 2 - 2) * $rows;
+        // A coprime stride spreads small teams out instead of stacking adjacent name tags.
+        $position = ($index * 17) % $cells;
+        $column = intdiv($position, $rows);
+
+        return ['x' => $team === 1 ? 2 + $column : self::WIDTH - 3 - $column, 'y' => 1 + $position % $rows];
+    }
+
+    private function avatarUrl(?string $avatar): ?string
+    {
+        if (! $avatar || str_starts_with($avatar, '//') || str_contains($avatar, '\\')) {
+            return null;
+        }
+        $scheme = parse_url($avatar, PHP_URL_SCHEME);
+        if ($scheme !== null) {
+            return in_array(strtolower((string) $scheme), ['http', 'https'], true) && filter_var($avatar, FILTER_VALIDATE_URL) ? $avatar : null;
+        }
+
+        return asset(ltrim($avatar, '/'));
     }
 
     private function finishIfDue(object $match): void

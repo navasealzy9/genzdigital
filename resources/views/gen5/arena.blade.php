@@ -7,6 +7,9 @@
 <div class="gen5-field-header"><span><i class="gen5-dot emerald"></i>ទឹកដីក្រុម 1</span><span>BUILD · CROSS · ATTACK</span><span>ទឹកដីក្រុម 2 <i class="gen5-dot coral"></i></span></div>
 <section class="gen5-field" aria-label="GEN5 arena"><canvas id="gen5-board" tabindex="0" aria-label="Game board. Arrow keys or WASD to move. B to build. X to attack. Use the buttons below on a phone."></canvas><div id="gen5-overlay" class="gen5-overlay" hidden><div class="gen5-overlay-card"><span id="gen5-overlay-kicker"></span><h2 id="gen5-overlay-title"></h2><p id="gen5-overlay-description"></p>@unless($admin)<button id="gen5-join" type="button" hidden>ចូលក្រុម / Join match →</button>@endunless</div></div><span class="gen5-border-label" aria-hidden="true">BORDER</span></section>
 <div class="gen5-message" id="gen5-message" role="status">កំពុងភ្ជាប់ទៅសមរភូមិ…</div>
+@if($admin && !$screen)
+<section id="gen5-team-generator" class="gen5-team-generator"><div><strong>ចែកសិស្សក្នុងថ្នាក់ជាពីរក្រុម</strong><p>Generate សិស្សសកម្មទាំងអស់ក្នុងថ្នាក់ ដោយចៃដន្យ។ ចំនួនស្មើគ្នា ឬខុសគ្នាម្នាក់ បើចំនួនសិស្សជាលេខសេស។ អាច Generate ម្ដងទៀតមុន Start។</p></div><button type="button" id="gen5-generate-teams">⇄ Generate teams</button></section>
+@endif
 @if($admin)
 <section class="gen5-admin-controls"><div><span class="gen5-control-label">MATCH CONTROL</span><p>សិស្សចូលក្រុមតាមមុខងារ GEN5 របស់ពួកគេ។</p></div><div class="gen5-admin-buttons"><button data-control="start" class="gen5-start">▶ ចាប់ផ្ដើម</button><button data-control="finish" class="gen5-stop">បញ្ចប់ការប្រកួត</button><button data-control="cancel" class="gen5-cancel">លុបចោល</button></div></section>
 @else
@@ -22,6 +25,7 @@
         'actionUrl' => $admin ? null : route('gen5.action', $initial['match']['id']),
         'joinUrl' => $admin ? null : route('gen5.join', $initial['match']['id']),
         'controlUrl' => $admin ? route('admin.gen5.control', $initial['match']['id']) : null,
+        'generateUrl' => $admin ? route('admin.gen5.generate', $initial['match']['id']) : null,
         'assignBase' => $admin ? url('/admin/gen5/'.$initial['match']['id'].'/players') : null,
     ];
 @endphp

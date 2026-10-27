@@ -76,6 +76,22 @@
 .gen5-rosters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }.gen5-rosters h3 { font-size:12px; margin:0 0 10px; font-weight:500; }.emerald-text { color:#78c9a9; }.coral-text { color:#d89b86; }
 .gen5-player-row { display:flex; align-items:center; gap:8px; padding:6px 0; color:#94a9c2; font-size:11px; }.gen5-player-row>span:nth-child(2) { min-width:0; overflow-wrap:anywhere; }.gen5-player-avatar { width:23px; height:23px; display:grid; place-items:center; flex-shrink:0; border-radius:6px; font:600 10px system-ui; }.gen5-player-avatar.team-1 { color:#87d9ba; background:#264a40; }.gen5-player-avatar.team-2 { color:#e6ac98; background:#523c38; }.gen5-player-row button { margin-left:auto; font-size:12px; padding:2px 8px; }
 .gen5-roster-empty { font-size:11px; color:#5f7894; margin:14px 0; }
+.gen5-team-generator { display:flex; align-items:center; justify-content:space-between; gap:22px; margin:0 0 18px; padding:18px 22px; border:1px solid #365347; border-radius:12px; background:#122b29; }
+.gen5-team-generator strong { display:block; font-size:14px; color:#b1e1cc; }
+.gen5-team-generator p { max-width:750px; font-size:12px; color:#81a99c; margin:7px 0 0; }
+.gen5-team-generator button { flex-shrink:0; background:#3b8165; border-color:#579b7c; color:#e0ffee; font-size:13px; }
+.gen5-player-avatar { position:relative; overflow:hidden; }
+.gen5-player-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.gen5-player-layer { position:absolute; inset:0; z-index:1; pointer-events:none; }
+.gen5-player-tag { position:absolute; width:30px; height:30px; transform:translate(-50%,-50%); pointer-events:none; }
+.gen5-player-tag>.gen5-player-avatar { width:30px; height:30px; border-radius:50%; border:2px solid var(--mint); box-shadow:0 2px 6px #0008; font-size:13px; }
+.gen5-player-tag.team-2>.gen5-player-avatar { border-color:var(--coral); }
+.gen5-player-tag.is-me>.gen5-player-avatar { box-shadow:0 0 0 2px #eef8ff,0 2px 8px #0008; }
+.gen5-player-name { position:absolute; left:calc(50% + var(--name-shift,0px)); bottom:calc(100% + 4px); transform:translateX(-50%); width:max-content; max-width:145px; padding:2px 7px; border:1px solid #5abf9d66; border-radius:5px; background:#0a1828ed; color:#dbfff0; font:500 11px/1.5 'Noto Sans Khmer','Khmer OS',system-ui,sans-serif; text-align:center; overflow-wrap:anywhere; box-shadow:0 2px 7px #0003; }
+.gen5-player-tag.team-2 .gen5-player-name { border-color:#d1876b77; color:#ffe3d8; }
+.gen5-player-tag.label-below .gen5-player-name { bottom:auto; top:calc(100% + 4px); }
+.gen5-overlay { z-index:3; }.gen5-border-label { z-index:4; }
+@media(max-width:760px) { .gen5-team-generator { flex-direction:column; align-items:stretch; gap:14px; padding:17px; }.gen5-team-generator p { font-size:11px; }.gen5-player-tag,.gen5-player-tag>.gen5-player-avatar { width:24px; height:24px; }.gen5-player-name { max-width:115px; font-size:10px; } }
 #gen5-events { list-style:none; padding:0; margin:0; }#gen5-events li { display:flex; align-items:baseline; gap:9px; border-top:1px solid #203149; padding:10px 0; font-size:11px; color:#7f96b3; }#gen5-events li>i { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
 .gen5-instructions { border-top:1px solid #24364f; margin-top:26px; padding-top:20px; }.gen5-instructions summary { color:#7b93b3; font-size:12px; cursor:pointer; }.gen5-instructions p { font-size:12px; color:#6c85a4; line-height:2; max-width:1000px; }
 .gen5-projector .gen5-game { max-width:1600px; padding-top:20px; }.gen5-projector #gen5-board { max-height:calc(100dvh - 360px); min-height:180px; object-fit:contain; }

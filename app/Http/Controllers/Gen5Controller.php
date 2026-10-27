@@ -97,4 +97,11 @@ class Gen5Controller extends Controller
 
         return $this->state($request, $game, $match);
     }
+
+    public function generate(Request $request, Gen5Game $game, int $match)
+    {
+        $game->generateTeams($match);
+
+        return $this->state($request, $game, $match);
+    }
 }

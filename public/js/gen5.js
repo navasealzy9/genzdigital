@@ -11,6 +11,14 @@
     let busy = false, stopped = false, mode = 'move', intent = null, hover = null;
     let held = null, pollTimer, rosterKey = '', eventKey = '', displayedRevision = -1;
     const visuals = new Map();
+    const playerTags = new Map();
+    let measureLabels = true;
+    const playerLayer = document.createElement('div');
+    playerLayer.className = 'gen5-player-layer';
+    playerLayer.setAttribute('role', 'list');
+    playerLayer.setAttribute('aria-label', 'Players · Avatars and names');
+    canvas.after(playerLayer);
+    new ResizeObserver(() => { measureLabels = true; }).observe(canvas);
     const message = (text, error = false) => { $('message').textContent = text; $('message').classList.toggle('is-error', error); };
     const serverNow = () => state.server_time + performance.now() - receivedAt;
     const connected = () => performance.now() - lastSuccess < 5000;
@@ -67,7 +75,8 @@
             $('my-team').textContent = state.me ? teamName(state.me.team) : 'មិនទាន់ចូលក្រុម';
             $('my-team').style.color = state.me ? colors[state.me.team] : '';
         }
-        renderRoster(); renderEvents(); renderOverlay();
+        renderRoster(); renderPlayerTags(); renderEvents(); renderOverlay();
+        if ($('team-generator')) $('team-generator').hidden = state.match.status !== 'lobby';
         document.querySelectorAll('[data-control]').forEach(button => {
             const action = button.dataset.control;
             button.hidden = action === 'start' ? state.match.status !== 'lobby' : action === 'finish' ? state.match.status !== 'live' : !['lobby','live'].includes(state.match.status);
@@ -103,7 +112,7 @@
     }
 
     function renderRoster() {
-        const key = state.match.status + state.players.map(p => `${p.id}:${p.team}:${p.name}`).join('|');
+        const key = JSON.stringify([state.match.status, state.players.map(p => [p.id,p.team,p.name,p.avatar])]);
         if (key === rosterKey) return; rosterKey = key;
         [1,2].forEach(team => {
             $(`roster-${team === 1 ? 'one' : 'two'}-title`).textContent = teamName(team);
@@ -112,7 +121,7 @@
             if (!players.length) { const empty = document.createElement('p'); empty.className = 'gen5-roster-empty'; empty.textContent = 'កំពុងរង់ចាំសមាជិក…'; list.append(empty); }
             players.forEach(player => {
                 const row = document.createElement('div'); row.className = 'gen5-player-row';
-                const avatar = document.createElement('span'); avatar.className = `gen5-player-avatar team-${team}`; avatar.textContent = [...player.name][0]?.toUpperCase() || '?';
+                const avatar = makeAvatar(player);
                 const name = document.createElement('span'); name.textContent = player.name + (state.me?.id === player.id ? ' (អ្នក)' : '');
                 row.append(avatar, name);
                 if (config.admin && state.match.status === 'lobby') {
@@ -124,10 +133,51 @@
         });
     }
 
+    function makeAvatar(player) {
+        const avatar = document.createElement('span');
+        avatar.className = `gen5-player-avatar team-${player.team}`;
+        avatar.setAttribute('aria-hidden', 'true');
+        const fallback = document.createElement('span');
+        fallback.textContent = [...player.name][0]?.toUpperCase() || '?';
+        avatar.append(fallback);
+        if (player.avatar) {
+            try {
+                const url = new URL(player.avatar, location.href);
+                if (['http:', 'https:'].includes(url.protocol)) {
+                    const image = document.createElement('img');
+                    image.alt = ''; image.decoding = 'async'; image.referrerPolicy = 'no-referrer';
+                    image.addEventListener('error', () => image.remove(), {once:true});
+                    image.src = url.href; avatar.append(image);
+                }
+            } catch { /* Keep the initials avatar when a profile URL is invalid. */ }
+        }
+        return avatar;
+    }
+
+    function renderPlayerTags() {
+        const ids = new Set(state.players.map(player => player.id));
+        for (const [id, tag] of playerTags) if (!ids.has(id)) { tag.element.remove(); playerTags.delete(id); }
+        state.players.forEach(player => {
+            const signature = JSON.stringify([player.name,player.avatar,player.team,state.me?.id === player.id]);
+            let tag = playerTags.get(player.id);
+            if (tag?.signature === signature) return;
+            if (tag) tag.element.remove();
+            const element = document.createElement('div');
+            element.className = `gen5-player-tag team-${player.team}${state.me?.id === player.id ? ' is-me' : ''}`;
+            element.dataset.playerId = player.id;
+            element.setAttribute('role', 'listitem');
+            element.title = `${player.name} · ${teamName(player.team)}`;
+            const name = document.createElement('span'); name.className = 'gen5-player-name'; name.textContent = player.name;
+            element.append(makeAvatar(player),name); playerLayer.append(element);
+            playerTags.set(player.id,{element,name,signature,nameWidth:0});
+            measureLabels = true;
+        });
+    }
+
     function renderEvents() {
         const key = JSON.stringify(state.events); if (key === eventKey) return; eventKey = key;
         const list = $('events'); list.replaceChildren();
-        const labels = {joined:'បានចូលក្រុម', built:'បានសង់អគារពេញលេញ', attacked:'បានវាយអគារគូប្រកួត', destroyed:'បានបំផ្លាញអគារគូប្រកួត', started:'ការប្រកួតចាប់ផ្ដើម!', finished:'ការប្រកួតបានបញ្ចប់។', cancelled:'ការប្រកួតត្រូវបានលុបចោល។'};
+        const labels = {generated:'Admin បានចែកសិស្សក្នុងថ្នាក់ជាពីរក្រុមរួច។', joined:'បានចូលក្រុម', built:'បានសង់អគារពេញលេញ', attacked:'បានវាយអគារគូប្រកួត', destroyed:'បានបំផ្លាញអគារគូប្រកួត', started:'ការប្រកួតចាប់ផ្ដើម!', finished:'ការប្រកួតបានបញ្ចប់។', cancelled:'ការប្រកួតត្រូវបានលុបចោល។'};
         state.events.slice(0,6).forEach(event => {
             const item = document.createElement('li');
             const dot = document.createElement('i'); dot.style.background = colors[event.team] || '#91a2c3';
@@ -175,6 +225,17 @@
         if (busy) return; busy = true;
         try { update(await request(config.joinUrl, {})); message('បានចូលក្រុមរួច។ រង់ចាំ Admin ចាប់ផ្ដើម។'); }
         catch (error) { message(error.message, true); } finally { busy = false; }
+    });
+    $('generate-teams')?.addEventListener('click', async () => {
+        if (busy || state.match.status !== 'lobby') return;
+        if (state.players.length && !confirm('Generate នឹងចែកសិស្សសកម្មទាំងអស់ក្នុងថ្នាក់ឡើងវិញដោយចៃដន្យ។ បន្ត?')) return;
+        busy = true; $('generate-teams').disabled = true;
+        try {
+            update(await request(config.generateUrl, {}));
+            const one = state.players.filter(p => p.team === 1).length, two = state.players.length - one;
+            message(`បានចែកក្រុមរួច៖ ${teamName(1)} ${one} នាក់ · ${teamName(2)} ${two} នាក់។${one !== two ? ' ចំនួនសិស្សជាលេខសេស ដូច្នេះខុសគ្នាម្នាក់។' : ''}`);
+        } catch (error) { message(error.message, true); }
+        finally { busy = false; $('generate-teams').disabled = false; update(state); }
     });
     document.querySelectorAll('[data-control]').forEach(button => button.addEventListener('click', async () => {
         if (busy) return;
@@ -286,6 +347,10 @@
         const dpr = Math.min(devicePixelRatio || 1,2);
         const width = Math.max(1,Math.round(canvas.clientWidth * dpr)), height = Math.max(1,Math.round(canvas.clientHeight * dpr));
         if(canvas.width !== width || canvas.height !== height) { canvas.width=width; canvas.height=height; }
+        if (measureLabels) {
+            for (const tag of playerTags.values()) tag.nameWidth = tag.name.offsetWidth;
+            measureLabels = false;
+        }
         ctx.setTransform(width/W,0,0,height/H,0,0); ctx.clearRect(0,0,W,H);
         ctx.fillStyle='#101d30'; ctx.fillRect(0,0,W,H);
         if(state) {
@@ -311,8 +376,17 @@
                 ctx.fillStyle='#00000035';ctx.beginPath();ctx.ellipse(x,y+10,12,5,0,0,Math.PI*2);ctx.fill();
                 if(mine) {ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.stroke();}
                 ctx.fillStyle=colors[player.team];ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fill();
-                ctx.strokeStyle='#102334';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#142d30';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText([...player.name][0]?.toUpperCase()||'?',x,y+.5);
-                if(mine){ctx.fillStyle='#f1f7ff';ctx.font='bold 8px system-ui';ctx.fillText('YOU',x,y-23);}
+                ctx.strokeStyle='#102334';ctx.lineWidth=2;ctx.stroke();
+                const tag = playerTags.get(player.id);
+                if (tag) {
+                    const px = x / W * canvas.clientWidth, py = y / H * canvas.clientHeight;
+                    tag.element.style.left = `${x / W * 100}%`; tag.element.style.top = `${y / H * 100}%`;
+                    const half = tag.nameWidth / 2;
+                    const shift = Math.max(half + 5, Math.min(canvas.clientWidth - half - 5, px)) - px;
+                    tag.name.style.setProperty('--name-shift', `${shift}px`);
+                    tag.element.classList.toggle('label-below', py < 50);
+                    tag.element.style.zIndex = mine ? '2' : '1';
+                }
             });
             ctx.textBaseline='alphabetic';
         }

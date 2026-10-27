@@ -42,6 +42,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', LearningAccess::clas
     Route::get('/gen5/{match}', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.show');
     Route::get('/gen5/{match}/screen', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.screen');
     Route::post('/gen5/{match}/control', [Gen5Controller::class, 'control'])->whereNumber('match')->name('gen5.control');
+    Route::post('/gen5/{match}/generate-teams', [Gen5Controller::class, 'generate'])->whereNumber('match')->name('gen5.generate');
     Route::post('/gen5/{match}/players/{player}/team', [Gen5Controller::class, 'assign'])->whereNumber('match')->whereNumber('player')->name('gen5.assign');
     Route::get('/', [LearningAdminController::class, 'index'])->name('index');
     Route::post('/courses', [LearningAdminController::class, 'saveCourse'])->name('courses.store');

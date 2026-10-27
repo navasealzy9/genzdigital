@@ -210,4 +210,74 @@ class Gen5Test extends TestCase
         DB::table('learning_courses')->where('id', $this->course)->update(['status' => 'archived']);
         $this->actingAs($this->two)->getJson('/gen5/'.$this->match.'/state')->assertForbidden();
     }
+
+    public function test_generate_includes_the_entire_active_class_and_evenly_splits_more_than_eighty_students(): void
+    {
+        $extra = User::factory()->count(80)->create(['role' => 'student', 'status' => 'Active']);
+        foreach ($extra as $user) {
+            DB::table('learning_enrollments')->insert(['course_id' => $this->course, 'user_id' => $user->id, 'status' => 'active']);
+        }
+        $inactive = User::factory()->create(['role' => 'student', 'status' => 'Inactive']);
+        $suspended = User::factory()->create(['role' => 'student', 'status' => 'Active']);
+        foreach ([$inactive, $suspended, $this->admin] as $user) {
+            DB::table('learning_enrollments')->insert(['course_id' => $this->course, 'user_id' => $user->id, 'status' => $user->id === $suspended->id ? 'suspended' : 'active']);
+        }
+        $outsider = User::factory()->create(['role' => 'student', 'status' => 'Active']);
+        $this->actingAs($this->admin)->postJson('/admin/gen5/'.$this->match.'/generate-teams')->assertOk()->assertJsonCount(82, 'players');
+        $players = DB::table('gen5_players')->where('match_id', $this->match)->get();
+        $this->assertSame(41, $players->where('team', 1)->count());
+        $this->assertSame(41, $players->where('team', 2)->count());
+        $this->assertSame(82, $players->pluck('user_id')->unique()->count());
+        $this->assertSame(82, $players->map(fn ($p) => $p->x.':'.$p->y)->unique()->count());
+        foreach ([$inactive, $suspended, $this->admin, $outsider] as $user) {
+            $this->assertDatabaseMissing('gen5_players', ['match_id' => $this->match, 'user_id' => $user->id]);
+        }
+        $ids = $players->pluck('id', 'user_id')->sortKeys()->all();
+        $this->postJson('/admin/gen5/'.$this->match.'/generate-teams')->assertOk()->assertJsonCount(82, 'players');
+        $this->assertSame($ids, DB::table('gen5_players')->where('match_id', $this->match)->pluck('id', 'user_id')->sortKeys()->all());
+        $this->assertDatabaseCount('learning_enrollments', 85);
+    }
+
+    public function test_odd_class_sizes_keep_every_student_with_one_person_difference_and_generated_students_can_resume(): void
+    {
+        $third = User::factory()->create(['role' => 'student', 'status' => 'Active']);
+        DB::table('learning_enrollments')->insert(['course_id' => $this->course, 'user_id' => $third->id, 'status' => 'active']);
+        $this->actingAs($this->admin)->postJson('/admin/gen5/'.$this->match.'/generate-teams')->assertOk()->assertJsonCount(3, 'players');
+        $counts = DB::table('gen5_players')->where('match_id', $this->match)->selectRaw('team, COUNT(*) as total')->groupBy('team')->pluck('total', 'team');
+        $this->assertSame(1, abs($counts[1] - $counts[2]));
+        $this->postJson('/admin/gen5/'.$this->match.'/control', ['action' => 'start'])->assertOk();
+        $this->actingAs($third)->postJson('/gen5/'.$this->match.'/join')->assertOk()->assertJsonPath('me.user_id', $third->id);
+        $this->assertDatabaseCount('gen5_players', 3);
+    }
+
+    public function test_only_admin_can_generate_and_running_teams_cannot_be_regenerated(): void
+    {
+        $this->actingAs($this->one)->postJson('/admin/gen5/'.$this->match.'/generate-teams')->assertForbidden();
+        $this->ready();
+        $before = DB::table('gen5_players')->get()->toJson();
+        $this->actingAs($this->admin)->postJson('/admin/gen5/'.$this->match.'/generate-teams')->assertStatus(409);
+        $this->assertSame($before, DB::table('gen5_players')->get()->toJson());
+    }
+
+    public function test_generating_with_too_few_students_does_not_erase_the_existing_lobby(): void
+    {
+        $this->actingAs($this->one)->postJson('/gen5/'.$this->match.'/join')->assertOk();
+        DB::table('learning_enrollments')->where('user_id', $this->two->id)->update(['status' => 'suspended']);
+        $this->actingAs($this->admin)->postJson('/admin/gen5/'.$this->match.'/generate-teams')->assertStatus(422);
+        $this->assertDatabaseCount('gen5_players', 1);
+    }
+
+    public function test_snapshots_share_profile_avatars_and_names_without_private_account_information(): void
+    {
+        $this->one->update(['name' => 'Sok Dara', 'avatar' => 'uploads/avatars/dara.png']);
+        $this->two->update(['avatar' => 'javascript:alert(1)']);
+        $this->ready();
+        $response = $this->actingAs($this->admin)->getJson('/gen5/'.$this->match.'/state')->assertOk()
+            ->assertJsonPath('players.0.name', 'Sok Dara')->assertJsonPath('players.0.avatar', asset('uploads/avatars/dara.png'))
+            ->assertJsonPath('players.1.avatar', null);
+        $this->assertArrayNotHasKey('email', $response->json('players.0'));
+        $this->assertArrayNotHasKey('password', $response->json('players.0'));
+        $this->one->update(['avatar' => 'https://example.test/photo.jpg']);
+        $this->getJson('/gen5/'.$this->match.'/state')->assertJsonPath('players.0.avatar', 'https://example.test/photo.jpg');
+    }
 }
