@@ -1,0 +1,1 @@
+@include('errors.learning', ['status' => 422, 'heading' => 'សូមពិនិត្យលក្ខខណ្ឌមុនបន្ត', 'message' => $exception->getMessage() ?: 'This action cannot be completed. Check the requirements and try again.'])
