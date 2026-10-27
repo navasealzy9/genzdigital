@@ -953,4 +953,110 @@ class AdvancedFeaturesTest extends TestCase
             ob_end_flush();
         }
     }
+
+    /**
+     * Test 25. Exam Visibility Restricted: Student sees ONLY exams for Admin-enrolled classes
+     */
+    public function test_student_sees_only_exams_for_admin_enrolled_class_and_not_other_classes(): void
+    {
+        $uniqueStudentId = 'GZ_EXAM_' . uniqid();
+        $studentUser = \App\Models\User::create([
+            'name' => 'Kosal Vuthy',
+            'email' => 'kosal.exam.' . uniqid() . '@genzdigital.edu',
+            'password' => bcrypt('password'),
+            'student_id' => $uniqueStudentId,
+            'role' => 'student',
+            'status' => 'Active',
+        ]);
+
+        DB::table('campus_students')->insert([
+            'name' => 'Kosal Vuthy',
+            'student_id' => $uniqueStudentId,
+            'email' => $studentUser->email,
+            'major' => 'Digital Tech',
+            'gender' => 'Male',
+            'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+            'attendance_rate' => '95%',
+            'valid_until' => '08/2028',
+            'status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $enrolledClassCode = 'DGT01_' . uniqid();
+        $otherClassCode = 'DGT02_' . uniqid();
+
+        // 1. Admin enrolls this student into DGT01 only
+        DB::table('campus_course_carts')->insert([
+            'student_id' => $uniqueStudentId,
+            'course_code' => $enrolledClassCode,
+            'course_title' => 'Digital AI Class 01',
+            'instructor' => 'Dr. Sok',
+            'credits' => 3,
+            'schedule' => 'Mon 09:00 AM',
+            'status' => 'Enrolled',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 2. Create Exam A for enrolled class
+        $examAId = DB::table('campus_exams')->insertGetId([
+            'title' => 'DGITAI-GEN0 (' . $enrolledClassCode . ')',
+            'course' => $enrolledClassCode,
+            'class_code' => $enrolledClassCode,
+            'exam_date' => date('M d, Y • h:i A'),
+            'room' => 'G9-01',
+            'type' => 'Test exam',
+            'category' => 'Test exam',
+            'status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 3. Create Exam B for another class that student is NOT enrolled in
+        $examBId = DB::table('campus_exams')->insertGetId([
+            'title' => 'DGTAI02 (' . $otherClassCode . ')',
+            'course' => $otherClassCode,
+            'class_code' => $otherClassCode,
+            'exam_date' => date('M d, Y • h:i A'),
+            'room' => 'G7-05',
+            'type' => 'Test exam',
+            'category' => 'Test exam',
+            'status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 4. Student views exam screen: Must see Exam A, must NOT see Exam B
+        $response = $this->actingAs($studentUser)->get('/');
+        $response->assertStatus(200);
+        $response->assertSee('DGITAI-GEN0 (' . $enrolledClassCode . ')');
+        $response->assertDontSee('DGTAI02 (' . $otherClassCode . ')');
+
+        // 5. Student cannot access questions API for unenrolled Exam B (403)
+        $unenrolledQuestions = $this->actingAs($studentUser)->getJson("/api/exams/{$examBId}/questions");
+        $unenrolledQuestions->assertStatus(403);
+        $unenrolledQuestions->assertJson(['success' => false]);
+
+        // 6. Student can access questions API for enrolled Exam A (200)
+        $enrolledQuestions = $this->actingAs($studentUser)->getJson("/api/exams/{$examAId}/questions");
+        $enrolledQuestions->assertStatus(200);
+
+        // 7. Student cannot submit exam for unenrolled Exam B (403)
+        $unenrolledSubmit = $this->actingAs($studentUser)->postJson("/api/exams/{$examBId}/submit", [
+            'answers' => [1 => 'A'],
+        ]);
+        $unenrolledSubmit->assertStatus(403);
+        $unenrolledSubmit->assertJson(['success' => false]);
+
+        // Clean up test records
+        DB::table('campus_exams')->whereIn('id', [$examAId, $examBId])->delete();
+        DB::table('campus_course_carts')->where('student_id', $uniqueStudentId)->delete();
+        DB::table('campus_students')->where('student_id', $uniqueStudentId)->delete();
+        $studentUser->delete();
+
+        while (ob_get_level() > 1) {
+            ob_end_flush();
+        }
+    }
 }

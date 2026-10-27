@@ -2301,7 +2301,8 @@
         @empty
             <div class="col-12 text-center py-5 text-secondary">
                 <i data-lucide="calendar-x" style="width: 48px; height: 48px;" class="mb-2 opacity-50"></i>
-                <p>No exams currently scheduled.</p>
+                <h6 class="fw-bold mb-1">មិនទាន់មានវិញ្ញាសាប្រឡងសម្រាប់ថ្នាក់របស់អ្នកនៅឡើយទេ</h6>
+                <p class="small text-secondary mb-0">ប្រព័ន្ធបង្ហាញតែវិញ្ញាសាប្រឡងសម្រាប់ថ្នាក់ដែល Admin បាន Enroll អ្នកតែប៉ុណ្ណោះ។</p>
             </div>
         @endforelse
     </div>

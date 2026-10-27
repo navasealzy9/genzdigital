@@ -131,7 +131,33 @@ class CampusController extends Controller
             })->toArray();
 
         // 5. Fetch live exams, challenges, resources, certificates, collaborations, books, posts from DB
-        $exams = DB::table('campus_exams')->orderBy('id', 'asc')->get();
+        // IMPORTANT: Show exams ONLY for classes that Admin has enrolled this student into!
+        $enrolledCodes = $enrolledClasses->pluck('course_code')->filter()->unique()->toArray();
+        $examsQuery = DB::table('campus_exams')->orderBy('id', 'asc');
+
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            // Admin can preview all exams
+            $exams = $examsQuery->get();
+        } else {
+            // Students only see exams for their enrolled classes (or campus-wide exams)
+            if (!empty($enrolledCodes)) {
+                $exams = $examsQuery->where(function ($q) use ($enrolledCodes) {
+                    $q->whereIn('class_code', $enrolledCodes)
+                      ->orWhereIn('course', $enrolledCodes);
+
+                    foreach ($enrolledCodes as $cCode) {
+                        $q->orWhere('title', 'LIKE', "%{$cCode}%")
+                          ->orWhere('course', 'LIKE', "%{$cCode}%");
+                    }
+
+                    $q->orWhere('class_code', 'ALL')
+                      ->orWhere('class_code', 'CAMPUS');
+                })->get();
+            } else {
+                // If student has no enrolled classes, show 0 exams
+                $exams = collect();
+            }
+        }
         $challenges = DB::table('campus_challenges')->where('status', 'Active')->orderBy('id', 'desc')->get();
         $resources = DB::table('campus_resources')->orderBy('id', 'desc')->get();
         $certificates = DB::table('campus_certificates')->where('recipient', $student['name'])->orderBy('id', 'desc')->get();
@@ -1235,6 +1261,29 @@ class CampusController extends Controller
             $user = \Illuminate\Support\Facades\Auth::user();
             $studentRecord = DB::table('campus_students')->where('email', $user->email)->first();
             $studentId = $user->student_id ?: ($studentRecord ? $studentRecord->student_id : 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT));
+
+            // Verify class enrollment: Student cannot access an exam belonging to another class
+            if ($user->role === 'student') {
+                $examClass = $exam->class_code ?: $exam->course;
+                if ($examClass && !in_array(strtoupper($examClass), ['ALL', 'CAMPUS'])) {
+                    $isEnrolledInClass = DB::table('campus_course_carts')
+                        ->where('student_id', $studentId)
+                        ->where('status', 'Enrolled')
+                        ->where(function ($q) use ($examClass, $exam) {
+                            $q->where('course_code', $examClass)
+                              ->orWhere('course_code', $exam->course)
+                              ->orWhere('course_title', 'LIKE', "%{$examClass}%");
+                        })
+                        ->exists();
+
+                    if (!$isEnrolledInClass) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "⚠️ វិញ្ញាសានេះសម្រាប់តែសិស្សក្នុងថ្នាក់ [{$examClass}] តែប៉ុណ្ណោះ! អ្នកមិនត្រូវបានអនុញ្ញាតឱ្យប្រឡងថ្នាក់នេះឡើយ។",
+                        ], 403);
+                    }
+                }
+            }
         }
 
         $existingSub = DB::table('campus_exam_submissions')
@@ -1370,6 +1419,29 @@ class CampusController extends Controller
             $studentId = $user->student_id ?: ($studentRecord ? $studentRecord->student_id : 'GZ' . str_pad($user->id, 6, '0', STR_PAD_LEFT));
             $studentName = $user->name;
             $studentAvatar = $user->avatar ?: ($studentRecord ? $studentRecord->avatar : $studentAvatar);
+
+            // Verify class enrollment: Student cannot submit exam for another class
+            if ($user->role === 'student') {
+                $examClass = $exam->class_code ?: $exam->course;
+                if ($examClass && !in_array(strtoupper($examClass), ['ALL', 'CAMPUS'])) {
+                    $isEnrolledInClass = DB::table('campus_course_carts')
+                        ->where('student_id', $studentId)
+                        ->where('status', 'Enrolled')
+                        ->where(function ($q) use ($examClass, $exam) {
+                            $q->where('course_code', $examClass)
+                              ->orWhere('course_code', $exam->course)
+                              ->orWhere('course_title', 'LIKE', "%{$examClass}%");
+                        })
+                        ->exists();
+
+                    if (!$isEnrolledInClass) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "⚠️ វិញ្ញាសានេះសម្រាប់តែសិស្សក្នុងថ្នាក់ [{$examClass}] តែប៉ុណ្ណោះ! អ្នកមិនត្រូវបានអនុញ្ញាតឱ្យបញ្ជូនចម្លើយថ្នាក់នេះឡើយ។",
+                        ], 403);
+                    }
+                }
+            }
         }
 
         // Check if student has already submitted this exam
