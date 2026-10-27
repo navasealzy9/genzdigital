@@ -1,6 +1,7 @@
 @extends('learning.layout')
 @section('title', 'My learning')
 @section('content')
+<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-color:#c8d7f8;background:#edf3ff"><div><strong>GEN5 · ប្រកួតសង់ទីក្រុង</strong><p class="hint" style="margin:5px 0 0">ចូលក្រុម សង់អគារ និងឆ្លងព្រំដែនទៅប្រកួតជាមួយក្រុមម្ខាងទៀត។</p></div><a class="button" href="{{ route('gen5.index') }}">ចូល GEN5 →</a></div>
 <div class="hero"><span class="eyebrow">LEARN AT YOUR OWN PACE</span><h1>បន្តការសិក្សារបស់អ្នក</h1><p>Explore your courses, study each lesson, practice with assignments, and check your understanding with quizzes.</p></div>
 @php($active = $courses->filter(fn($c) => isset($enrollments[$c->id]) && $enrollments[$c->id]->status === 'active'))
 <div class="stats"><div class="stat"><strong>{{ $active->count() }}</strong><span>វគ្គដែលកំពុងរៀន / Enrolled courses</span></div><div class="stat"><strong>{{ $active->filter(fn($c) => $c->progress['eligible'])->count() }}</strong><span>វគ្គបានបញ្ចប់ / Completed courses</span></div><div class="stat"><strong>{{ $active->sum(fn($c) => $c->progress['completed_lessons']) }}</strong><span>មេរៀនបានបញ្ចប់ / Lessons completed</span></div></div>

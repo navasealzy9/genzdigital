@@ -39,6 +39,21 @@ Open `/` using an active student account.
 - Start or resume timed quizzes. Selecting an answer saves it to the server; the UI reports save failures. Leaving the page does not pause the server deadline. Late requests cannot add answers: expired attempts are graded from answers saved before expiry. A quiz can have opening/closing dates and a maximum attempt count.
 - View only personal submissions, feedback, results, progress, and certificates. Certificate printing supports the browser's Save as PDF option.
 
+## GEN5 — live two-team city building
+
+Open **GEN5** in the administrator sidebar to create a match for a class (course). Set a title, two team names, and a countdown of 1–60 minutes. Only one lobby/running match is allowed per class. Students find GEN5 in their navigation or dashboard and can only enter matches for classes where they have active enrollment. GEN5 can be opened for a draft course independently of publishing learning content; archived classes are unavailable.
+
+1. Students join the lobby and are automatically assigned to the smaller team. Up to 40 players can join each team. Administrators can adjust teams in the lobby. At least one active enrolled student on each team is required to start.
+2. Click **Full screen** to open the projector in a new tab. The projector displays both territories, player movement, building counts, the countdown, and the final result. Use its Full screen button to request browser fullscreen. Start, finish early, or cancel from the main administration match tab.
+3. Start the match when everyone is ready. Teams and new-player entry lock after start; existing players can refresh or reconnect to resume.
+4. Students move with arrows/WASD, the on-screen directional pad, or by tapping the board. Select Move, Build, or Attack and tap a target: the character walks into range before performing one construction/attack action. **B** builds on the current tile; **X** attacks an adjacent enemy building. Touch buttons provide the same actions.
+5. Build only in your own half. Three construction actions create a complete three-floor building, worth **one point**. Each attack removes one floor from an enemy building; damaged buildings stop scoring until repaired, and zero-floor buildings disappear. Players can freely cross the border but must be on or next to a target tile to build or attack.
+6. At the server deadline, count complete buildings still standing. The team with more buildings wins; equal counts produce a draw. Final results are saved and cannot be changed by late actions. Cancelling does not declare a winner. Game results do not alter academic grades, lesson progress, or certificates.
+
+All actions are authorized and serialized on a database match lock. The server enforces one-tile movement, territory, range, 220 ms movement cooldown, and 900 ms shared construction/attack cooldown; clients cannot submit their own scores, team identity, positions, or time extensions. The interface synchronizes through authenticated polling every **900 ms** in visible tabs (2.5 seconds in background tabs), with immediate state responses after actions and interpolation for movement. A WebSocket service or Node build is not required. Connection loss stops automatic movement; reopening reconnects to persisted state.
+
+The existing Laravel scheduler also runs `php artisan gen5:finish-expired` every minute. State polling and incoming actions finalize expired matches immediately on access, so deadline enforcement does not depend on the scheduler. Match state, teams, recent events, and results are stored in the new `gen5_matches` and `gen5_players` tables without changing existing learning data.
+
 ## Existing installation and data
 
 The `2026_10_27_000001_create_learning_platform` migration adds independent `learning_*` tables. It does **not** delete or reset the `users` or `campus_*` tables.

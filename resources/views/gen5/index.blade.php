@@ -1,0 +1,20 @@
+@extends($admin ? 'learning.admin-layout' : 'learning.layout')
+@section('title', 'GEN5 · Team battle')
+@section('styles')
+@parent
+<link rel="stylesheet" href="{{ asset('css/gen5.css') }}?v={{ filemtime(public_path('css/gen5.css')) }}">
+@endsection
+@section('content')
+<div class="gen5-intro"><div><span class="eyebrow">BUILD TOGETHER. BATTLE TOGETHER.</span><h1>GEN<span>5</span> <small>សមរភូមិសង់ទីក្រុង</small></h1><p>ក្រុមពីរ ទឹកដីពីរ និងពេលវេលាតែមួយ។ សង់ការពារទីក្រុងរបស់អ្នក ហើយឆ្លងព្រំដែនទៅវាយអគារគូប្រកួត។</p></div><span class="gen5-intro-art" aria-hidden="true">▂▅▇<b>VS</b>▇▅▂</span></div>
+@if($admin)
+<details class="gen5-create" @if($errors->any() || $matches->isEmpty()) open @endif><summary>＋ បង្កើតការប្រកួត GEN5 ថ្មី</summary><form action="{{ route('admin.gen5.store') }}" method="post">@csrf
+<div class="form-grid"><label class="field">ថ្នាក់ / Course<select name="course_id" required><option value="">ជ្រើសរើសថ្នាក់</option>@foreach($courses as $course)<option value="{{ $course->id }}" @selected((string)old('course_id', request('course_id')) === (string)$course->id)>{{ $course->code }} · {{ $course->title }}</option>@endforeach</select></label><label class="field">ឈ្មោះការប្រកួត<input name="title" required maxlength="160" value="{{ old('title', 'GEN5 · City builders') }}"></label><label class="field">ក្រុមទី 1<input name="team_one" required maxlength="60" value="{{ old('team_one', 'Emerald') }}"></label><label class="field">ក្រុមទី 2<input name="team_two" required maxlength="60" value="{{ old('team_two', 'Coral') }}"></label><label class="field">រយៈពេលប្រកួត (នាទី)<input name="duration_minutes" type="number" min="1" max="60" required value="{{ old('duration_minutes', 5) }}"></label></div><p class="hint">សិស្សក្នុងថ្នាក់អាចចូល Lobby មុនចាប់ផ្ដើម។ ប្រព័ន្ធចែកក្រុមស្វ័យប្រវត្តិ ហើយ Admin អាចប្ដូរក្រុមមុន Start។</p><button>បង្កើត Lobby →</button></form></details>
+@endif
+<div class="gen5-list-heading"><h2>{{ $admin ? 'ការប្រកួតតាមថ្នាក់' : 'GEN5 សម្រាប់ថ្នាក់របស់ខ្ញុំ' }}</h2><span>{{ $matches->total() }} matches</span></div>
+<div class="gen5-match-grid">@forelse($matches as $match)<article class="gen5-match-card"><div class="gen5-match-top"><span class="gen5-match-code">{{ $match->course_code }}</span><span class="gen5-match-status {{ $match->status }}">{{ ['lobby'=>'រង់ចាំសិស្ស', 'live'=>'កំពុងប្រកួត', 'finished'=>'បានបញ្ចប់', 'cancelled'=>'បានលុបចោល'][$match->status] }}</span></div><h3>{{ $match->title }}</h3><p class="gen5-match-course">{{ $match->course_title }}</p><div class="gen5-match-teams"><span>{{ $match->team_one }}</span><b>VS</b><span>{{ $match->team_two }}</span></div><div class="gen5-match-meta"><span>◷ {{ $match->duration_minutes }} នាទី</span><span>♙ {{ $match->player_count }} អ្នកលេង</span></div>
+@if($match->status === 'finished')<p class="gen5-match-result">{{ $match->score_one }} : {{ $match->score_two }} · {{ $match->winner === 0 ? 'ស្មើគ្នា' : (($match->winner === 1 ? $match->team_one : $match->team_two).' ឈ្នះ') }}</p>@endif
+<div class="gen5-match-actions"><a class="button" href="{{ route($admin ? 'admin.gen5.show' : 'gen5.show', $match->id) }}">{{ $admin ? 'គ្រប់គ្រងការប្រកួត' : ($match->status === 'lobby' ? 'ចូល Lobby' : 'បើកការប្រកួត') }} →</a>@if($admin)<a class="button subtle" href="{{ route('admin.gen5.screen', $match->id) }}" target="_blank" rel="noopener">⛶ Full screen ↗</a>@endif</div></article>
+@empty<div class="empty full"><h3>មិនទាន់មានការប្រកួត GEN5</h3><p>{{ $admin ? 'បង្កើត Lobby សម្រាប់ថ្នាក់មួយ ដើម្បីឱ្យសិស្សចូលក្រុម។' : 'នៅពេល Admin បើក GEN5 សម្រាប់ថ្នាក់ដែលអ្នកបានចុះឈ្មោះ វានឹងបង្ហាញនៅទីនេះ។' }}</p></div>@endforelse</div>
+@include('learning.partials.admin-pagination', ['paginator' => $matches, 'label' => 'GEN5 matches'])
+<section class="gen5-rule-strip"><div><b>01</b><strong>សង់នៅទឹកដីខ្លួន</strong><span>សង់ 3 ជាន់ = អគារ 1 = ពិន្ទុ 1</span></div><div><b>02</b><strong>ឆ្លងព្រំដែនវាយប្រហារ</strong><span>វាយមួយដង ដកមួយជាន់</span></div><div><b>03</b><strong>ការពាររហូតដល់ចប់ម៉ោង</strong><span>អគារពេញលេញនៅសល់ច្រើនជាងគេឈ្នះ</span></div></section>
+@endsection

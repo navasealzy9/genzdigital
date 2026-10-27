@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\Gen5Game;
 use App\Services\QuizGrader;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -17,6 +18,12 @@ Artisan::command('learning:expire-attempts', function () {
 })->purpose('Finalize expired learning assessments');
 
 Schedule::command('learning:expire-attempts')->everyMinute()->withoutOverlapping();
+
+Artisan::command('gen5:finish-expired', function () {
+    app(Gen5Game::class)->expire();
+    $this->info('GEN5 expired matches finalized.');
+})->purpose('Finalize GEN5 matches at their server deadline');
+Schedule::command('gen5:finish-expired')->everyMinute()->withoutOverlapping();
 
 Artisan::command('learning:status', function () {
     $this->table(['Record type', 'Count'], [

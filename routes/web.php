@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Gen5Controller;
 use App\Http\Controllers\LearningAdminController;
 use App\Http\Controllers\LearningController;
 use App\Http\Middleware\LearningAccess;
@@ -17,8 +18,13 @@ Route::middleware(['auth', LearningAccess::class])->group(function () {
     Route::get('/', [LearningController::class, 'index'])->name('campus.index');
     Route::get('/lessons/{lesson}/material', [LearningController::class, 'material'])->name('learning.material');
     Route::get('/submissions/{submission}/attachment', [LearningController::class, 'attachment'])->name('learning.attachment');
+    Route::get('/gen5/{match}/state', [Gen5Controller::class, 'state'])->whereNumber('match')->name('gen5.state');
 });
 Route::middleware(['auth', LearningAccess::class.':student'])->group(function () {
+    Route::get('/gen5', [Gen5Controller::class, 'index'])->name('gen5.index');
+    Route::get('/gen5/{match}', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.show');
+    Route::post('/gen5/{match}/join', [Gen5Controller::class, 'join'])->middleware('throttle:20,1')->whereNumber('match')->name('gen5.join');
+    Route::post('/gen5/{match}/action', [Gen5Controller::class, 'action'])->middleware('throttle:360,1')->whereNumber('match')->name('gen5.action');
     Route::get('/courses/{course}', [LearningController::class, 'show'])->name('learning.course');
     Route::post('/courses/{course}/enroll', [LearningController::class, 'enroll'])->name('learning.enroll');
     Route::get('/lessons/{lesson}', [LearningController::class, 'lesson'])->name('learning.lesson');
@@ -31,6 +37,12 @@ Route::middleware(['auth', LearningAccess::class.':student'])->group(function ()
     Route::get('/courses/{course}/certificate', [LearningController::class, 'certificate'])->name('learning.certificate');
 });
 Route::prefix('admin')->name('admin.')->middleware(['auth', LearningAccess::class.':admin'])->group(function () {
+    Route::get('/gen5', [Gen5Controller::class, 'index'])->name('gen5.index');
+    Route::post('/gen5', [Gen5Controller::class, 'store'])->name('gen5.store');
+    Route::get('/gen5/{match}', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.show');
+    Route::get('/gen5/{match}/screen', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.screen');
+    Route::post('/gen5/{match}/control', [Gen5Controller::class, 'control'])->whereNumber('match')->name('gen5.control');
+    Route::post('/gen5/{match}/players/{player}/team', [Gen5Controller::class, 'assign'])->whereNumber('match')->whereNumber('player')->name('gen5.assign');
     Route::get('/', [LearningAdminController::class, 'index'])->name('index');
     Route::post('/courses', [LearningAdminController::class, 'saveCourse'])->name('courses.store');
     Route::get('/courses/{course}', [LearningAdminController::class, 'show'])->name('courses.show');

@@ -14,6 +14,7 @@
     @hasSection('sidebar')<div class="workspace-topbar-label"><span class="workspace-dot"></span>E-Learning <span>/</span> Admin workspace</div>@endif
     <nav aria-label="Main navigation">
     @auth
+        @if(auth()->user()->role === 'student')<a href="{{ route('gen5.index') }}">GEN5 🎮</a>@endif
         <a href="{{ route(auth()->user()->role === 'admin' ? 'admin.index' : 'campus.index') }}">{{ auth()->user()->role === 'admin' ? 'គ្រប់គ្រង / Admin' : 'ការសិក្សារបស់ខ្ញុំ / My learning' }}</a>
         <span class="user-name">{{ auth()->user()->name }}</span>
         <form method="post" action="{{ route('logout') }}">@csrf<button class="button subtle">ចាកចេញ</button></form>

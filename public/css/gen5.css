@@ -1,0 +1,87 @@
+/* GEN5 listings live inside the learning platform. The arena is an independent stage. */
+.gen5-intro { display:flex; align-items:center; justify-content:space-between; gap:24px; background:linear-gradient(120deg,#152940,#193e48); border-radius:18px; padding:32px; color:#f2f8ff; margin-bottom:26px; overflow:hidden; }
+.gen5-intro .eyebrow { color:#91c6bf; font-size:10px; }
+.gen5-intro h1 { font:800 42px/1.3 system-ui,sans-serif; letter-spacing:-2px; margin:12px 0; }
+.gen5-intro h1>span { color:#68e9bc; }.gen5-intro h1 small { font:500 19px/1.8 'Khmer OS',system-ui,sans-serif; letter-spacing:0; color:#d4e8ec; margin-left:12px; }
+.gen5-intro p { color:#a7c4d0; font-size:13px; max-width:690px; margin:0; }
+.gen5-intro-art { display:flex; align-items:center; gap:16px; color:#5de2b6; font-size:42px; white-space:nowrap; }
+.gen5-intro-art b { color:#91a8b8; font-size:12px; }.gen5-intro-art::first-letter { color:#ff987e; }
+.gen5-create { padding:22px; margin-bottom:28px; }.gen5-create summary { color:#486784; }
+.gen5-list-heading { display:flex; align-items:center; justify-content:space-between; margin:28px 0 18px; gap:16px; }
+.gen5-list-heading h2 { font-size:20px; margin:0; }.gen5-list-heading>span { color:#8593a5; font-size:12px; }
+.gen5-match-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.gen5-match-card { min-width:0; padding:24px; border:1px solid #e1e8ef; border-radius:15px; background:#fff; }
+.gen5-match-top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.gen5-match-code { font-size:10px; letter-spacing:1px; color:#8a99ac; font-weight:700; }
+.gen5-match-status { background:#f0f3f9; color:#8190a7; border-radius:6px; padding:4px 9px; font-size:11px; }
+.gen5-match-status.live { background:#e1f7ef; color:#299d75; }.gen5-match-status.lobby { background:#fff3db; color:#b78c3d; }
+.gen5-match-card h3 { font-size:19px; margin:20px 0 4px; }.gen5-match-course { font-size:12px; color:#93a0b2; margin:0 0 20px; }
+.gen5-match-teams { display:grid; grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr); gap:6px; align-items:center; padding:15px; border-radius:10px; background:linear-gradient(90deg,#effaf6,#fff4ef); }
+.gen5-match-teams span { font-size:14px; color:#358b74; overflow-wrap:anywhere; }.gen5-match-teams span:last-child { color:#c47b69; text-align:right; }.gen5-match-teams b { font-size:10px; color:#a0a6aa; text-align:center; }
+.gen5-match-meta { display:flex; gap:24px; font-size:12px; color:#8d9bb0; margin:18px 0; }
+.gen5-match-actions { display:flex; flex-wrap:wrap; gap:10px; }.gen5-match-actions .button { font-size:12px; }
+.gen5-match-result { font-size:13px; color:#68817c; padding:10px 0; }
+.gen5-rule-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; margin-top:30px; padding:24px; border:1px solid #e1e8ef; border-radius:14px; background:#fff; }
+.gen5-rule-strip b { display:block; color:#82adac; font:700 12px system-ui; margin-bottom:10px; }.gen5-rule-strip strong { display:block; color:#576e87; font-size:13px; }.gen5-rule-strip span { display:block; color:#92a1b3; font-size:12px; margin-top:7px; }
+
+.gen5-arena { --mint:#55e2b0; --coral:#ff896f; margin:0; background:#0b1423; color:#ecf3ff; font:14px/1.7 'Noto Sans Khmer','Khmer OS',system-ui,sans-serif; color-scheme:dark; }
+.gen5-arena * { box-sizing:border-box; }.gen5-arena button,.gen5-arena a { -webkit-tap-highlight-color:transparent; }
+.gen5-arena [hidden] { display:none!important; }
+.gen5-arena button { font:inherit; border:1px solid #30425c; border-radius:8px; padding:9px 15px; background:#1b2b43; color:#dbe8fa; cursor:pointer; transition:background .15s,border-color .15s; }
+.gen5-arena button:hover { background:#273c59; }.gen5-arena button:disabled { opacity:.4; cursor:not-allowed; }.gen5-arena button:focus-visible,.gen5-arena a:focus-visible { outline:3px solid #79cbbf; outline-offset:4px; }
+.gen5-arena a { color:#afc2dc; text-decoration:none; }.gen5-arena a:hover { color:#fff; }
+.gen5-top { min-height:84px; border-bottom:1px solid #263449; display:flex; align-items:center; gap:25px; padding:18px 30px; }
+.gen5-wordmark { font:900 29px/1.1 system-ui,sans-serif; letter-spacing:-1px; color:#f3f8ff!important; flex-shrink:0; }
+.gen5-wordmark>span { color:var(--mint); }.gen5-wordmark small { display:block; font:500 7px system-ui; letter-spacing:1.8px; color:#748ba9; margin-top:6px; }
+.gen5-heading { border-left:1px solid #304057; padding-left:24px; min-width:0; }
+.gen5-heading h1 { font-size:15px; font-weight:600; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gen5-heading>span { display:block; font-size:10px; color:#788eac; margin-top:4px; }
+.gen5-top-actions { display:flex; align-items:center; gap:18px; margin-left:auto; flex-shrink:0; font-size:11px; }
+.gen5-top-actions button { padding:6px 11px; font-size:11px; }.gen5-connection { font-size:10px; color:#75c8a9; }.gen5-connection.is-offline { color:#ffba85; }
+.gen5-game { max-width:1320px; margin:auto; padding:28px 30px 40px; }
+.gen5-scoreboard { display:grid; grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr); gap:20px; align-items:center; margin-bottom:25px; }
+.gen5-team-score { display:flex; align-items:center; gap:16px; border:1px solid #294439; background:linear-gradient(100deg,#142d2b,#132332); padding:18px 22px; border-radius:13px; min-width:0; }
+.gen5-team-mark { width:35px; height:41px; display:grid; place-items:center; border:1px solid #39675b; border-radius:8px; font:700 13px system-ui; color:#7adabb; flex-shrink:0; }
+.gen5-team-score h2 { font-size:17px; margin:0; color:#8ff0c9; overflow-wrap:anywhere; }
+.gen5-team-score>div { min-width:0; }.gen5-team-score>div>span { display:block; font-size:10px; color:#759f94; margin-top:4px; }
+.gen5-team-score>strong { font:700 45px/1.1 system-ui; color:#9df5d3; margin-left:auto; }
+.gen5-team-score.team-two { background:linear-gradient(100deg,#232432,#362a2c); border-color:#503735; text-align:right; }
+.gen5-team-score.team-two>strong { margin:0 auto 0 0; color:#ffb39d; }.team-two .gen5-team-mark { color:#eda48d; border-color:#754d42; }.gen5-team-score.team-two h2 { color:#ffb39d; }.gen5-team-score.team-two>div>span { color:#ae8279; }
+.gen5-clock { text-align:center; }.gen5-clock>span { color:#93a5bf; font-size:9px; letter-spacing:2px; }.gen5-clock>strong { display:block; font:650 39px/1.3 system-ui; letter-spacing:2px; color:#f3f7ff; font-variant-numeric:tabular-nums; }.gen5-clock small { display:block; font-size:10px; color:#758ba9; }
+.gen5-clock>strong.is-urgent { color:#ffac83; }
+.gen5-field-header { display:flex; align-items:center; justify-content:space-between; padding:0 4px 12px; gap:16px; color:#8aa0bb; font-size:11px; }
+.gen5-field-header>span:nth-child(2) { font:500 8px system-ui; letter-spacing:2px; color:#536a88; }
+.gen5-dot { width:6px; height:6px; border-radius:50%; display:inline-block; margin:0 6px; }.gen5-dot.emerald { background:var(--mint); }.gen5-dot.coral { background:var(--coral); }
+.gen5-field { position:relative; border:1px solid #2b3d53; border-radius:14px; overflow:hidden; background:#101d30; box-shadow:0 12px 40px #0002; }
+#gen5-board { display:block; width:100%; aspect-ratio:1040/660; touch-action:none; cursor:crosshair; outline-offset:-4px; }
+.gen5-border-label { position:absolute; top:10px; left:50%; transform:translateX(-50%); font:600 7px system-ui; letter-spacing:2px; color:#6f819b; pointer-events:none; }
+.gen5-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:24px; background:#0e1a2b60; backdrop-filter:blur(2px); }
+.gen5-overlay-card { text-align:center; max-width:520px; border:1px solid #52718560; border-radius:17px; padding:30px 35px; background:#111f32ed; box-shadow:0 20px 70px #0004; }
+.gen5-overlay-card>span { color:#8cbdad; font:600 9px system-ui; letter-spacing:2px; }.gen5-overlay-card h2 { font-size:27px; color:#ecf7f9; margin:15px 0; line-height:1.6; }.gen5-overlay-card p { font-size:13px; line-height:1.9; color:#8ea7c2; margin:0; }.gen5-overlay-card>button { background:#69dbb0; border-color:#69dbb0; color:#15392e; font-size:13px; margin-top:22px; font-weight:650; }
+.gen5-message { min-height:42px; font-size:12px; color:#7b96af; text-align:center; padding:12px; }.gen5-message.is-error { color:#f3b28e; }
+.gen5-admin-controls,.gen5-player-controls { display:flex; align-items:center; gap:22px; background:#121f32; border:1px solid #26364e; border-radius:12px; padding:18px 22px; }
+.gen5-control-label { display:block; font:600 8px system-ui; letter-spacing:1.8px; color:#7287a5; margin-bottom:5px; }
+.gen5-admin-controls p { margin:0; font-size:11px; color:#8ba0bb; }.gen5-admin-buttons { display:flex; align-items:center; gap:10px; margin-left:auto; }
+.gen5-admin-buttons button { font-size:12px; }.gen5-admin-buttons .gen5-start { color:#153b2e; background:#6ce2b5; border-color:#6ce2b5; font-weight:650; }.gen5-stop { color:#ffb997!important; }.gen5-cancel { background:transparent!important; color:#7a8ca7!important; border-color:transparent!important; }
+.gen5-my-team { min-width:125px; }.gen5-my-team>strong { display:block; font-size:15px; line-height:1.5; }.gen5-my-team>span:last-child { display:block; font-size:9px; color:#778eaa; margin-top:3px; }
+.gen5-toolset { display:flex; gap:5px; border:1px solid #2a3c56; padding:4px; border-radius:10px; }
+.gen5-toolset button { font-size:12px; border:0; background:transparent; color:#8ba1bd; padding:9px 15px; }
+.gen5-toolset button.is-selected { background:#2a4359; color:#c6e9e2; }
+.gen5-dpad { display:grid; grid-template-columns:repeat(3,32px); grid-template-rows:repeat(2,29px); gap:4px; margin-left:auto; }
+.gen5-dpad button { padding:0; border-radius:6px; font-size:14px; touch-action:none; }.gen5-dpad .up { grid-column:2; grid-row:1; }.gen5-dpad .left { grid-column:1; grid-row:2; }.gen5-dpad .down { grid-column:2; grid-row:2; }.gen5-dpad .right { grid-column:3; grid-row:2; }
+.gen5-quick-actions { display:flex; gap:8px; }.gen5-quick-actions button { font-size:12px; padding:10px 13px; }.gen5-quick-actions>button:first-child { border-color:#36614e; color:#a1dfc4; }.gen5-quick-actions>button:last-child { border-color:#66463d; color:#ebb49f; }
+.gen5-bottom { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:22px; margin-top:24px; }
+.gen5-roster-panel,.gen5-events-panel { background:#111f31; border:1px solid #23354b; border-radius:12px; padding:22px; min-width:0; }
+.gen5-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; }.gen5-panel-heading h2 { font-size:14px; margin:0; color:#b4c5dc; }.gen5-panel-heading>span { font-size:9px; color:#677f9c; }
+.gen5-rosters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }.gen5-rosters h3 { font-size:12px; margin:0 0 10px; font-weight:500; }.emerald-text { color:#78c9a9; }.coral-text { color:#d89b86; }
+.gen5-player-row { display:flex; align-items:center; gap:8px; padding:6px 0; color:#94a9c2; font-size:11px; }.gen5-player-row>span:nth-child(2) { min-width:0; overflow-wrap:anywhere; }.gen5-player-avatar { width:23px; height:23px; display:grid; place-items:center; flex-shrink:0; border-radius:6px; font:600 10px system-ui; }.gen5-player-avatar.team-1 { color:#87d9ba; background:#264a40; }.gen5-player-avatar.team-2 { color:#e6ac98; background:#523c38; }.gen5-player-row button { margin-left:auto; font-size:12px; padding:2px 8px; }
+.gen5-roster-empty { font-size:11px; color:#5f7894; margin:14px 0; }
+#gen5-events { list-style:none; padding:0; margin:0; }#gen5-events li { display:flex; align-items:baseline; gap:9px; border-top:1px solid #203149; padding:10px 0; font-size:11px; color:#7f96b3; }#gen5-events li>i { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.gen5-instructions { border-top:1px solid #24364f; margin-top:26px; padding-top:20px; }.gen5-instructions summary { color:#7b93b3; font-size:12px; cursor:pointer; }.gen5-instructions p { font-size:12px; color:#6c85a4; line-height:2; max-width:1000px; }
+.gen5-projector .gen5-game { max-width:1600px; padding-top:20px; }.gen5-projector #gen5-board { max-height:calc(100dvh - 360px); min-height:180px; object-fit:contain; }
+.gen5-projector .gen5-bottom,.gen5-projector .gen5-instructions,.gen5-projector .gen5-admin-controls { display:none; }.gen5-projector .gen5-scoreboard { margin-bottom:18px; }.gen5-projector .gen5-team-score>strong { font-size:55px; }
+@media(min-width:1600px) { .gen5-arena .gen5-game { max-width:1480px; }.gen5-projector .gen5-game { max-width:1700px; } }
+@media(max-width:1050px) { .gen5-top { flex-wrap:wrap; gap:18px; padding:16px 22px; }.gen5-top-actions { gap:14px; }.gen5-heading { flex:1; }.gen5-game { padding:24px 22px; }.gen5-player-controls { flex-wrap:wrap; gap:15px; }.gen5-quick-actions { flex:1; }.gen5-dpad { order:2; margin-left:auto; }.gen5-bottom { grid-template-columns:1fr; }.gen5-scoreboard { grid-template-columns:minmax(0,1fr) 135px minmax(0,1fr); gap:14px; }.gen5-team-score { padding:14px; gap:10px; }.gen5-team-score h2 { font-size:14px; }.gen5-team-mark { width:28px; height:34px; font-size:11px; }.gen5-team-score>strong { font-size:34px; }.gen5-clock>strong { font-size:33px; } }
+@media(max-width:760px) { .gen5-intro { padding:24px; }.gen5-intro-art { display:none; }.gen5-intro h1 { font-size:35px; }.gen5-intro h1 small { display:block; margin:7px 0 0; font-size:17px; }.gen5-match-grid { grid-template-columns:1fr; }.gen5-rule-strip { grid-template-columns:1fr; gap:18px; }.gen5-rule-strip>div { border-bottom:1px solid #edf1f5; padding-bottom:15px; }.gen5-rule-strip>div:last-child { border:0; padding:0; }.gen5-top { padding:14px 16px; }.gen5-wordmark { font-size:25px; }.gen5-heading h1 { font-size:13px; }.gen5-top-actions { width:100%; margin:0; justify-content:space-between; gap:10px; }.gen5-top-actions button { font-size:10px; }.gen5-game { padding:20px 14px 30px; }.gen5-scoreboard { grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr); gap:8px; margin-bottom:18px; }.gen5-team-score { flex-wrap:wrap; gap:6px; padding:12px; }.gen5-team-mark { display:none; }.gen5-team-score h2 { font-size:13px; }.gen5-team-score>strong { font-size:30px; }.gen5-team-score.team-two>strong { order:2; }.gen5-team-score.team-two>div { width:100%; }.gen5-team-score>div { width:100%; }.gen5-team-score>strong,.gen5-team-score.team-two>strong { margin:4px 0 0; }.gen5-team-score.team-two { justify-content:flex-end; }.gen5-clock>strong { font-size:27px; letter-spacing:0; }.gen5-clock>span { font-size:7px; letter-spacing:1px; }.gen5-clock small { font-size:8px; }.gen5-field-header { font-size:10px; }.gen5-field-header>span:nth-child(2) { display:none; }.gen5-field { border-radius:10px; }.gen5-border-label { top:7px; font-size:5px; }.gen5-overlay { padding:12px; }.gen5-overlay-card { padding:16px 18px; max-width:350px; }.gen5-overlay-card h2 { font-size:20px; margin:8px 0; }.gen5-overlay-card p { font-size:11px; line-height:1.8; }.gen5-overlay-card>span { font-size:7px; }.gen5-overlay-card>button { font-size:11px; margin-top:12px; padding:7px 12px; }.gen5-message { padding:10px 2px; font-size:11px; min-height:50px; }.gen5-admin-controls { padding:16px; flex-wrap:wrap; gap:15px; }.gen5-admin-buttons { margin:0; width:100%; flex-wrap:wrap; }.gen5-admin-buttons button { font-size:11px; padding:7px 10px; }.gen5-player-controls { padding:14px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px 10px; }.gen5-my-team { min-width:0; }.gen5-toolset { justify-content:space-between; grid-column:1/-1; grid-row:2; }.gen5-toolset button { flex:1; padding:9px 7px; }.gen5-dpad { grid-column:2; grid-row:1; order:0; }.gen5-quick-actions { grid-column:1/-1; }.gen5-quick-actions button { flex:1; }.gen5-roster-panel,.gen5-events-panel { padding:17px; }.gen5-panel-heading { flex-wrap:wrap; gap:7px; }.gen5-rosters { gap:12px; }.gen5-player-row { font-size:10px; }.gen5-projector #gen5-board { min-height:0; max-height:none; }.gen5-projector .gen5-team-score>strong { font-size:30px; } }
+@media(max-width:380px) { .gen5-scoreboard { grid-template-columns:minmax(0,1fr) 85px minmax(0,1fr); }.gen5-team-score { padding:9px; }.gen5-clock>strong { font-size:24px; }.gen5-overlay-card p { font-size:10px; }.gen5-overlay-card h2 { font-size:17px; } }
+@media(prefers-reduced-motion:reduce) { .gen5-arena button { transition:none; } }
