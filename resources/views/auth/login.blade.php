@@ -319,7 +319,7 @@
                         <span class="input-icon-left">
                             <i data-lucide="mail" style="width: 18px; height: 18px;"></i>
                         </span>
-                        <input type="email" name="email" id="input-email" class="custom-input" placeholder="maya.chen@genzdigital.edu" value="{{ old('email', 'maya.chen@genzdigital.edu') }}" required autofocus>
+                        <input type="email" name="email" id="input-email" class="custom-input" placeholder="student@example.com" value="{{ old('email') }}" autocomplete="email" required autofocus>
                     </div>
                 </div>
 
@@ -327,13 +327,13 @@
                 <div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <label class="field-label mb-0" for="input-password">PASSWORD</label>
-                        <span class="field-sublabel">Default: password</span>
+                        <span class="field-sublabel">Your account password</span>
                     </div>
                     <div class="custom-input-group">
                         <span class="input-icon-left">
                             <i data-lucide="lock" style="width: 18px; height: 18px;"></i>
                         </span>
-                        <input type="password" name="password" id="input-password" class="custom-input" placeholder="••••••••" value="password" required>
+                        <input type="password" name="password" id="input-password" class="custom-input" placeholder="••••••••" autocomplete="current-password" required>
                         <button type="button" class="toggle-password-btn" onclick="toggleLoginPassword()" title="Show/Hide Password">
                             <i id="login-pass-icon" data-lucide="eye" style="width: 18px; height: 18px;"></i>
                         </button>
@@ -354,6 +354,7 @@
                     <i data-lucide="log-in" style="width: 20px; height: 20px;"></i>
                     <span>Sign In to Campus</span>
                 </button>
+                <p class="text-center text-secondary small mt-4 mb-0">New student? <a href="{{ route('register') }}" class="fw-semibold text-decoration-none">Create an account</a></p>
             </form>
 
         </div>

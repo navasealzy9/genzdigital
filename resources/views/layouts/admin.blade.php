@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>window.BASE_URL = "{{ url('/') }}";</script>
 
-    <title>Admin Portal - GenZ Digital Campus OS</title>
+    <title>@yield('title', 'Admin Portal') - GenZ Digital Campus OS</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=26.1">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/genz-logo.png') }}?v=26.1">
@@ -312,6 +312,7 @@
             }
         }
     </style>
+    @yield('styles')
 </head>
 <body>
     <!-- Top Admin Navbar -->
@@ -348,9 +349,9 @@
             <!-- Right Controls: Switch to Student Portal, Theme Toggle, Admin User -->
             <div class="d-flex align-items-center gap-2">
                 <!-- SWITCH TO CLIENT SIDE (STUDENT VIEW) -->
-                <a href="{{ route('campus.index') }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1.5 rounded-pill px-3 py-1.5 fw-bold shadow-sm" title="View Client Side / Student Dashboard">
+                <a href="{{ route('admin.gen5.index') }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1.5 rounded-pill px-3 py-1.5 fw-bold shadow-sm" title="GEN5 Live Classroom">
                     <i data-lucide="smartphone" style="width: 16px; height: 16px;"></i>
-                    <span class="d-none d-sm-inline">Switch to Student View</span>
+                    <span class="d-none d-sm-inline">GEN5 · Live Game</span>
                 </a>
 
                 <!-- Dark Mode Toggle Button -->
@@ -368,9 +369,9 @@
                             <span class="fw-bold fs-7 d-block">{{ Auth::user()->name }}</span>
                             <small class="badge bg-danger" style="font-size: 9px;">ADMINISTRATOR</small>
                         </div>
-                        <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger rounded-circle p-1 d-flex align-items-center justify-content-center ms-1" title="Log Out" style="width: 32px; height: 32px;">
+                        <form method="post" action="{{ route('logout') }}" class="m-0">@csrf<button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1 d-flex align-items-center justify-content-center ms-1" title="Log Out" style="width: 32px; height: 32px;">
                             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
-                        </a>
+                        </button></form>
                     @else
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
                             AD
@@ -413,7 +414,9 @@
         </div>
 
         <!-- Main Dynamic Content Area -->
-        <main class="flex-grow-1 p-3 p-md-4" style="min-width: 0;">
+        <main class="flex-grow-1 p-3 p-md-4 learning-workspace" style="min-width: 0;">
+            @include('learning.partials.admin-icons')
+            @if($errors->any())<div class="alert alert-danger" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
                     <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>

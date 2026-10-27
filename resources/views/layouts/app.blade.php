@@ -1198,9 +1198,12 @@
             color: inherit;
         }
     </style>
+    @yield('styles')
 </head>
 <body>
-    <!-- Top Header Removed for Ultra-Clean Minimalist UI -->
+    @hasSection('learning-workspace')
+    <header class="campus-student-header"><a href="{{ route('campus.index') }}"><img src="{{ asset('images/genz-logo.png') }}" alt="GenZ Digital"><span>GenZ Digital<small>Digital Campus & Learning</small></span></a><div>@auth<a href="{{ route('gen5.index') }}">GEN5</a><button type="button" id="campus-theme-toggle" aria-label="Toggle theme"><i data-lucide="moon"></i></button><form method="post" action="{{ route('logout') }}">@csrf<button type="submit">ចាកចេញ</button></form>@else<a href="{{ route('login') }}">Sign in</a>@endauth</div></header>
+    @endif
 
     <!-- Global Floating Toast Notification -->
     <div id="app-toast" class="app-toast">
@@ -1210,13 +1213,20 @@
 
     <!-- Main Responsive Body Content -->
     <main class="app-main-content @auth py-3 py-md-4 @else p-0 guest-app-wrapper @endauth">
-        <div class="@auth container-xl @else w-100 p-0 @endauth">
+        <div class="@auth container-xl @else w-100 p-0 @endauth @hasSection('learning-workspace') learning-workspace @endif">
+            @hasSection('learning-workspace')
+            @if(session('success'))<div class="alert alert-success" role="status">{{ session('success') }}</div>@endif
+            @if($errors->any())<div class="alert alert-danger" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
+            @endif
             @yield('content')
         </div>
     </main>
 
     <!-- Mobile Bottom Navigation Bar (< 768px - Visible only when logged in) -->
     @auth
+    @hasSection('learning-workspace')
+    @include('learning.partials.campus-bottom-nav')
+    @else
     <div class="mobile-bottom-nav d-md-none">
         <div class="d-flex justify-content-around align-items-center">
             <button class="mobile-tab-btn active" data-tab="home" onclick="switchTab('home')">
@@ -1253,6 +1263,7 @@
             </button>
         </div>
     </div>
+    @endif
     @endauth
 
     <!-- Bootstrap 5.3.3 JS Bundle -->

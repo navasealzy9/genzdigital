@@ -608,7 +608,7 @@
                                     <span class="clean-input-icon">
                                         <i data-lucide="lock" style="width: 15px; height: 15px;"></i>
                                     </span>
-                                    <input type="password" name="password" id="reg-pass" placeholder="Min. 6 chars" required>
+                                    <input type="password" name="password" id="reg-pass" placeholder="Min. 8 chars" minlength="8" autocomplete="new-password" required>
                                 </div>
                             </div>
                         </div>

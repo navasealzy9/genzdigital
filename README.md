@@ -1,6 +1,8 @@
 # GenZ Digital — E-Learning
 
-Laravel 12 / PHP 8.2+ learning platform with separate administrator and student workspaces. Uses the configured MySQL or SQLite database. The new responsive interface uses local CSS and works without a Node build or external UI CDN.
+Laravel 12 / PHP 8.2+ learning platform with separate administrator and student workspaces. Uses the configured MySQL or SQLite database. The original Campus OS Login, Admin and Student layouts are retained, including their Bootstrap styling, Google Sans/Khmer fonts, theme controls and mobile navigation. These original layouts load their existing UI libraries/fonts from CDNs. Learning styles are scoped to the content area so they cannot replace the original navigation or headers. GEN5 retains its independent arena.
+
+The generated `public/css/campus-learning.css` and `campus-admin-content.css` files are committed, so deployment does not require Node. When changing the source learning styles, regenerate these scoped styles with `node scripts/build-campus-theme.mjs`; original-shell adjustments live in `public/css/campus-restore.css`.
 
 ## Learning workflow
 
@@ -64,7 +66,7 @@ The `2026_10_27_000001_create_learning_platform` migration adds independent `lea
 - Existing classroom records become **draft courses** for administrator review. Their instructor, code, and title are retained. Add real learning content before publishing.
 - Existing enrolled course-cart rows are imported when their course code and student ID match a course and an existing student account. Rows without matching accounts remain in the legacy tables for review.
 - Old attendance, scores, assignments, exams, resources, certificates, and other classroom data remain in `campus_*` tables. They are **not** used as new learning results or silently treated as completed work. The legacy code contains sample-data fallbacks, so these records need manual review before any future import.
-- The old classroom controllers/views remain in the repository for reference, but their routes are no longer exposed. The active application uses `LearningController`, `LearningAdminController`, and `resources/views/learning`.
+- The old classroom controllers and their sample-data routes remain inactive. The active application uses `LearningController`, `LearningAdminController`, and `resources/views/learning` inside the original `resources/views/layouts/admin.blade.php` and `layouts/app.blade.php` shells. Authentication uses the original `resources/views/auth` designs with blank login credentials and the current password rules.
 - Adding or unpublishing course requirements recalculates current completion eligibility. Previously issued certificate records are retained; students must meet the current requirements to retrieve a certificate through the course page.
 
 For an existing installation:
