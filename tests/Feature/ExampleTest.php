@@ -137,6 +137,14 @@ class ExampleTest extends TestCase
         $avatarUploadResponse->assertStatus(200);
         $avatarUploadResponse->assertJson(['success' => true]);
         $avatarUploadResponse->assertJsonStructure(['success', 'avatar_url', 'message']);
+        $avatarUrl = $avatarUploadResponse->json('avatar_url');
+        if ($avatarUrl) {
+            $parsedPath = parse_url($avatarUrl, PHP_URL_PATH);
+            $localFile = public_path(ltrim($parsedPath, '/'));
+            if (file_exists($localFile)) {
+                @unlink($localFile);
+            }
+        }
 
         // 6. Test Admin Report Export (CSV)
         $csvResponse = $this->get('/admin/reports/export');
