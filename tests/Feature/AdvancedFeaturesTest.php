@@ -103,6 +103,21 @@ class AdvancedFeaturesTest extends TestCase
     public function test_exam_qcm_and_auto_scoring(): void
     {
         $exam = DB::table('campus_exams')->first();
+        if (!$exam) {
+            $examId = DB::table('campus_exams')->insertGetId([
+                'title' => 'Digital Product Design Mid-Term',
+                'course' => 'DES302',
+                'class_code' => 'DES302',
+                'date' => date('Y-m-d'),
+                'start_time' => '09:00 AM',
+                'duration' => '60 Mins',
+                'total_questions' => 20,
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $exam = DB::table('campus_exams')->where('id', $examId)->first();
+        }
         DB::table('campus_exam_submissions')->where('exam_id', $exam->id)->delete();
 
         // 1. Admin adds QCM question
@@ -141,6 +156,18 @@ class AdvancedFeaturesTest extends TestCase
     public function test_challenge_and_fullscreen_leaderboard(): void
     {
         $challenge = DB::table('campus_challenges')->first();
+        if (!$challenge) {
+            $chId = DB::table('campus_challenges')->insertGetId([
+                'title' => 'UI Speed Prototyping',
+                'category' => 'Design Sprint',
+                'points' => 500,
+                'participants_count' => 12,
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $challenge = DB::table('campus_challenges')->where('id', $chId)->first();
+        }
 
         // 1. Visit Fullscreen Leaderboard
         $response = $this->get("/admin/challenges/{$challenge->id}/fullscreen");
@@ -209,6 +236,20 @@ class AdvancedFeaturesTest extends TestCase
     public function test_collaboration_realtime_qcm(): void
     {
         $collab = DB::table('campus_collaborations')->first();
+        if (!$collab) {
+            $collabId = DB::table('campus_collaborations')->insertGetId([
+                'title' => 'UX Team Heuristic Review',
+                'team_name' => 'Team Alpha',
+                'question' => 'Which heuristic applies to visibility of system status?',
+                'options' => json_encode(['A' => 'Aesthetic design', 'B' => 'System feedback', 'C' => 'Error prevention', 'D' => 'Help docs']),
+                'correct_option' => 'B',
+                'points' => 100,
+                'status' => 'Open',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $collab = DB::table('campus_collaborations')->where('id', $collabId)->first();
+        }
         $response = $this->postJson("/api/collaborations/{$collab->id}/answer", [
             'answer' => 'B',
         ]);
@@ -259,8 +300,32 @@ class AdvancedFeaturesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('QR Code & Short Passcode Manager', false);
 
-        // 2. Find an active QR code with short code
+        // 2. Find or create an active QR code with short code for testing
         $qr = DB::table('campus_qr_codes')->where('status', 'Active')->first();
+        if (!$qr || \App\Http\Controllers\CampusController::isQrExpired($qr)) {
+            $qrId = DB::table('campus_qr_codes')->insertGetId([
+                'title' => 'Lab 402 Active QR',
+                'type' => 'Attendance',
+                'class_code' => 'DES302',
+                'session_name' => 'Session 1 (ព្រឹក)',
+                'session_date' => date('Y-m-d'),
+                'code_value' => 'GZ-QR-ACTIVE-TEST-' . uniqid(),
+                'short_code' => '8492',
+                'expires_at' => date('Y-m-d H:i:s', time() + 86400),
+                'scans_count' => 0,
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $qr = DB::table('campus_qr_codes')->where('id', $qrId)->first();
+        } else {
+            DB::table('campus_qr_codes')->where('id', $qr->id)->update([
+                'short_code' => $qr->short_code ?: '8492',
+                'expires_at' => date('Y-m-d H:i:s', time() + 86400),
+                'status' => 'Active',
+            ]);
+            $qr = DB::table('campus_qr_codes')->where('id', $qr->id)->first();
+        }
         $this->assertNotNull($qr);
 
         // Clear prior attendance records for Maya Chen so testing is deterministic
@@ -312,6 +377,9 @@ class AdvancedFeaturesTest extends TestCase
         ]);
         $expiredResponse->assertStatus(422);
         $expiredResponse->assertJson(['success' => false, 'error_code' => 'QR_EXPIRED']);
+
+        // Clean up temporary expired QR so it doesn't affect subsequent tests
+        DB::table('campus_qr_codes')->where('id', $expiredQrId)->delete();
     }
 
     /**
@@ -500,6 +568,18 @@ class AdvancedFeaturesTest extends TestCase
 
         // Find target class (e.g. DGT01 or first class)
         $targetClass = DB::table('campus_classes')->first();
+        if (!$targetClass) {
+            $targetClassId = DB::table('campus_classes')->insertGetId([
+                'code' => 'DES302',
+                'title' => 'UI/UX Design Systems',
+                'prof' => 'Dr. Aris Thorne',
+                'room' => 'Lab 402',
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $targetClass = DB::table('campus_classes')->where('id', $targetClassId)->first();
+        }
 
         // 2. Admin selects checkbox and performs batch enroll
         $batchEnrollResponse = $this->post('/admin/students/batch-assign-class', [
@@ -531,6 +611,23 @@ class AdvancedFeaturesTest extends TestCase
 
         // Clean any attendance for today to test 2-session workflow
         DB::table('campus_attendances')->where('student_id', $uniqueId)->delete();
+
+        // Ensure target class has a valid, active QR code for testing check-in
+        DB::table('campus_qr_codes')->where('class_code', $targetClass->code)->delete();
+        $classQrId = DB::table('campus_qr_codes')->insertGetId([
+            'title' => 'Class Session QR',
+            'type' => 'Attendance',
+            'class_code' => $targetClass->code,
+            'session_name' => 'Session 1 (ព្រឹក)',
+            'session_date' => date('Y-m-d'),
+            'code_value' => 'GZ-QR-CLASS-' . $targetClass->code . '-' . uniqid(),
+            'short_code' => '8492',
+            'expires_at' => date('Y-m-d H:i:s', time() + 86400),
+            'scans_count' => 0,
+            'status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         // 6. Enrolled student scans Session 1 (Morning) -> succeeds 200
         $session1Scan = $this->postJson('/api/attendance/check-in', [
@@ -583,6 +680,9 @@ class AdvancedFeaturesTest extends TestCase
         $adminUsersPageUnassigned = $this->get('/admin?tab=users');
         $pendingReturned = $adminUsersPageUnassigned->viewData('pendingStudents');
         $this->assertTrue($pendingReturned->contains('student_id', $uniqueId));
+
+        // Clean up temporary class QR
+        DB::table('campus_qr_codes')->where('id', $classQrId)->delete();
     }
 
     /**

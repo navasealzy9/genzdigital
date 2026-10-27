@@ -41,6 +41,61 @@ class ExampleTest extends TestCase
         $registerPage->assertSee('Create Your Campus Account');
 
         // 4. Test Student Login as Maya Chen (Enrolled Student): All features unlocked!
+        // Ensure Maya Chen test student user exists with valid credentials
+        \App\Models\User::updateOrCreate(
+            ['email' => 'maya.chen@genzdigital.edu'],
+            [
+                'name' => 'Maya Chen',
+                'password' => bcrypt('password'),
+                'role' => 'student',
+                'student_id' => 'GZ20260482',
+                'major' => 'Visual Communication',
+                'gender' => 'Female',
+                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+                'status' => 'Active',
+            ]
+        );
+        \Illuminate\Support\Facades\DB::table('campus_students')->updateOrInsert(
+            ['email' => 'maya.chen@genzdigital.edu'],
+            [
+                'name' => 'Maya Chen',
+                'student_id' => 'GZ20260482',
+                'email' => 'maya.chen@genzdigital.edu',
+                'major' => 'Visual Communication',
+                'gender' => 'Female',
+                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+                'status' => 'Active',
+                'attendance_rate' => '92%',
+                'valid_until' => '08/2028',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+        if (\Illuminate\Support\Facades\DB::table('campus_course_carts')->where('student_id', 'GZ20260482')->where('status', 'Enrolled')->count() === 0) {
+            \Illuminate\Support\Facades\DB::table('campus_course_carts')->insert([
+                'student_id' => 'GZ20260482',
+                'course_code' => 'DES302',
+                'course_title' => 'UI/UX Design Systems',
+                'instructor' => 'Dr. Aris Thorne',
+                'credits' => 4,
+                'schedule' => 'Mon, Wed 09:00 - 10:30 AM',
+                'status' => 'Enrolled',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Ensure Admin user exists with valid credentials
+        \App\Models\User::updateOrCreate(
+            ['email' => 'admin@genzdigital.edu'],
+            [
+                'name' => 'Admin Instructor',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
+                'status' => 'Active',
+            ]
+        );
+
         $studentLogin = $this->post('/login', [
             'email' => 'maya.chen@genzdigital.edu',
             'password' => 'password',
