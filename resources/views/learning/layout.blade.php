@@ -6,9 +6,12 @@
     <title>@yield('title', 'Learning') · GenZ Digital</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('css/learning.css') }}">
+    @yield('styles')
 </head>
-<body>
+<body class="@yield('body-class')">
+@yield('sidebar')
 <header class="topbar"><a class="brand" href="{{ route('campus.index') }}"><span class="brand-icon">G<span>z</span></span><span>GenZ Digital<small>E-LEARNING PLATFORM</small></span></a>
+    @hasSection('sidebar')<div class="workspace-topbar-label"><span class="workspace-dot"></span>E-Learning <span>/</span> Admin workspace</div>@endif
     <nav aria-label="Main navigation">
     @auth
         <a href="{{ route(auth()->user()->role === 'admin' ? 'admin.index' : 'campus.index') }}">{{ auth()->user()->role === 'admin' ? 'គ្រប់គ្រង / Admin' : 'ការសិក្សារបស់ខ្ញុំ / My learning' }}</a>

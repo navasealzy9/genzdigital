@@ -293,4 +293,32 @@ class LearningPlatformTest extends TestCase
         $this->get('/')->assertOk()->assertSee('New learner');
         $this->get('/admin')->assertForbidden();
     }
+
+    public function test_admin_student_search_status_filter_and_pagination_keep_global_totals(): void
+    {
+        User::factory()->count(14)->create(['role' => 'student', 'status' => 'Active']);
+        $target = User::factory()->create(['role' => 'student', 'name' => 'Unique learner', 'email' => 'unique@example.test', 'status' => 'Inactive']);
+        $this->actingAs($this->user('admin'));
+        $this->get('/admin?section=students')->assertOk()
+            ->assertViewHas('students', fn ($rows) => $rows->count() === 12 && $rows->total() === 15);
+        $this->get('/admin?section=students&student_page=2')->assertOk()
+            ->assertViewHas('students', fn ($rows) => $rows->count() === 3 && $rows->currentPage() === 2);
+        $this->get('/admin?section=students&q=unique&account=Inactive')->assertOk()
+            ->assertSee($target->email)->assertViewHas('studentCount', 15)
+            ->assertViewHas('students', fn ($rows) => $rows->total() === 1);
+        $this->get('/admin?section=students&q=unique&account=Active')->assertOk()
+            ->assertViewHas('students', fn ($rows) => $rows->total() === 0);
+    }
+
+    public function test_admin_course_filters_and_separate_sections_render_correctly(): void
+    {
+        $this->course(['title' => 'Hidden draft', 'status' => 'draft']);
+        $this->course(['title' => 'Public course', 'status' => 'published']);
+        $this->actingAs($this->user('admin'));
+        $this->get('/admin?section=courses&q=Hidden&status=draft')->assertOk()->assertSee('Hidden draft')->assertDontSee('Public course')
+            ->assertViewHas('courses', fn ($rows) => $rows->total() === 1)
+            ->assertViewHas('courseCounts', fn ($counts) => $counts->sum() === 2);
+        $this->get('/admin?section=create')->assertOk()->assertSee('name="code"', false);
+        $this->get('/admin')->assertOk()->assertDontSee('name="password_confirmation"', false);
+    }
 }

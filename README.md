@@ -19,6 +19,8 @@ Lesson completion is student-confirmed; it does not claim verified video watch t
 
 Open `/admin` using an active administrator account.
 
+The sidebar separates Overview, Courses, Students, and Create course. Overview highlights real totals, recent courses, pending assignment reviews, and publishing status. Course and student lists support search and status filters; results are paginated (8 courses or 12 students per page). On phones, the sidebar becomes a compact navigation row and the recent course table becomes a stacked list.
+
 - Create/edit courses; use draft, published, or archived status. Archived courses are hidden from students and retain their history.
 - Add/edit/order lessons and chapters. Unpublish a lesson to remove it from current course requirements. Course material uploads support PDF, TXT, DOC/DOCX, PPT/PPTX, ZIP up to 20 MB.
 - Create student accounts or let students register. Activate/deactivate accounts.

@@ -11,17 +11,48 @@ use Illuminate\Validation\Rule;
 
 class LearningAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $courses = DB::table('learning_courses')->orderByDesc('id')->get();
-        foreach ($courses as $course) {
-            $course->students = DB::table('learning_enrollments')->where('course_id', $course->id)->where('status', 'active')->count();
-            $course->lessons = DB::table('learning_lessons')->where('course_id', $course->id)->count();
+        $filters = $request->validate([
+            'section' => 'nullable|in:overview,courses,students,create',
+            'q' => 'nullable|string|max:100',
+            'status' => 'nullable|in:draft,published,archived',
+            'account' => 'nullable|in:Active,Inactive',
+        ]);
+        $section = $filters['section'] ?? 'overview';
+        $search = trim($filters['q'] ?? '');
+        $courseCounts = DB::table('learning_courses')->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
+        $studentCount = User::where('role', 'student')->count();
+        $activeStudentCount = User::where('role', 'student')->where('status', 'Active')->count();
+        $courses = DB::table('learning_courses')
+            ->select('learning_courses.*')
+            ->selectSub(DB::table('learning_enrollments')->selectRaw('COUNT(*)')->whereColumn('course_id', 'learning_courses.id')->where('status', 'active'), 'students')
+            ->selectSub(DB::table('learning_lessons')->selectRaw('COUNT(*)')->whereColumn('course_id', 'learning_courses.id'), 'lessons');
+        if ($section === 'courses') {
+            if ($search !== '') {
+                $courses->where(fn ($q) => $q->where('title', 'like', '%'.$search.'%')->orWhere('code', 'like', '%'.$search.'%')->orWhere('instructor', 'like', '%'.$search.'%'));
+            }
+            if (! empty($filters['status'])) {
+                $courses->where('status', $filters['status']);
+            }
         }
-        $students = User::where('role', 'student')->orderBy('name')->get();
+        $courses = $courses->orderByDesc('id')->paginate(8, ['*'], 'course_page')->withQueryString();
+        $students = User::where('role', 'student');
+        if ($section === 'students') {
+            if ($search !== '') {
+                $students->where(fn ($q) => $q->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%'));
+            }
+            if (! empty($filters['account'])) {
+                $students->where('status', $filters['account']);
+            }
+        }
+        $students = $students->orderBy('name')->paginate(12, ['*'], 'student_page')->withQueryString();
         $pendingGrades = DB::table('learning_submissions')->whereNull('graded_at')->count();
+        $reviewQueue = DB::table('learning_submissions as s')->join('learning_assignments as a', 'a.id', '=', 's.assignment_id')
+            ->join('learning_courses as c', 'c.id', '=', 'a.course_id')->whereNull('s.graded_at')
+            ->select('c.id', 'c.title')->selectRaw('COUNT(*) as pending')->groupBy('c.id', 'c.title')->orderByDesc('pending')->limit(4)->get();
 
-        return view('learning.admin', compact('courses', 'students', 'pendingGrades'));
+        return view('learning.admin', compact('courses', 'students', 'pendingGrades', 'section', 'search', 'courseCounts', 'studentCount', 'activeStudentCount', 'reviewQueue'));
     }
 
     public function saveCourse(Request $request, ?int $course = null)
@@ -236,7 +267,7 @@ class LearningAdminController extends Controller
         $data = $request->validate(['name' => 'required|string|max:191', 'email' => 'required|email|max:191|unique:users', 'password' => 'required|string|min:8|confirmed']);
         User::create($data + ['role' => 'student', 'status' => 'Active']);
 
-        return back()->with('success', 'Student account created. Assign a course to begin learning.');
+        return redirect()->route('admin.index', ['section' => 'students'])->with('success', 'Student account created. Assign a course to begin learning.');
     }
 
     public function studentStatus(Request $request, int $student)

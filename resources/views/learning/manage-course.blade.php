@@ -1,4 +1,4 @@
-@extends('learning.layout')
+@extends('learning.admin-layout')
 @section('title', $course->title.' · Manage')
 @section('content')
 <a href="{{ route('admin.index') }}">← All courses</a><div class="hero" style="margin-top:18px"><span class="eyebrow">{{ $course->code }} · {{ $course->status }}</span><h1>{{ $course->title }}</h1><p>Add lessons and assessments, enroll your students, then publish the course.</p></div>
