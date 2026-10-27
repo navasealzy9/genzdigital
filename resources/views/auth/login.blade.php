@@ -312,14 +312,14 @@
             <form action="{{ route('login.post') }}" method="POST">
                 @csrf
 
-                <!-- Campus Email -->
+                <!-- Username or Student ID -->
                 <div>
-                    <label class="field-label" for="input-email">CAMPUS EMAIL</label>
+                    <label class="field-label" for="input-login">STUDENT ID / USERNAME</label>
                     <div class="custom-input-group">
                         <span class="input-icon-left">
-                            <i data-lucide="mail" style="width: 18px; height: 18px;"></i>
+                            <i data-lucide="user-round" style="width: 18px; height: 18px;"></i>
                         </span>
-                        <input type="email" name="email" id="input-email" class="custom-input" placeholder="student@example.com" value="{{ old('email') }}" autocomplete="email" required autofocus>
+                        <input type="text" name="login" id="input-login" class="custom-input" placeholder="Student ID or username" value="{{ old('login') }}" autocomplete="username" maxlength="100" required autofocus>
                     </div>
                 </div>
 

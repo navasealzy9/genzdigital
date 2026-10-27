@@ -35,6 +35,10 @@ The sidebar separates Overview, Courses, Students, and Create course. Overview h
 
 Open `/` using an active student account.
 
+Registration and login use **username or Student ID**, not email/Gmail. Register with a username (3–100 letters, digits, dots, underscores or hyphens) and/or a unique Student ID. Usernames are stored in lowercase and both login identifiers are matched case-insensitively. If only an ID is entered it also becomes the username; if no ID is entered, the system generates one. Email is not required or fabricated. Administrators use the same username login form.
+
+The username migration preserves old emails, passwords, roles, and Student IDs. Existing students receive a username based on their ID; accounts without an ID receive one based on their previous email prefix, with a suffix if necessary to avoid conflicts. Look up actual identifiers with `php artisan learning:accounts` or `php artisan learning:accounts --admins`. The administrator student list and course enrollment screens show usernames/IDs. Existing duplicate legacy IDs cannot authenticate ambiguously; those accounts can use their individually unique usernames.
+
 - View published courses and enrolled courses. Courses can require administrator enrollment or allow direct enrollment; suspended enrollment cannot be bypassed by self-enrolling again.
 - Study published lessons and download private materials.
 - Submit text and optional PDF/TXT/DOC/DOCX/ZIP/PNG/JPG attachments up to 20 MB. Ungraded work can be updated before its deadline. Graded work requires reopening by the administrator.
@@ -91,11 +95,11 @@ Configure `APP_URL`, database access, and `APP_TIMEZONE` in `.env`. The default 
 
 ```powershell
 php artisan migrate
-php artisan learning:admin admin@example.com
+php artisan learning:admin admin
 php artisan serve
 ```
 
-`learning:admin` asks for a name and a password of at least 12 characters without displaying the password. It creates a new administrator and refuses to modify an existing account. There is no built-in administrator password. Public registration always creates students with passwords of at least 8 characters.
+`learning:admin` accepts a username, asks for a name and a password of at least 12 characters without displaying the password, and creates an administrator without requiring email. It refuses to modify an existing account. There is no built-in administrator password. Public registration always creates students with passwords of at least 8 characters.
 
 Legacy migrations contain sample classroom records; the new application does not expose those records as learning progress. The legacy `CampusSeeder` is not needed for the learning platform.
 

@@ -554,14 +554,14 @@
                         </div>
                     </div>
 
-                    <!-- Row 2: Campus Email Address -->
+                    <!-- Row 2: Account Username -->
                     <div class="clean-field-group">
-                        <label class="clean-field-label" for="reg-email">CAMPUS EMAIL ADDRESS</label>
+                        <label class="clean-field-label" for="reg-username">USERNAME (OR USE STUDENT ID BELOW)</label>
                         <div class="clean-input-box">
                             <span class="clean-input-icon">
-                                <i data-lucide="mail" style="width: 15px; height: 15px;"></i>
+                                <i data-lucide="user-round" style="width: 15px; height: 15px;"></i>
                             </span>
-                            <input type="email" name="email" id="reg-email" placeholder="student@genzdigital.edu" value="{{ old('email') }}" required>
+                            <input type="text" name="username" id="reg-username" placeholder="e.g. sok.dara" value="{{ old('username') }}" minlength="3" maxlength="100" autocomplete="username" pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{2,99}">
                         </div>
                     </div>
 
@@ -575,7 +575,7 @@
                                         <span class="clean-input-icon">
                                             <i data-lucide="credit-card" style="width: 15px; height: 15px;"></i>
                                         </span>
-                                        <input type="text" name="student_id" id="reg-student-id" placeholder="Auto if blank" value="{{ old('student_id') }}">
+                                        <input type="text" name="student_id" id="reg-student-id" placeholder="Auto if blank" value="{{ old('student_id') }}" minlength="3" maxlength="100" pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{2,99}">
                                     </div>
                                 </div>
                             </div>

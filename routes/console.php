@@ -1,12 +1,14 @@
 <?php
 
 use App\Models\User;
+use App\Services\AccountIdentity;
 use App\Services\Gen5Game;
 use App\Services\QuizGrader;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Validation\ValidationException;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -35,15 +37,15 @@ Artisan::command('learning:status', function () {
     ]);
 })->purpose('Check learning platform data without exposing personal information');
 
-Artisan::command('learning:admin {email}', function () {
-    $email = $this->argument('email');
-    if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $this->error('A valid email is required.');
+Artisan::command('learning:admin {username}', function () {
+    $username = mb_strtolower(trim($this->argument('username')));
+    if (! preg_match('/\A[a-z0-9][a-z0-9_.-]{2,99}\z/', $username)) {
+        $this->error('Use 3–100 letters, digits, dots, underscores or hyphens for the username.');
 
         return 1;
     }
-    if (User::where('email', $email)->exists()) {
-        $this->error('This email already has an account. Existing accounts are not modified by this command.');
+    if (User::whereRaw('LOWER(username) = ?', [$username])->orWhereRaw('LOWER(student_id) = ?', [$username])->exists()) {
+        $this->error('This username or student ID already has an account. Existing accounts are not modified.');
 
         return 1;
     }
@@ -59,8 +61,22 @@ Artisan::command('learning:admin {email}', function () {
 
         return 1;
     }
-    User::create(['name' => $name, 'email' => $email, 'password' => $password, 'role' => 'admin', 'status' => 'Active']);
-    $this->info('Administrator created.');
+    try {
+        app(AccountIdentity::class)->create(['name' => $name, 'username' => $username, 'password' => $password, 'password_confirmation' => $password], 'admin');
+    } catch (ValidationException $exception) {
+        $this->error(implode(' ', $exception->validator->errors()->all()));
+
+        return 1;
+    }
+    $this->info('Administrator created. Sign in with username: '.$username);
 
     return 0;
 })->purpose('Create an administrator interactively without a default password');
+
+Artisan::command('learning:accounts {--admins : Show only administrator accounts}', function () {
+    $query = User::query()->orderBy('id');
+    if ($this->option('admins')) {
+        $query->where('role', 'admin');
+    }
+    $this->table(['Name', 'Username', 'Student ID', 'Role'], $query->get()->map(fn ($user) => [$user->name, $user->username, $user->student_id ?: '—', $user->role])->all());
+})->purpose('Look up account login identifiers without exposing passwords');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\AccountIdentity;
 use App\Services\LearningProgress;
 use App\Services\QuizGrader;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class LearningAdminController extends Controller
         $students = User::where('role', 'student');
         if ($section === 'students') {
             if ($search !== '') {
-                $students->where(fn ($q) => $q->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%'));
+                $students->where(fn ($q) => $q->where('name', 'like', '%'.$search.'%')->orWhere('username', 'like', '%'.$search.'%')->orWhere('student_id', 'like', '%'.$search.'%'));
             }
             if (! empty($filters['account'])) {
                 $students->where('status', $filters['account']);
@@ -93,7 +94,7 @@ class LearningAdminController extends Controller
             $quiz->started = DB::table('learning_attempts')->where('quiz_id', $quiz->id)->exists();
         }
         $students = User::where('role', 'student')->orderBy('name')->get();
-        $enrollments = DB::table('learning_enrollments as e')->join('users as u', 'u.id', '=', 'e.user_id')->where('e.course_id', $course->id)->select('e.*', 'u.name', 'u.email')->get();
+        $enrollments = DB::table('learning_enrollments as e')->join('users as u', 'u.id', '=', 'e.user_id')->where('e.course_id', $course->id)->select('e.*', 'u.name', 'u.username', 'u.student_id')->get();
         foreach ($enrollments as $e) {
             $e->progress = $progress->forStudent($course->id, $e->user_id);
         }
@@ -262,10 +263,9 @@ class LearningAdminController extends Controller
         return back()->with('success', 'Attempt limit increased for all enrolled students.');
     }
 
-    public function saveStudent(Request $request)
+    public function saveStudent(Request $request, AccountIdentity $identity)
     {
-        $data = $request->validate(['name' => 'required|string|max:191', 'email' => 'required|email|max:191|unique:users', 'password' => 'required|string|min:8|confirmed']);
-        User::create($data + ['role' => 'student', 'status' => 'Active']);
+        $identity->create($request->all());
 
         return redirect()->route('admin.index', ['section' => 'students'])->with('success', 'Student account created. Assign a course to begin learning.');
     }
@@ -281,15 +281,15 @@ class LearningAdminController extends Controller
     public function export(int $course, LearningProgress $progress)
     {
         $this->course($course);
-        $rows = DB::table('learning_enrollments as e')->join('users as u', 'u.id', '=', 'e.user_id')->where('course_id', $course)->select('u.id', 'u.name', 'u.email', 'e.status')->get();
+        $rows = DB::table('learning_enrollments as e')->join('users as u', 'u.id', '=', 'e.user_id')->where('course_id', $course)->select('u.id', 'u.name', 'u.username', 'u.student_id', 'e.status')->get();
 
         return response()->streamDownload(function () use ($rows, $progress, $course) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Student', 'Email', 'Enrollment', 'Progress %', 'Lessons completed', 'Assignments passed', 'Quizzes passed', 'Completion requirements met']);
+            fputcsv($file, ['Student', 'Username', 'Student ID', 'Enrollment', 'Progress %', 'Lessons completed', 'Assignments passed', 'Quizzes passed', 'Completion requirements met']);
             foreach ($rows as $row) {
                 $p = $progress->forStudent($course, $row->id);
                 $safe = fn ($v) => preg_match('/^[=+@\-\t\r]/u', $v) ? "'".$v : $v;
-                fputcsv($file, [$safe($row->name), $safe($row->email), $row->status, $p['percentage'], $p['completed_lessons'], $p['passed_assignments'], $p['passed_quizzes'], $p['eligible'] ? 'Yes' : 'No']);
+                fputcsv($file, [$safe($row->name), $safe($row->username ?? ''), $safe($row->student_id ?? ''), $row->status, $p['percentage'], $p['completed_lessons'], $p['passed_assignments'], $p['passed_quizzes'], $p['eligible'] ? 'Yes' : 'No']);
             }
             fclose($file);
         }, 'course-'.$course.'-progress.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

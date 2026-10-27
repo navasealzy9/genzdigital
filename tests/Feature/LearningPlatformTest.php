@@ -56,10 +56,10 @@ class LearningPlatformTest extends TestCase
     public function test_registration_is_student_only_and_passwords_are_hashed(): void
     {
         $this->get('/register')->assertOk();
-        $this->post('/register', ['name' => 'Learner', 'email' => 'learner@example.test', 'password' => 'secure-password', 'password_confirmation' => 'secure-password', 'role' => 'admin'])->assertSessionHasErrors('role');
-        $this->assertDatabaseMissing('users', ['email' => 'learner@example.test']);
-        $this->post('/register', ['name' => 'Learner', 'email' => 'learner@example.test', 'password' => 'secure-password', 'password_confirmation' => 'secure-password'])->assertRedirect('/');
-        $user = User::where('email', 'learner@example.test')->firstOrFail();
+        $this->post('/register', ['name' => 'Learner', 'username' => 'learner', 'password' => 'secure-password', 'password_confirmation' => 'secure-password', 'role' => 'admin'])->assertSessionHasErrors('role');
+        $this->assertDatabaseMissing('users', ['username' => 'learner']);
+        $this->post('/register', ['name' => 'Learner', 'username' => 'learner', 'password' => 'secure-password', 'password_confirmation' => 'secure-password'])->assertRedirect('/');
+        $user = User::where('username', 'learner')->firstOrFail();
         $this->assertSame('student', $user->role);
         $this->assertTrue(password_verify('secure-password', $user->password));
         $this->get('/')->assertOk()->assertDontSee('3.88')->assertDontSee('Maya Chen');
@@ -69,7 +69,7 @@ class LearningPlatformTest extends TestCase
     {
         $user = $this->user();
         $user->update(['status' => 'Inactive']);
-        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertSessionHasErrors('email');
+        $this->post('/login', ['login' => $user->username, 'password' => 'password'])->assertSessionHasErrors('login');
         $this->actingAs($user)->get('/')->assertForbidden();
     }
 
@@ -287,9 +287,9 @@ class LearningPlatformTest extends TestCase
 
     public function test_admin_created_students_can_sign_in_with_their_password(): void
     {
-        $this->actingAs($this->user('admin'))->post('/admin/students', ['name' => 'New learner', 'email' => 'new@example.test', 'password' => 'a-secure-password', 'password_confirmation' => 'a-secure-password'])->assertRedirect();
+        $this->actingAs($this->user('admin'))->post('/admin/students', ['name' => 'New learner', 'username' => 'new.learner', 'password' => 'a-secure-password', 'password_confirmation' => 'a-secure-password'])->assertRedirect();
         $this->post('/logout')->assertRedirect('/login');
-        $this->post('/login', ['email' => 'new@example.test', 'password' => 'a-secure-password'])->assertRedirect('/');
+        $this->post('/login', ['login' => 'new.learner', 'password' => 'a-secure-password'])->assertRedirect('/');
         $this->get('/')->assertOk()->assertSee('New learner');
         $this->get('/admin')->assertForbidden();
     }
@@ -297,14 +297,14 @@ class LearningPlatformTest extends TestCase
     public function test_admin_student_search_status_filter_and_pagination_keep_global_totals(): void
     {
         User::factory()->count(14)->create(['role' => 'student', 'status' => 'Active']);
-        $target = User::factory()->create(['role' => 'student', 'name' => 'Unique learner', 'email' => 'unique@example.test', 'status' => 'Inactive']);
+        $target = User::factory()->create(['role' => 'student', 'name' => 'Unique learner', 'username' => 'unique.learner', 'email' => 'unique@example.test', 'status' => 'Inactive']);
         $this->actingAs($this->user('admin'));
         $this->get('/admin?section=students')->assertOk()
             ->assertViewHas('students', fn ($rows) => $rows->count() === 12 && $rows->total() === 15);
         $this->get('/admin?section=students&student_page=2')->assertOk()
             ->assertViewHas('students', fn ($rows) => $rows->count() === 3 && $rows->currentPage() === 2);
         $this->get('/admin?section=students&q=unique&account=Inactive')->assertOk()
-            ->assertSee($target->email)->assertViewHas('studentCount', 15)
+            ->assertSee($target->username)->assertViewHas('studentCount', 15)
             ->assertViewHas('students', fn ($rows) => $rows->total() === 1);
         $this->get('/admin?section=students&q=unique&account=Active')->assertOk()
             ->assertViewHas('students', fn ($rows) => $rows->total() === 0);
