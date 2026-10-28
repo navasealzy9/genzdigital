@@ -39,6 +39,7 @@ Registration and login use **username or Student ID**, not email/Gmail. Register
 
 The username migration preserves old emails, passwords, roles, and Student IDs. Existing students receive a username based on their ID; accounts without an ID receive one based on their previous email prefix, with a suffix if necessary to avoid conflicts. Look up actual identifiers with `php artisan learning:accounts` or `php artisan learning:accounts --admins`. The administrator student list and course enrollment screens show usernames/IDs. Existing duplicate legacy IDs cannot authenticate ambiguously; those accounts can use their individually unique usernames.
 
+- Edit personal information from **Edit profile** on the student dashboard: Student ID, name, gender, major, and profile photo. Student IDs cannot conflict with another account's username or ID. Username stays unchanged. Photos support JPG/PNG/WebP up to 5 MB and 6000 ? 6000 pixels. Run `php artisan storage:link` on the server to serve uploaded profile photos.
 - View published courses and enrolled courses. Courses can require administrator enrollment or allow direct enrollment; suspended enrollment cannot be bypassed by self-enrolling again.
 - Study published lessons and download private materials.
 - Submit text and optional PDF/TXT/DOC/DOCX/ZIP/PNG/JPG attachments up to 20 MB. Ungraded work can be updated before its deadline. Graded work requires reopening by the administrator.

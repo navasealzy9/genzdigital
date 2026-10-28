@@ -42,6 +42,45 @@ class LearningPlatformTest extends TestCase
         return [$quiz, $question];
     }
 
+    public function test_student_can_update_only_own_profile_and_replace_photo(): void
+    {
+        Storage::fake('public');
+        $student = $this->user();
+        $other = $this->user();
+        $this->get('/profile')->assertRedirect('/login');
+        $this->actingAs($student)->get('/profile')->assertOk()->assertSee('Save profile');
+        $data = ['student_id' => 'MY-2026', 'name' => 'Updated Student', 'gender' => 'Female', 'major' => 'Computer Science', 'role' => 'admin', 'status' => 'Inactive', 'id' => $other->id];
+        $this->put('/profile', $data + ['photo' => UploadedFile::fake()->image('photo.jpg')])->assertRedirect('/profile')->assertSessionHasNoErrors();
+        $student->refresh();
+        $this->assertSame('student', $student->role);
+        $this->assertSame('Active', $student->status);
+        $this->assertSame('MY-2026', $student->student_id);
+        $this->assertSame('Updated Student', $student->name);
+        $this->assertSame('Computer Science', $student->major);
+        $this->assertSame('Female', $student->gender);
+        $this->assertNotSame('Updated Student', $other->fresh()->name);
+        $firstPhoto = 'avatars/'.basename($student->avatar);
+        Storage::disk('public')->assertExists($firstPhoto);
+        $this->put('/profile', $data + ['photo' => UploadedFile::fake()->image('new.png')])->assertSessionHasNoErrors();
+        Storage::disk('public')->assertMissing($firstPhoto);
+        Storage::disk('public')->assertExists('avatars/'.basename($student->fresh()->avatar));
+        $this->actingAs($this->user('admin'))->get('/profile')->assertForbidden();
+    }
+
+    public function test_profile_rejects_identifier_collisions_and_invalid_photos(): void
+    {
+        Storage::fake('public');
+        $student = $this->user();
+        $other = $this->user();
+        $other->update(['student_id' => 'TAKEN-ID']);
+        $data = ['student_id' => 'taken-id', 'name' => 'Changed'];
+        $this->actingAs($student)->put('/profile', $data)->assertSessionHasErrors('student_id');
+        $this->put('/profile', array_replace($data, ['student_id' => strtoupper($other->username)]))->assertSessionHasErrors('student_id');
+        $this->put('/profile', array_replace($data, ['student_id' => 'FREE-ID', 'photo' => UploadedFile::fake()->create('unsafe.svg', 1, 'image/svg+xml')]))->assertSessionHasErrors('photo');
+        $this->assertNotSame('Changed', $student->fresh()->name);
+        $this->assertCount(0, Storage::disk('public')->allFiles());
+    }
+
     public function test_bulk_qcm_creation_is_atomic_and_grading_passes_at_fifty_percent(): void
     {
         $admin = $this->user('admin');

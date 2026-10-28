@@ -21,6 +21,8 @@ Route::middleware(['auth', LearningAccess::class])->group(function () {
     Route::get('/gen5/{match}/state', [Gen5Controller::class, 'state'])->whereNumber('match')->name('gen5.state');
 });
 Route::middleware(['auth', LearningAccess::class.':student'])->group(function () {
+    Route::get('/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('learning.profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('learning.profile.update');
     Route::get('/gen5', [Gen5Controller::class, 'index'])->name('gen5.index');
     Route::get('/gen5/{match}', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.show');
     Route::post('/gen5/{match}/join', [Gen5Controller::class, 'join'])->middleware('throttle:20,1')->whereNumber('match')->name('gen5.join');

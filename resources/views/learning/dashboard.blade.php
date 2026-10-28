@@ -10,6 +10,7 @@
 @endphp
 <section id="student-profile" class="campus-profile">
     <div class="campus-profile-identity"><div class="campus-profile-avatar">@if($user->avatar)<img src="{{ $user->avatar }}" alt="{{ $user->name }}" onerror="this.hidden=true">@endif<span>{{ mb_substr($user->name,0,1) }}</span></div><div><h1>{{ $user->name }}</h1><div class="campus-profile-id">ID · {{ $user->student_id ?: 'GZ-'.$user->id }} <span>● {{ $user->status }}</span></div><a href="#courses">មើលវគ្គសិក្សារបស់ខ្ញុំ →</a></div></div>
+    <a class="button" href="{{ route('learning.profile.edit') }}">Edit profile</a>
     <div class="campus-profile-meta"><div><small>GENDER</small><strong>{{ $user->gender ?: 'Not set' }}</strong></div><div><small>MAJOR</small><strong>{{ $user->major ?: 'Not set' }}</strong></div></div>
 </section>
 <section id="learning-tools" class="campus-tools" aria-label="Learning tools">
