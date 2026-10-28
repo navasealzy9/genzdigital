@@ -14,7 +14,6 @@ class QuizGrader
             if (! $attempt || $attempt->submitted_at) {
                 return;
             }
-            $quiz = DB::table('learning_quizzes')->find($attempt->quiz_id);
             $questions = collect(json_decode($attempt->questions, true));
             // After expiry, grade only answers already saved before the deadline.
             if (now()->gte(Carbon::parse($attempt->expires_at))) {
@@ -25,7 +24,7 @@ class QuizGrader
             $percentage = round($earned * 100 / $attempt->total_points, 2);
             DB::table('learning_attempts')->where('id', $id)->update([
                 'answers' => json_encode($answers), 'earned_points' => $earned, 'percentage' => $percentage,
-                'passed' => $percentage >= $quiz->pass_percentage, 'submitted_at' => now(), 'updated_at' => now(),
+                'passed' => $earned * 100 >= $attempt->total_points * 50, 'submitted_at' => now(), 'updated_at' => now(),
             ]);
         });
     }

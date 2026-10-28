@@ -42,6 +42,37 @@ class LearningPlatformTest extends TestCase
         return [$quiz, $question];
     }
 
+    public function test_bulk_qcm_creation_is_atomic_and_grading_passes_at_fifty_percent(): void
+    {
+        $admin = $this->user('admin');
+        $student = $this->user();
+        $course = $this->course();
+        $question = ['prompt' => 'Choose A', 'options' => ['A' => 'Yes', 'B' => 'No', 'C' => 'Other', 'D' => 'Neither'], 'correct_option' => 'A', 'points' => 1];
+        $data = ['title' => 'Bulk exam', 'duration_minutes' => 30, 'max_attempts' => 2, 'questions' => [$question, $question]];
+        $this->actingAs($admin)->post('/admin/courses/'.$course.'/quizzes', $data)->assertRedirect()->assertSessionHasNoErrors();
+        $quiz = DB::table('learning_quizzes')->where('title', 'Bulk exam')->first();
+        $this->assertSame(50, $quiz->pass_percentage);
+        $this->assertSame(2, DB::table('learning_questions')->where('quiz_id', $quiz->id)->count());
+        $invalid = $question;
+        $invalid['correct_option'] = 'E';
+        $this->post('/admin/courses/'.$course.'/quizzes/'.$quiz->id.'/questions', ['questions' => [$question, $invalid]])->assertSessionHasErrors('questions.1.correct_option');
+        $this->assertSame(2, DB::table('learning_questions')->where('quiz_id', $quiz->id)->count());
+        $this->post('/admin/courses/'.$course.'/quizzes/'.$quiz->id.'/questions', ['questions' => [$question, $question]])->assertSessionHasNoErrors();
+        $this->assertSame(4, DB::table('learning_questions')->where('quiz_id', $quiz->id)->count());
+        DB::table('learning_quizzes')->where('id', $quiz->id)->update(['published' => true]);
+        $this->enroll($student, $course);
+        $this->actingAs($student)->post('/quizzes/'.$quiz->id.'/start')->assertRedirect();
+        $attempt = DB::table('learning_attempts')->where('quiz_id', $quiz->id)->first();
+        $questions = DB::table('learning_questions')->where('quiz_id', $quiz->id)->pluck('id');
+        $this->post('/attempts/'.$attempt->id.'/submit', ['answers' => [$questions[0] => 'A', $questions[1] => 'A']])->assertRedirect();
+        $this->assertDatabaseHas('learning_attempts', ['id' => $attempt->id, 'percentage' => 50, 'passed' => true]);
+        $this->post('/quizzes/'.$quiz->id.'/start');
+        $attempt = DB::table('learning_attempts')->where('quiz_id', $quiz->id)->orderByDesc('id')->first();
+        $this->post('/attempts/'.$attempt->id.'/submit', ['answers' => [$questions[0] => 'A']]);
+        $this->assertDatabaseHas('learning_attempts', ['id' => $attempt->id, 'percentage' => 25, 'passed' => false]);
+        $this->actingAs($admin)->post('/admin/courses/'.$course.'/quizzes/'.$quiz->id.'/questions', ['questions' => [$question, $question]])->assertStatus(422);
+    }
+
     public function test_waiting_list_bulk_enrollment_and_permissions(): void
     {
         $admin = $this->user('admin');
@@ -308,7 +339,7 @@ class LearningPlatformTest extends TestCase
     {
         $course = $this->course();
         $this->actingAs($this->user('admin'));
-        $quizData = ['title' => 'Final assessment', 'duration_minutes' => 20, 'pass_percentage' => 70, 'max_attempts' => 2, 'closes_at' => now()->addDays(2)->format('Y-m-d H:i:s')];
+        $quizData = ['title' => 'Final assessment', 'duration_minutes' => 20, 'pass_percentage' => 50, 'max_attempts' => 2, 'closes_at' => now()->addDays(2)->format('Y-m-d H:i:s')];
         $this->post('/admin/courses/'.$course.'/quizzes', $quizData)->assertRedirect();
         $quiz = DB::table('learning_quizzes')->first();
         $this->post('/admin/courses/'.$course.'/quizzes/'.$quiz->id, $quizData + ['published' => 1])->assertStatus(422);

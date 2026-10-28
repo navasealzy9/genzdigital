@@ -195,17 +195,23 @@ class LearningAdminController extends Controller
         }
         $data = $request->validate([
             'title' => 'required|string|max:255', 'duration_minutes' => 'required|integer|min:1|max:240',
-            'pass_percentage' => 'required|integer|min:1|max:100', 'max_attempts' => 'required|integer|min:1|max:10',
+            'pass_percentage' => 'sometimes|integer|in:50', 'max_attempts' => 'required|integer|min:1|max:10',
             'opens_at' => 'nullable|date', 'closes_at' => ['nullable', 'date', Rule::when($request->filled('opens_at'), 'after:opens_at')], 'published' => 'sometimes|boolean',
         ]);
+        $data['pass_percentage'] = 50;
+        $questions = $request->has('questions') ? $request->validate($this->questionRules())['questions'] : [];
         $data['published'] = $request->boolean('published');
-        DB::transaction(function () use ($data, $course, $quiz) {
+        DB::transaction(function () use ($data, $course, $quiz, $questions) {
             if ($quiz) {
                 DB::table('learning_quizzes')->where('id', $quiz)->lockForUpdate()->first();
                 abort_if(DB::table('learning_attempts')->where('quiz_id', $quiz)->exists(), 422, 'This quiz has started attempts and is locked.');
             }
             abort_if($data['published'] && (! $quiz || ! DB::table('learning_questions')->where('quiz_id', $quiz)->exists()), 422, 'Add questions before publishing the quiz.');
-            $this->save('quizzes', $data, $course, $quiz);
+            $id = $quiz ?: DB::table('learning_quizzes')->insertGetId($data + ['course_id' => $course, 'created_at' => now(), 'updated_at' => now()]);
+            if ($quiz) {
+                $this->save('quizzes', $data, $course, $quiz);
+            }
+            $this->insertQuestions($id, $questions);
         });
 
         return back()->with('success', 'Quiz saved.');
@@ -215,19 +221,32 @@ class LearningAdminController extends Controller
     {
         $this->child('quizzes', $quiz, $course);
         abort_if(DB::table('learning_attempts')->where('quiz_id', $quiz)->exists(), 422, 'Questions are locked after the first attempt.');
-        $data = $request->validate([
-            'prompt' => 'required|string|max:10000', 'options' => 'required|array:A,B,C,D|size:4',
-            'options.*' => 'required|string|max:2000', 'correct_option' => 'required|in:A,B,C,D',
-            'points' => 'required|integer|min:1|max:1000',
-        ]);
-        $data['options'] = json_encode($data['options']);
+        $request->merge(['questions' => $request->input('questions', [$request->only('prompt', 'options', 'correct_option', 'points')])]);
+        $data = $request->validate($this->questionRules());
         DB::transaction(function () use ($quiz, $data) {
             DB::table('learning_quizzes')->where('id', $quiz)->lockForUpdate()->first();
             abort_if(DB::table('learning_attempts')->where('quiz_id', $quiz)->exists(), 422, 'Questions are locked after the first attempt.');
-            DB::table('learning_questions')->insert($data + ['quiz_id' => $quiz, 'created_at' => now(), 'updated_at' => now()]);
+            $this->insertQuestions($quiz, $data['questions']);
         });
+        return back()->with('success', 'Questions added.');
+    }
 
-        return back()->with('success', 'Question added.');
+    private function questionRules(): array
+    {
+        return [
+            'questions' => 'required|array|min:1|max:100',
+            'questions.*.prompt' => 'required|string|max:10000', 'questions.*.options' => 'required|array:A,B,C,D|size:4',
+            'questions.*.options.*' => 'required|string|max:2000', 'questions.*.correct_option' => 'required|in:A,B,C,D',
+            'questions.*.points' => 'required|integer|min:1|max:1000',
+        ];
+    }
+
+    private function insertQuestions(int $quiz, array $questions): void
+    {
+        foreach ($questions as $question) {
+            $question['options'] = json_encode($question['options']);
+            DB::table('learning_questions')->insert($question + ['quiz_id' => $quiz, 'created_at' => now(), 'updated_at' => now()]);
+        }
     }
 
     public function deleteQuestion(int $course, int $quiz, int $question)
