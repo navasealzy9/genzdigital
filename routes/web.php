@@ -58,6 +58,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', LearningAccess::clas
     Route::post('/submissions/{submission}/grade', [LearningAdminController::class, 'grade'])->name('submissions.grade');
     Route::post('/submissions/{submission}/reopen', [LearningAdminController::class, 'reopen'])->name('submissions.reopen');
     Route::post('/courses/{course}/quizzes/{quiz}/attempt-limit', [LearningAdminController::class, 'extendAttempts'])->name('quizzes.extend');
+    Route::post('/waiting-list/enroll', [LearningAdminController::class, 'enrollWaiting'])->name('waiting.enroll');
     Route::post('/students', [LearningAdminController::class, 'saveStudent'])->name('students.store');
     Route::post('/students/{student}/status', [LearningAdminController::class, 'studentStatus'])->name('students.status');
 });

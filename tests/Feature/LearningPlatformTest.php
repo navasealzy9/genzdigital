@@ -42,6 +42,44 @@ class LearningPlatformTest extends TestCase
         return [$quiz, $question];
     }
 
+    public function test_waiting_list_bulk_enrollment_and_permissions(): void
+    {
+        $admin = $this->user('admin');
+        $first = $this->user();
+        $second = $this->user();
+        $existing = $this->user();
+        $course = $this->course();
+        $this->enroll($existing, $course);
+        $this->actingAs($admin)->get('/admin?section=waiting')->assertOk()
+            ->assertViewHas('waitingStudents', fn ($rows) => $rows->contains('id', $first->id) && ! $rows->contains('id', $existing->id));
+        $this->post('/admin/waiting-list/enroll', ['course_id' => $course, 'students' => [$first->id, $second->id]])->assertRedirect('/admin?section=waiting');
+        foreach ([$first, $second] as $student) {
+            $this->assertDatabaseHas('learning_enrollments', ['course_id' => $course, 'user_id' => $student->id, 'status' => 'active']);
+        }
+        $this->get('/admin?section=waiting')->assertViewHas('waitingStudents', fn ($rows) => ! $rows->contains('id', $first->id) && ! $rows->contains('id', $second->id));
+        $this->post('/admin/waiting-list/enroll', ['course_id' => $course, 'students' => [$admin->id]])->assertSessionHasErrors('students.0');
+        $this->post('/admin/waiting-list/enroll', ['course_id' => $course])->assertSessionHasErrors('students');
+        $this->actingAs($first)->post('/admin/waiting-list/enroll', ['course_id' => $course, 'students' => [$second->id]])->assertForbidden();
+    }
+
+    public function test_students_cannot_view_or_submit_other_class_assessments(): void
+    {
+        $student = $this->user();
+        $own = $this->course();
+        $other = $this->course();
+        $this->enroll($student, $own);
+        [$quiz] = $this->quiz($other);
+        $assignment = DB::table('learning_assignments')->insertGetId([
+            'course_id' => $other, 'title' => 'Private class assignment', 'instructions' => 'Private instructions',
+            'max_score' => 100, 'pass_score' => 50, 'published' => true, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->actingAs($student)->get('/courses/'.$other)->assertForbidden();
+        $this->post('/quizzes/'.$quiz.'/start')->assertForbidden();
+        $this->post('/assignments/'.$assignment.'/submit', ['answer' => 'Unauthorized answer'])->assertForbidden();
+        $this->assertDatabaseMissing('learning_attempts', ['quiz_id' => $quiz, 'user_id' => $student->id]);
+        $this->assertDatabaseMissing('learning_submissions', ['assignment_id' => $assignment, 'user_id' => $student->id]);
+    }
+
     public function test_guests_and_students_cannot_access_administration_or_old_unsafe_endpoints(): void
     {
         $this->get('/')->assertRedirect('/login');

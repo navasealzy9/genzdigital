@@ -15,7 +15,7 @@ class LearningAdminController extends Controller
     public function index(Request $request)
     {
         $filters = $request->validate([
-            'section' => 'nullable|in:overview,courses,students,create',
+            'section' => 'nullable|in:overview,courses,students,waiting,create',
             'q' => 'nullable|string|max:100',
             'status' => 'nullable|in:draft,published,archived',
             'account' => 'nullable|in:Active,Inactive',
@@ -53,7 +53,43 @@ class LearningAdminController extends Controller
             ->join('learning_courses as c', 'c.id', '=', 'a.course_id')->whereNull('s.graded_at')
             ->select('c.id', 'c.title')->selectRaw('COUNT(*) as pending')->groupBy('c.id', 'c.title')->orderByDesc('pending')->limit(4)->get();
 
-        return view('learning.admin', compact('courses', 'students', 'pendingGrades', 'section', 'search', 'courseCounts', 'studentCount', 'activeStudentCount', 'reviewQueue'));
+        $waitingStudents = $this->waitingStudents()->orderBy('created_at')->get();
+        $enrollmentCourses = DB::table('learning_courses')->whereIn('status', ['draft', 'published'])->orderBy('title')->get();
+        return view('learning.admin', compact('waitingStudents', 'enrollmentCourses', 'courses', 'students', 'pendingGrades', 'section', 'search', 'courseCounts', 'studentCount', 'activeStudentCount', 'reviewQueue'));
+    }
+
+    private function waitingStudents()
+    {
+        return User::where('role', 'student')->whereNotExists(function ($query) {
+            $query->selectRaw('1')->from('learning_enrollments')->whereColumn('learning_enrollments.user_id', 'users.id');
+        });
+    }
+
+    public function enrollWaiting(Request $request)
+    {
+        $data = $request->validate([
+            'course_id' => ['required', 'integer', Rule::exists('learning_courses', 'id')->whereIn('status', ['draft', 'published'])],
+            'students' => 'required|array|min:1',
+            'students.*' => ['required', 'integer', 'distinct', Rule::exists('users', 'id')->where('role', 'student')],
+        ]);
+        $count = DB::transaction(function () use ($data) {
+            $course = DB::table('learning_courses')->where('id', $data['course_id'])->lockForUpdate()->first();
+            abort_unless($course && in_array($course->status, ['draft', 'published'], true), 422, 'Choose an available class.');
+            $students = User::where('role', 'student')->whereIn('id', $data['students'])->orderBy('id')->lockForUpdate()->get();
+            $count = 0;
+            foreach ($students as $student) {
+                if (DB::table('learning_enrollments')->where('user_id', $student->id)->exists()) {
+                    continue;
+                }
+                DB::table('learning_enrollments')->insert([
+                    'course_id' => $course->id, 'user_id' => $student->id, 'status' => 'active',
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+                $count++;
+            }
+            return $count;
+        });
+        return redirect()->route('admin.index', ['section' => 'waiting'])->with('success', $count.' students enrolled.');
     }
 
     public function saveCourse(Request $request, ?int $course = null)
