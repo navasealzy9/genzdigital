@@ -101,13 +101,11 @@ class LearningAdminController extends Controller
             'title' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:100', Rule::unique('learning_courses', 'code')->ignore($course)],
             'description' => 'nullable|string|max:20000', 'instructor' => 'required|string|max:255',
-            'status' => 'required|in:draft,published,archived', 'self_enrollment' => 'sometimes|boolean',
+            'status' => 'sometimes|in:draft,published,archived', 'self_enrollment' => 'sometimes|boolean',
         ]);
         $data['self_enrollment'] = $request->boolean('self_enrollment');
         $data['updated_at'] = now();
-        if ($data['status'] === 'published') {
-            abort_unless($course && DB::table('learning_lessons')->where('course_id', $course)->where('published', true)->exists(), 422, 'Publish at least one lesson before publishing a course.');
-        }
+        $data['status'] = ($data['status'] ?? 'published') === 'archived' ? 'archived' : 'published';
         if ($course) {
             DB::table('learning_courses')->where('id', $course)->update($data);
         } else {

@@ -188,7 +188,7 @@ class LearningPlatformTest extends TestCase
         $data = ['title' => 'Khmer web course', 'code' => 'KH101', 'instructor' => 'Teacher', 'status' => 'draft'];
         $this->post('/admin/courses', $data)->assertRedirect();
         $course = DB::table('learning_courses')->where('code', 'KH101')->value('id');
-        $this->put('/admin/courses/'.$course, array_replace($data, ['status' => 'published']))->assertStatus(422);
+        $this->put('/admin/courses/'.$course, array_replace($data, ['status' => 'published']))->assertRedirect();
         $this->post('/admin/courses/'.$course.'/lessons', ['title' => 'First lesson', 'section' => 'Chapter 1', 'position' => 1, 'content' => 'Real lesson content', 'published' => 1])->assertRedirect();
         $this->put('/admin/courses/'.$course, array_replace($data, ['status' => 'published', 'self_enrollment' => 1]))->assertRedirect();
         $this->get('/admin/courses/'.$course)->assertOk()->assertSee('First lesson');

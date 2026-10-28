@@ -17,6 +17,38 @@ class AccountIdentityTest extends TestCase
         return $extra + ['name' => 'Sok Dara', 'username' => 'sok.dara', 'password' => 'strong-password', 'password_confirmation' => 'strong-password'];
     }
 
+    public function test_classes_publish_automatically_and_existing_drafts_are_published(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'Active']);
+        $this->actingAs($admin)->post('/admin/courses', ['title' => 'Automatic class', 'code' => 'AUTO', 'instructor' => 'Teacher'])->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertDatabaseHas('learning_courses', ['code' => 'AUTO', 'status' => 'published']);
+        $course = DB::table('learning_courses')->where('code', 'AUTO')->value('id');
+        $this->put('/admin/courses/'.$course, ['title' => 'Automatic class', 'code' => 'AUTO', 'instructor' => 'Teacher', 'status' => 'draft'])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('learning_courses', ['id' => $course, 'status' => 'published']);
+        DB::table('learning_courses')->where('id', $course)->update(['status' => 'draft']);
+        $migration = require database_path('migrations/2026_10_28_100000_publish_existing_draft_classes.php');
+        $migration->up();
+        $this->assertDatabaseHas('learning_courses', ['id' => $course, 'status' => 'published']);
+    }
+
+    public function test_registered_student_can_login_after_admin_waiting_list_enrollment(): void
+    {
+        $this->post('/register', $this->registration(['student_id' => 'FLOW-001']))->assertRedirect('/');
+        $student = User::where('username', 'sok.dara')->firstOrFail();
+        $this->post('/logout');
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'Active']);
+        $course = DB::table('learning_courses')->insertGetId(['title' => 'Enrolled class', 'code' => 'FLOW-CLASS', 'instructor' => 'Teacher', 'status' => 'published', 'self_enrollment' => false, 'created_at' => now(), 'updated_at' => now()]);
+        $this->actingAs($admin)->post('/admin/waiting-list/enroll', ['course_id' => $course, 'students' => [$student->id]])->assertSessionHasNoErrors()->assertRedirect();
+        $this->post('/logout');
+        foreach (['sok.dara', 'FLOW-001'] as $identifier) {
+            $this->post('/login', ['login' => $identifier, 'password' => 'strong-password', 'remember' => 'on'])->assertSessionHasNoErrors()->assertRedirect('/');
+            $this->assertAuthenticatedAs($student);
+            $this->get('/')->assertOk()->assertSee('Enrolled class');
+            $this->get('/courses/'.$course)->assertOk();
+            $this->post('/logout');
+        }
+    }
+
     public function test_register_without_email_and_login_by_username_or_student_id(): void
     {
         $this->post('/register', $this->registration(['username' => 'Sok.Dara', 'student_id' => 'GZ2026999']))->assertRedirect('/');

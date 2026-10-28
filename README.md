@@ -6,10 +6,10 @@ The generated `public/css/campus-learning.css` and `campus-admin-content.css` fi
 
 ## Learning workflow
 
-1. Administrator creates a **draft course** with a code, description, and instructor.
+1. Administrator creates an **automatically published course** with a code, description, and instructor.
 2. Add lessons grouped into chapters, plain-text lesson content, optional HTTPS video links, and private downloadable materials. Publish the lessons that are ready.
 3. Optionally add assignments and quizzes. Set passing scores, deadlines, time limits, and attempt limits. Add actual multiple-choice questions before publishing a quiz.
-4. Publish the course after at least one lesson is published.
+4. Classes are published automatically, including classes without lessons. Publish individual lessons and assessments when ready.
 5. Enroll student accounts through the course management page, or enable self-enrollment. Suspension blocks access while retaining learning history.
 6. Students study lessons, confirm completion, submit assignments, and take quizzes.
 7. Administrator grades assignments and provides feedback. Quizzes are graded on the server using weighted question points.
@@ -23,7 +23,7 @@ Open `/admin` using an active administrator account.
 
 The sidebar separates Overview, Courses, Students, and Create course. Overview highlights real totals, recent courses, pending assignment reviews, and publishing status. Course and student lists support search and status filters; results are paginated (8 courses or 12 students per page). On phones, the sidebar becomes a compact navigation row and the recent course table becomes a stacked list.
 
-- Create/edit courses; use draft, published, or archived status. Archived courses are hidden from students and retain their history.
+- Create/edit courses; classes are published automatically and can be archived. Archived courses are hidden from students and retain their history.
 - Add/edit/order lessons and chapters. Unpublish a lesson to remove it from current course requirements. Course material uploads support PDF, TXT, DOC/DOCX, PPT/PPTX, ZIP up to 20 MB.
 - Create student accounts or let students register. Activate/deactivate accounts.
 - Assign or suspend enrollment for each course and student.
