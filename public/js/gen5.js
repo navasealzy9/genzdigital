@@ -13,6 +13,15 @@
     const visuals = new Map();
     const playerTags = new Map();
     let measureLabels = true;
+    let overview = false;
+    let cameraX = 0, viewWidth = W;
+    const mobileView = matchMedia('(max-width: 760px), (max-height: 500px) and (orientation: landscape)');
+    $('map-view')?.addEventListener('click', () => {
+        overview = !overview;
+        $('map-view').setAttribute('aria-pressed', String(overview));
+        $('map-view').querySelector('span').textContent = overview ? '◎ តាមខ្ញុំ / Follow' : '⊞ ផែនទី / Map';
+        measureLabels = true;
+    });
     const playerLayer = document.createElement('div');
     playerLayer.className = 'gen5-player-layer';
     playerLayer.setAttribute('role', 'list');
@@ -253,7 +262,7 @@
 
     function point(event) {
         const rect = canvas.getBoundingClientRect();
-        return {x:Math.floor(((event.clientX - rect.left) * W / rect.width - ox) / tile), y:Math.floor(((event.clientY - rect.top) * H / rect.height - oy) / tile)};
+        return {x:Math.floor(((event.clientX - rect.left) * viewWidth / rect.width + cameraX - ox) / tile), y:Math.floor(((event.clientY - rect.top) * H / rect.height - oy) / tile)};
     }
     canvas.addEventListener('pointermove', event => { const p = point(event); hover = p.x >= 0 && p.x < 20 && p.y >= 0 && p.y < 12 ? p : null; });
     canvas.addEventListener('pointerleave', () => { hover = null; });
@@ -326,6 +335,8 @@
     function building(b) {
         const cx = ox + b.x * tile + 25, base = oy + b.y * tile + 35, height = b.height * 12;
         const one = b.team === 1;
+        ctx.fillStyle = one ? '#55e2b018' : '#ff896f18';
+        ctx.fillRect(ox + b.x * tile + 3, oy + b.y * tile + 3, tile - 6, tile - 6);
         ctx.fillStyle = '#00000025'; ctx.beginPath(); ctx.ellipse(cx+6,base+2,20,7,0,0,Math.PI*2); ctx.fill();
         polygon([[cx-14,base-7],[cx,base+1],[cx,base-height+1],[cx-14,base-height-7]], one?'#218a70':'#ab514b');
         polygon([[cx,base+1],[cx+14,base-7],[cx+14,base-height-7],[cx,base-height+1]],one?'#3ac39b':'#ee806b');
@@ -351,16 +362,35 @@
             for (const tag of playerTags.values()) tag.nameWidth = tag.name.offsetWidth;
             measureLabels = false;
         }
-        ctx.setTransform(width/W,0,0,height/H,0,0); ctx.clearRect(0,0,W,H);
+        viewWidth = !config.admin && mobileView.matches && !overview && state?.me
+            ? Math.min(W, H * canvas.clientWidth / canvas.clientHeight) : W;
+        const meVisual = state?.me ? visuals.get(state.me.id) : null;
+        const followT = meVisual ? (reducedMotion ? 1 : Math.min(1, (time - meVisual.at) / 190)) : 1;
+        const followX = meVisual ? meVisual.x + (meVisual.tx - meVisual.x) * followT : (state?.me?.x || 0);
+        cameraX = Math.max(0, Math.min(W - viewWidth, ox + followX * tile + 25 - viewWidth / 2));
+        const borderLabel = document.querySelector('.gen5-border-label');
+        if (borderLabel) {
+            const borderPosition = (ox + 500 - cameraX) / viewWidth;
+            borderLabel.style.left = `${borderPosition * 100}%`;
+            borderLabel.hidden = borderPosition < 0.04 || borderPosition > 0.96;
+        }
+        ctx.setTransform(width/viewWidth,0,0,height/H,-cameraX*width/viewWidth,0);
+        ctx.clearRect(cameraX,0,viewWidth,H);
         ctx.fillStyle='#101d30'; ctx.fillRect(0,0,W,H);
         if(state) {
             for(let y=0;y<12;y++) for(let x=0;x<20;x++) {
-                ctx.fillStyle=x<10?((x+y)%2?'#16372f':'#173c33'):((x+y)%2?'#392c30':'#3e2e32');
-                ctx.fillRect(ox+x*tile,oy+y*tile,tile,tile);
+                ctx.fillStyle=x<10?((x+y)%2?'#173e3c':'#1b4742'):((x+y)%2?'#453039':'#4b343c');
+                ctx.fillRect(ox+x*tile+1,oy+y*tile+1,tile-2,tile-2);
+                ctx.fillStyle=x<10?'#80f4c90c':'#ffbfa40c';
+                ctx.fillRect(ox+x*tile+3,oy+y*tile+3,tile-6,2);
                 ctx.strokeStyle='#b0dbcc08'; ctx.lineWidth=1; ctx.strokeRect(ox+x*tile,oy+y*tile,tile,tile);
             }
             ctx.font='bold 170px system-ui'; ctx.textAlign='center'; ctx.fillStyle='#55e2b008'; ctx.fillText('01',ox+250,oy+350); ctx.fillStyle='#ff896f08'; ctx.fillText('02',ox+750,oy+350);
             ctx.save();ctx.setLineDash([8,9]);ctx.strokeStyle='#a8b7c868';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ox+500,oy);ctx.lineTo(ox+500,oy+600);ctx.stroke();ctx.restore();
+            if (state.me && !config.admin) {
+                ctx.strokeStyle = colors[state.me.team] + '66'; ctx.lineWidth = 2;
+                ctx.strokeRect(ox + state.me.x * tile + 2, oy + state.me.y * tile + 2, tile - 4, tile - 4);
+            }
             const target = intent || hover;
             if(target && !config.admin) {
                 ctx.fillStyle = mode === 'attack' ? '#ff8a6e24' : '#ffffff15'; ctx.fillRect(ox+target.x*tile,oy+target.y*tile,tile,tile);
@@ -379,8 +409,9 @@
                 ctx.strokeStyle='#102334';ctx.lineWidth=2;ctx.stroke();
                 const tag = playerTags.get(player.id);
                 if (tag) {
-                    const px = x / W * canvas.clientWidth, py = y / H * canvas.clientHeight;
-                    tag.element.style.left = `${x / W * 100}%`; tag.element.style.top = `${y / H * 100}%`;
+                    const px = (x - cameraX) / viewWidth * canvas.clientWidth, py = y / H * canvas.clientHeight;
+                    tag.element.hidden = x < cameraX || x > cameraX + viewWidth;
+                    tag.element.style.left = `${(x - cameraX) / viewWidth * 100}%`; tag.element.style.top = `${y / H * 100}%`;
                     const half = tag.nameWidth / 2;
                     const shift = Math.max(half + 5, Math.min(canvas.clientWidth - half - 5, px)) - px;
                     tag.name.style.setProperty('--name-shift', `${shift}px`);

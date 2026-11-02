@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" fill="none">
+<defs><linearGradient id="ground" x2="1" y2="1"><stop stop-color="#183b48"/><stop offset="1" stop-color="#0c182c"/></linearGradient><linearGradient id="mint" x2="0" y2="1"><stop stop-color="#75ffcf"/><stop offset="1" stop-color="#148775"/></linearGradient><linearGradient id="coral" x2="0" y2="1"><stop stop-color="#ffb594"/><stop offset="1" stop-color="#ae4767"/></linearGradient><pattern id="windows" width="17" height="22" patternUnits="userSpaceOnUse"><rect x="5" y="5" width="5" height="9" rx="1" fill="#d8fff2" opacity=".7"/></pattern></defs>
+<ellipse cx="323" cy="253" rx="285" ry="31" fill="#030c1b" opacity=".35"/>
+<path d="m30 224 286-94 295 94-284 69z" fill="url(#ground)" stroke="#406270"/>
+<path d="m73 233 248-80m-171 100 246-80m-166 101 243-79M122 194l280 76m-193-105 282 79m-191-109 283 81" stroke="#658c9a" opacity=".18"/>
+<path d="m320 143 4 135" stroke="#d4e1ff" stroke-dasharray="6 8" opacity=".5"/>
+<g stroke="#a0ffe0" stroke-opacity=".3"><path d="m100 205 0-71 43-17 0 72z" fill="#137969"/><path d="m143 117 35 14v71l-35-13z" fill="url(#mint)"/><path d="m100 134 43-17 35 14-44 17z" fill="#8affdc"/>
+<path d="m192 222 0-140 45-17v140z" fill="#126959"/><path d="m237 65 38 16v140l-38-16z" fill="url(#mint)"/><path d="m192 82 45-17 38 16-44 18z" fill="#a3ffe3"/><path d="m237 205 0-122 34 14v121z" fill="url(#windows)"/>
+<path d="m157 248 0-70 35-13v70z" fill="#157466"/><path d="m192 165 30 13v70l-30-13z" fill="url(#mint)"/><path d="m157 178 35-13 30 13-35 13z" fill="#9affdf"/></g>
+<g stroke="#ffc3a6" stroke-opacity=".3"><path d="m373 208 0-111 40-16v111z" fill="#a45167"/><path d="m413 81 36 15v111l-36-15z" fill="url(#coral)"/><path d="m373 97 40-16 36 15-41 16z" fill="#ffd2b4"/><path d="m413 192 0-96 32 13v96z" fill="url(#windows)"/>
+<path d="m475 216 0-67 35-13v67z" fill="#a45167"/><path d="m510 136 33 14v67l-33-14z" fill="url(#coral)"/><path d="m475 149 35-13 33 14-35 13z" fill="#ffd2b4"/>
+<path d="m390 254 0-64 35-13v64z" fill="#a45167"/><path d="m425 177 31 13v64l-31-13z" fill="url(#coral)"/><path d="m390 190 35-13 31 13-35 13z" fill="#ffd2b4"/></g>
+<path d="M236 65V33l22 8-22 8" stroke="#a3ffe3" stroke-width="2"/><path d="M413 81V50l22 8-22 8" stroke="#ffc5a2" stroke-width="2"/>
+<g fill="#afffe4"><circle cx="85" cy="92" r="2"/><circle cx="310" cy="57" r="3"/><circle cx="546" cy="98" r="2"/><circle cx="356" cy="26" r="2"/></g>
+</svg>
