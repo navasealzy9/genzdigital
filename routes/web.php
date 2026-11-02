@@ -43,6 +43,8 @@ Route::middleware(['auth', LearningAccess::class.':student'])->group(function ()
     Route::get('/courses/{course}/certificate', [LearningController::class, 'certificate'])->name('learning.certificate');
 });
 Route::prefix('admin')->name('admin.')->middleware(['auth', LearningAccess::class.':admin'])->group(function () {
+    Route::get('/accounts', [\App\Http\Controllers\AccountManageController::class, 'index'])->name('accounts.index');
+    Route::post('/accounts', [\App\Http\Controllers\AccountManageController::class, 'store'])->middleware('throttle:20,1')->name('accounts.store');
     Route::get('/gen5', [Gen5Controller::class, 'index'])->name('gen5.index');
     Route::post('/gen5', [Gen5Controller::class, 'store'])->name('gen5.store');
     Route::get('/gen5/{match}', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.show');
