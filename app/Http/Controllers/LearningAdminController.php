@@ -55,7 +55,7 @@ class LearningAdminController extends Controller
 
         $waitingStudents = $this->waitingStudents()->orderBy('created_at')->get();
         $enrollmentCourses = DB::table('learning_courses')->whereIn('status', ['draft', 'published'])->orderBy('title')->get();
-        return view('learning.admin', compact('waitingStudents', 'enrollmentCourses', 'courses', 'students', 'pendingGrades', 'section', 'search', 'courseCounts', 'studentCount', 'activeStudentCount', 'reviewQueue'));
+        return response()->view('learning.admin', compact('waitingStudents', 'enrollmentCourses', 'courses', 'students', 'pendingGrades', 'section', 'search', 'courseCounts', 'studentCount', 'activeStudentCount', 'reviewQueue'))->header('Cache-Control', 'no-store, private');
     }
 
     private function waitingStudents()
@@ -321,6 +321,20 @@ class LearningAdminController extends Controller
         $identity->create($request->all());
 
         return redirect()->route('admin.index', ['section' => 'students'])->with('success', 'Student account created. Assign a course to begin learning.');
+    }
+
+    public function resetStudentPassword(Request $request, int $student)
+    {
+        $user = User::where('role', 'student')->findOrFail($student);
+        $temporaryPassword = \Illuminate\Support\Str::password(16, symbols: false);
+        $user->password = $temporaryPassword;
+        $user->must_change_password = true;
+        $user->remember_token = \Illuminate\Support\Str::random(60);
+        $user->save();
+
+        return redirect()->route('admin.index', ['section' => 'students'])
+            ->with('temporary_password', $temporaryPassword)
+            ->with('password_reset_username', $user->username);
     }
 
     public function studentStatus(Request $request, int $student)

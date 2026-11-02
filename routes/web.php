@@ -14,6 +14,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1')->name('register.post');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::get('/create-new-password', [AuthController::class, 'createPassword'])->name('password.create');
+    Route::post('/create-new-password', [AuthController::class, 'storePassword'])->middleware('throttle:6,1')->name('password.store');
+});
 Route::middleware(['auth', LearningAccess::class])->group(function () {
     Route::get('/', [LearningController::class, 'index'])->name('campus.index');
     Route::get('/lessons/{lesson}/material', [LearningController::class, 'material'])->name('learning.material');
@@ -63,4 +67,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', LearningAccess::clas
     Route::post('/waiting-list/enroll', [LearningAdminController::class, 'enrollWaiting'])->name('waiting.enroll');
     Route::post('/students', [LearningAdminController::class, 'saveStudent'])->name('students.store');
     Route::post('/students/{student}/status', [LearningAdminController::class, 'studentStatus'])->name('students.status');
+    Route::post('/students/{student}/password', [LearningAdminController::class, 'resetStudentPassword'])->middleware('throttle:20,1')->name('students.password');
 });

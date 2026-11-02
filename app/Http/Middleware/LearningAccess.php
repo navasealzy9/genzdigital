@@ -13,6 +13,10 @@ class LearningAccess
         abort_unless(in_array($request->user()->role, ['admin', 'student'], true), 403);
         abort_if($role && $request->user()->role !== $role, 403);
 
+        if ($request->user()->must_change_password) {
+            return redirect()->route('password.create');
+        }
+
         return $next($request);
     }
 }
