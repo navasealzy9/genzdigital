@@ -47,6 +47,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', LearningAccess::clas
     Route::post('/accounts', [\App\Http\Controllers\AccountManageController::class, 'store'])->middleware('throttle:20,1')->name('accounts.store');
     Route::get('/gen5', [Gen5Controller::class, 'index'])->name('gen5.index');
     Route::post('/gen5', [Gen5Controller::class, 'store'])->name('gen5.store');
+    Route::delete('/gen5/{match}', [Gen5Controller::class, 'destroy'])->whereNumber('match')->name('gen5.destroy');
     Route::get('/gen5/{match}', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.show');
     Route::get('/gen5/{match}/screen', [Gen5Controller::class, 'show'])->whereNumber('match')->name('gen5.screen');
     Route::post('/gen5/{match}/control', [Gen5Controller::class, 'control'])->whereNumber('match')->name('gen5.control');

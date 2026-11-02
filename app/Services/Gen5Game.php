@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Exceptions\OpenGen5MatchException;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -46,15 +45,20 @@ class Gen5Game
         return DB::transaction(function () use ($admin, $data) {
             $course = DB::table('learning_courses')->where('id', $data['course_id'])->lockForUpdate()->first();
             abort_unless($course && $course->status !== 'archived', 422, 'Choose an available class.');
-            $openMatch = DB::table('gen5_matches')->where('course_id', $course->id)->whereIn('status', ['lobby', 'live'])->first();
-            if ($openMatch) {
-                throw new OpenGen5MatchException((int) $openMatch->id);
-            }
 
             return DB::table('gen5_matches')->insertGetId($data + [
                 'created_by' => $admin->id, 'status' => 'lobby', 'board' => '{}', 'events' => '[]',
                 'created_at' => now(), 'updated_at' => now(),
             ]);
+        });
+    }
+
+    public function delete(int $id): void
+    {
+        DB::transaction(function () use ($id) {
+            $match = DB::table('gen5_matches')->where('id', $id)->lockForUpdate()->first();
+            abort_unless($match, 404);
+            DB::table('gen5_matches')->where('id', $id)->delete();
         });
     }
 

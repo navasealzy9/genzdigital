@@ -59,38 +59,48 @@ class Gen5Test extends TestCase
         $this->get('/admin/gen5/'.$this->match.'/screen')->assertOk()->assertSee('gen5-projector')->assertDontSee('admin-sidebar');
     }
 
-    public function test_match_creation_validates_duration_and_prevents_two_open_games_for_a_class(): void
-    {
-        $this->actingAs($this->admin)->postJson('/admin/gen5', ['course_id' => $this->course, 'title' => 'New game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 0])->assertUnprocessable()->assertJsonValidationErrors('duration_minutes');
-        $data = ['course_id' => $this->course, 'title' => 'New game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5];
-        $this->postJson('/admin/gen5', $data)->assertStatus(409);
-        $this->postJson('/admin/gen5/'.$this->match.'/control', ['action' => 'cancel'])->assertOk();
-        $this->post('/admin/gen5', $data)->assertRedirect();
-        $this->assertDatabaseCount('gen5_matches', 2);
-    }
-
-    public function test_duplicate_creation_from_browser_returns_form_and_existing_match_link(): void
-    {
-        $data = ['course_id' => $this->course, 'title' => 'My new game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5];
-        $url = route('admin.gen5.show', $this->match);
-        $this->actingAs($this->admin)->post('/admin/gen5', $data)
-            ->assertRedirect('/admin/gen5')->assertSessionHasErrors('course_id')
-            ->assertSessionHasInput('title', 'My new game')
-            ->assertSessionHasInput('course_id', $this->course)
-            ->assertSessionHas('existing_gen5_match_url', $url);
-        $this->get('/admin/gen5')->assertOk()->assertSee('Open Match')->assertSee($url)
-            ->assertSee('value="My new game"', false);
-        $this->assertDatabaseCount('gen5_matches', 1);
-    }
-
-    public function test_duplicate_live_game_keeps_conflict_response_for_json_and_provides_match_url(): void
+    public function test_admin_can_create_multiple_games_in_one_class_even_while_another_is_live(): void
     {
         $this->ready();
-        $this->actingAs($this->admin)->postJson('/admin/gen5', [
-            'course_id' => $this->course, 'title' => 'Duplicate game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5,
-        ])->assertStatus(409)->assertJsonPath('match_url', route('admin.gen5.show', $this->match));
-        $this->assertDatabaseCount('gen5_matches', 1);
+        $data = ['course_id' => $this->course, 'title' => 'Second game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5];
+        $this->actingAs($this->admin)->postJson('/admin/gen5', array_replace($data, ['duration_minutes' => 0]))->assertUnprocessable();
+        $this->post('/admin/gen5', $data)->assertSessionHasNoErrors()->assertRedirect();
+        $this->postJson('/admin/gen5', array_replace($data, ['title' => 'Third game']))->assertRedirect();
+        $this->assertDatabaseCount('gen5_matches', 3);
         $this->assertDatabaseHas('gen5_matches', ['id' => $this->match, 'status' => 'live']);
+        $this->actingAs($this->one)->get('/gen5')->assertOk()->assertSee('Second game')->assertSee('Third game');
+        $second = DB::table('gen5_matches')->where('title', 'Second game')->value('id');
+        $this->postJson('/gen5/'.$second.'/join')->assertOk();
+        $this->assertDatabaseHas('gen5_players', ['match_id' => $second, 'user_id' => $this->one->id]);
+        $this->assertDatabaseHas('gen5_players', ['match_id' => $this->match, 'user_id' => $this->one->id]);
+    }
+
+    public function test_only_admin_can_delete_games_and_related_players_are_removed(): void
+    {
+        $this->delete('/admin/gen5/'.$this->match)->assertRedirect('/login');
+        $this->actingAs($this->one)->postJson('/gen5/'.$this->match.'/join')->assertOk();
+        $this->delete('/admin/gen5/'.$this->match)->assertForbidden();
+        $this->get('/gen5')->assertOk()->assertDontSee('gen5-delete-form');
+        $other = app(Gen5Game::class)->create($this->admin, ['course_id' => $this->course, 'title' => 'Keep this game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5]);
+        $this->actingAs($this->admin)->get('/admin/gen5')->assertOk()->assertSee('gen5-delete-form')->assertSee('Delete');
+        $this->delete('/admin/gen5/'.$this->match)->assertRedirect('/admin/gen5')->assertSessionHas('success');
+        $this->assertDatabaseMissing('gen5_matches', ['id' => $this->match]);
+        $this->assertDatabaseMissing('gen5_players', ['match_id' => $this->match]);
+        $this->assertDatabaseHas('gen5_matches', ['id' => $other]);
+        $this->get('/admin/gen5/'.$this->match)->assertNotFound();
+        $this->delete('/admin/gen5/'.$this->match)->assertNotFound();
+    }
+
+    public function test_admin_can_delete_live_finished_and_cancelled_games(): void
+    {
+        $this->actingAs($this->admin);
+        foreach (['live', 'finished', 'cancelled'] as $status) {
+            $id = app(Gen5Game::class)->create($this->admin, ['course_id' => $this->course, 'title' => 'Delete '.$status, 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5]);
+            DB::table('gen5_matches')->where('id', $id)->update(['status' => $status]);
+            $this->delete('/admin/gen5/'.$id)->assertRedirect('/admin/gen5');
+            $this->assertDatabaseMissing('gen5_matches', ['id' => $id]);
+        }
+        $this->assertDatabaseHas('gen5_matches', ['id' => $this->match]);
     }
 
     public function test_students_only_see_and_join_their_own_active_class_games(): void
