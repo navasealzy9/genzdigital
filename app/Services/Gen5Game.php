@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\OpenGen5MatchException;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,10 @@ class Gen5Game
         return DB::transaction(function () use ($admin, $data) {
             $course = DB::table('learning_courses')->where('id', $data['course_id'])->lockForUpdate()->first();
             abort_unless($course && $course->status !== 'archived', 422, 'Choose an available class.');
-            abort_if(DB::table('gen5_matches')->where('course_id', $course->id)->whereIn('status', ['lobby', 'live'])->exists(), 409, 'This class already has an open GEN5 match. Finish or cancel it first.');
+            $openMatch = DB::table('gen5_matches')->where('course_id', $course->id)->whereIn('status', ['lobby', 'live'])->first();
+            if ($openMatch) {
+                throw new OpenGen5MatchException((int) $openMatch->id);
+            }
 
             return DB::table('gen5_matches')->insertGetId($data + [
                 'created_by' => $admin->id, 'status' => 'lobby', 'board' => '{}', 'events' => '[]',

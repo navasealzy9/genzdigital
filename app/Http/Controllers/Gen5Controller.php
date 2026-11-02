@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\OpenGen5MatchException;
 use App\Services\Gen5Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,18 @@ class Gen5Controller extends Controller
             'title' => 'required|string|max:160', 'team_one' => 'required|string|max:60|different:team_two',
             'team_two' => 'required|string|max:60', 'duration_minutes' => 'required|integer|min:1|max:60',
         ]);
-        $id = $game->create($request->user(), $data);
+        try {
+            $id = $game->create($request->user(), $data);
+        } catch (OpenGen5MatchException $exception) {
+            $url = route('admin.gen5.show', $exception->matchId);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $exception->getMessage(), 'match_url' => $url], 409);
+            }
+
+            return redirect()->route('admin.gen5.index')->withInput($data)
+                ->withErrors(['course_id' => $exception->getMessage()])
+                ->with('existing_gen5_match_url', $url);
+        }
 
         return redirect()->route('admin.gen5.show', $id)->with('success', 'GEN5 lobby created. Students can now join from GEN5.');
     }

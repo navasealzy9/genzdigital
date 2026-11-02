@@ -69,6 +69,30 @@ class Gen5Test extends TestCase
         $this->assertDatabaseCount('gen5_matches', 2);
     }
 
+    public function test_duplicate_creation_from_browser_returns_form_and_existing_match_link(): void
+    {
+        $data = ['course_id' => $this->course, 'title' => 'My new game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5];
+        $url = route('admin.gen5.show', $this->match);
+        $this->actingAs($this->admin)->post('/admin/gen5', $data)
+            ->assertRedirect('/admin/gen5')->assertSessionHasErrors('course_id')
+            ->assertSessionHasInput('title', 'My new game')
+            ->assertSessionHasInput('course_id', $this->course)
+            ->assertSessionHas('existing_gen5_match_url', $url);
+        $this->get('/admin/gen5')->assertOk()->assertSee('Open Match')->assertSee($url)
+            ->assertSee('value="My new game"', false);
+        $this->assertDatabaseCount('gen5_matches', 1);
+    }
+
+    public function test_duplicate_live_game_keeps_conflict_response_for_json_and_provides_match_url(): void
+    {
+        $this->ready();
+        $this->actingAs($this->admin)->postJson('/admin/gen5', [
+            'course_id' => $this->course, 'title' => 'Duplicate game', 'team_one' => 'A', 'team_two' => 'B', 'duration_minutes' => 5,
+        ])->assertStatus(409)->assertJsonPath('match_url', route('admin.gen5.show', $this->match));
+        $this->assertDatabaseCount('gen5_matches', 1);
+        $this->assertDatabaseHas('gen5_matches', ['id' => $this->match, 'status' => 'live']);
+    }
+
     public function test_students_only_see_and_join_their_own_active_class_games(): void
     {
         $outsider = User::factory()->create(['role' => 'student', 'status' => 'Active']);

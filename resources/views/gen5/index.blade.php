@@ -5,6 +5,12 @@
 <link rel="stylesheet" href="{{ asset('css/gen5.css') }}?v={{ filemtime(public_path('css/gen5.css')) }}">
 @endsection
 @section('content')
+@if($admin && session('existing_gen5_match_url'))
+<section class="gen5-conflict" role="status">
+    <div><strong>ថ្នាក់នេះមានហ្គេមរួចហើយ / Match already exists</strong><p>ចូលហ្គេមដែលមានស្រាប់ដើម្បីបន្ត។ បើចង់បង្កើតថ្មី សូមបញ្ចប់ ឬបោះបង់ហ្គេមចាស់ជាមុនសិន។</p></div>
+    <a class="button" href="{{ session('existing_gen5_match_url') }}">ចូលហ្គេមដែលមានស្រាប់ / Open Match →</a>
+</section>
+@endif
 <div class="gen5-intro"><div><span class="eyebrow">BUILD TOGETHER. BATTLE TOGETHER.</span><h1>GEN<span>5</span> <small>សមរភូមិសង់ទីក្រុង</small></h1><p>ក្រុមពីរ ទឹកដីពីរ និងពេលវេលាតែមួយ។ សង់ការពារទីក្រុងរបស់អ្នក ហើយឆ្លងព្រំដែនទៅវាយអគារគូប្រកួត។</p></div><img class="gen5-intro-art" src="{{ asset('images/gen5-city.svg') }}" alt="" aria-hidden="true"></div>
 @if($admin)
 <details class="gen5-create" @if($errors->any() || $matches->isEmpty()) open @endif><summary>＋ បង្កើតការប្រកួត GEN5 ថ្មី</summary><form action="{{ route('admin.gen5.store') }}" method="post">@csrf
